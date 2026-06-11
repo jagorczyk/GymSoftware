@@ -71,4 +71,32 @@ public class ClientPortalController {
     ) {
         return clientPortalService.purchasePass(principal.getUserId(), gymId, request);
     }
+
+    @GetMapping("/gyms/{gymId}/classes")
+    public List<com.jagorczyk.gymManagement.api.dto.GroupClassDtos.GroupClassView> getClasses(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime from,
+            @org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime to
+    ) {
+        return clientPortalService.getClasses(principal.getUserId(), gymId, from, to);
+    }
+
+    @PostMapping("/gyms/{gymId}/classes/{classId}/book")
+    public void bookClass(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long classId
+    ) {
+        clientPortalService.bookClass(principal.getUserId(), gymId, classId);
+    }
+
+    @PostMapping("/gyms/{gymId}/classes/{classId}/cancel")
+    public void cancelBooking(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long classId
+    ) {
+        clientPortalService.cancelBooking(principal.getUserId(), gymId, classId);
+    }
 }

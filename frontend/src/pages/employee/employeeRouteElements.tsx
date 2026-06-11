@@ -15,6 +15,9 @@ import { EmployeeSchedule } from "./EmployeeSchedule";
 import { EmployeeWorkSchedule } from "./EmployeeWorkSchedule";
 import { EmployeePassTypesList } from "./EmployeePassTypesList";
 import { EmployeePassTypeForm } from "./EmployeePassTypeForm";
+import { EmployeeClassesPage } from "./EmployeeClassesPage";
+import { EmployeeClassForm } from "./EmployeeClassForm";
+import { EmployeeClassDetail } from "./EmployeeClassDetail";
 
 function Guarded(props: { permissions: EmployeePermission[]; children: ReactElement }) {
   return <EmployeeRouteGuard permissions={props.permissions}>{props.children}</EmployeeRouteGuard>;
@@ -129,6 +132,39 @@ export function EmployeePassTypeEditPage() {
   return (
     <Guarded permissions={ctx.permissions}>
       <EmployeePassTypeForm ctx={ctx} mode="edit" />
+    </Guarded>
+  );
+}
+
+export function EmployeeClassesRoutePage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeClassesPage ctx={ctx} />
+    </Guarded>
+  );
+}
+export function EmployeeClassCreateRoutePage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeClassForm ctx={ctx} />
+    </Guarded>
+  );
+}
+export function EmployeeClassEditRoutePage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeClassForm ctx={ctx} isEdit={true} />
+    </Guarded>
+  );
+}
+export function EmployeeClassDetailRoutePage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeClassDetail ctx={ctx} />
     </Guarded>
   );
 }

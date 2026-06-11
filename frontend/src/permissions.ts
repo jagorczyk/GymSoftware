@@ -6,7 +6,8 @@ export type EmployeePermission =
   | "CREATE_LOCKERS"
   | "MANAGE_PASS_TYPES"
   | "MANAGE_SCHEDULE"
-  | "MANAGE_WORK_SCHEDULE";
+  | "MANAGE_WORK_SCHEDULE"
+  | "MANAGE_CLASSES";
 
 export const DEFAULT_EMPLOYEE_PERMISSIONS: EmployeePermission[] = [
   "VIEW_DASHBOARD",
@@ -31,6 +32,7 @@ export const PERMISSION_LABELS: Record<EmployeePermission, string> = {
   MANAGE_PASS_TYPES: "Zarządzanie ofertą karnetów",
   MANAGE_SCHEDULE: "Zarządzanie terminarzem",
   MANAGE_WORK_SCHEDULE: "Zarządzanie grafikiem pracy",
+  MANAGE_CLASSES: "Zarządzanie zajęciami grupowymi",
 };
 
 export const EMPLOYEE_ROUTE_PERMISSIONS: Record<string, EmployeePermission> = {

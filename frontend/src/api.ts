@@ -855,13 +855,156 @@ export async function getGymAnalytics(auth: AuthState, gymId: number): Promise<A
 export async function uploadAvatar(auth: AuthState, file: File): Promise<{ url: string }> {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await fetch(`${API_URL}/upload/image`, {
+
+  const response = await fetch(`${API_URL}/auth/avatar`, {
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
     body: formData,
   });
-  if (!response.ok) await parseApiError(response, "Nie udało się wgrać pliku");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować zdjęcia");
   return response.json();
+}
+
+export type GroupClassView = {
+  id: number;
+  instructorId: number;
+  instructorName: string;
+  name: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  activeReservations: number;
+};
+
+export type ClassReservationView = {
+  id: number;
+  classId: number;
+  guestId: number;
+  guestFirstName: string;
+  guestLastName: string;
+  guestEmail: string;
+  status: string;
+  reservedAt: string;
+};
+
+function classBasePath(role: string, gymId: number) {
+  return role === "OWNER"
+    ? `${API_URL}/owner/gyms/${gymId}/classes`
+    : `${API_URL}/employee/gyms/${gymId}/classes`;
+}
+
+export async function getClasses(
+  auth: AuthState,
+  gymId: number,
+  from: string,
+  to: string
+): Promise<GroupClassView[]> {
+  const url = new URL(classBasePath(auth.role, gymId));
+  url.searchParams.set("from", from);
+  url.searchParams.set("to", to);
+  const response = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zajęć");
+  return response.json();
+}
+
+export async function createClass(
+  auth: AuthState,
+  gymId: number,
+  payload: { instructorId: number; name: string; description?: string; startTime: string; endTime: string; capacity: number }
+): Promise<GroupClassView> {
+  const response = await fetch(classBasePath(auth.role, gymId), {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać zajęć");
+  return response.json();
+}
+
+export async function updateClass(
+  auth: AuthState,
+  gymId: number,
+  classId: number,
+  payload: { instructorId: number; name: string; description?: string; startTime: string; endTime: string; capacity: number }
+): Promise<GroupClassView> {
+  const response = await fetch(`${classBasePath(auth.role, gymId)}/${classId}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować zajęć");
+  return response.json();
+}
+
+export async function deleteClass(auth: AuthState, gymId: number, classId: number): Promise<void> {
+  const response = await fetch(`${classBasePath(auth.role, gymId)}/${classId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć zajęć");
+}
+
+export async function getClassReservations(
+  auth: AuthState,
+  gymId: number,
+  classId: number
+): Promise<ClassReservationView[]> {
+  const response = await fetch(`${classBasePath(auth.role, gymId)}/${classId}/reservations`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać rezerwacji");
+  return response.json();
+}
+
+export async function updateAttendance(
+  auth: AuthState,
+  gymId: number,
+  classId: number,
+  reservationId: number,
+  status: string
+): Promise<ClassReservationView> {
+  const response = await fetch(`${classBasePath(auth.role, gymId)}/${classId}/reservations/${reservationId}/attendance`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować obecności");
+  return response.json();
+}
+
+export async function getClientClasses(
+  auth: AuthState,
+  gymId: number,
+  from: string,
+  to: string
+): Promise<GroupClassView[]> {
+  const url = new URL(`${API_URL}/client/gyms/${gymId}/classes`);
+  url.searchParams.set("from", from);
+  url.searchParams.set("to", to);
+  const response = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zajęć");
+  return response.json();
+}
+
+export async function clientBookClass(auth: AuthState, gymId: number, classId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/classes/${classId}/book`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zarezerwować miejsca");
+}
+
+export async function clientCancelClass(auth: AuthState, gymId: number, classId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/classes/${classId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się anulować rezerwacji");
 }
 
 export type RankView = {

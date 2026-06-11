@@ -45,6 +45,7 @@ export function AppShell() {
         { label: "Klienci", to: "/employee/guests", icon: <Users className="w-5 h-5" /> },
         { label: "Kluczyki", to: "/employee/lockers", icon: <KeyRound className="w-5 h-5" /> },
         { label: "Oferta", to: "/employee/pass-types", icon: <ListPlus className="w-5 h-5" /> },
+        { label: "Zajęcia", to: "/employee/classes", icon: <CalendarDays className="w-5 h-5" /> },
         { label: "Obecni", to: "/employee/present", icon: <MapPin className="w-5 h-5" /> },
         { label: "Terminarz", to: "/employee/schedule", icon: <CalendarDays className="w-5 h-5" /> },
         { label: "Grafik", to: "/employee/work-schedule", icon: <CalendarClock className="w-5 h-5" /> },
@@ -63,6 +64,7 @@ export function AppShell() {
   const clientNavItems = useMemo(
     () => [
       { label: "Dashboard", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+      { label: "Zajęcia", to: "/client/classes", icon: <CalendarDays className="w-5 h-5" /> },
       { label: "Dołącz do siłowni", to: "/client/gyms/join", icon: <Store className="w-5 h-5" /> },
     ],
     []

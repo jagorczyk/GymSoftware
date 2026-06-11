@@ -36,6 +36,13 @@ public class ClientPortalService {
         this.auditLogRepository = auditLogRepository;
     }
 
+    private GroupClassService groupClassService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setGroupClassService(GroupClassService groupClassService) {
+        this.groupClassService = groupClassService;
+    }
+
     private StripeService stripeService;
 
     // Optional setter injection to avoid circular dependency if it happens
@@ -149,6 +156,35 @@ public class ClientPortalService {
         log.setAction("ONLINE_PASS_PURCHASE");
         log.setPayload(String.format("Zakup karnetu online (Stripe) %s za %.2f", passType.getName(), passType.getPrice()));
         auditLogRepository.save(log);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.jagorczyk.gymManagement.api.dto.GroupClassDtos.GroupClassView> getClasses(Long userId, Long gymId, java.time.LocalDateTime from, java.time.LocalDateTime to) {
+        getGuest(userId, gymId); // Ensure user is a guest of this gym
+        return groupClassService.getClasses(gymId, from, to).stream()
+                .map(c -> new com.jagorczyk.gymManagement.api.dto.GroupClassDtos.GroupClassView(
+                        c.getId(),
+                        c.getInstructor().getId(),
+                        c.getInstructor().getUser().getEmail(),
+                        c.getName(),
+                        c.getDescription(),
+                        c.getStartTime(),
+                        c.getEndTime(),
+                        c.getCapacity(),
+                        groupClassService.getClassReservations(gymId, c.getId()).stream().filter(r -> r.getStatus() != ClassReservationStatus.CANCELLED).count()
+                )).toList();
+    }
+
+    @Transactional
+    public void bookClass(Long userId, Long gymId, Long classId) {
+        Guest guest = getGuest(userId, gymId);
+        groupClassService.bookClass(gymId, classId, guest.getId());
+    }
+
+    @Transactional
+    public void cancelBooking(Long userId, Long gymId, Long classId) {
+        Guest guest = getGuest(userId, gymId);
+        groupClassService.cancelBooking(gymId, classId, guest.getId());
     }
 
     private Guest getGuest(Long userId, Long gymId) {

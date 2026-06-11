@@ -13,14 +13,15 @@ public enum EmployeePermission {
     CREATE_LOCKERS,
     MANAGE_PASS_TYPES,
     MANAGE_SCHEDULE,
-    MANAGE_WORK_SCHEDULE;
+    MANAGE_WORK_SCHEDULE,
+    MANAGE_CLASSES;
 
     public static Set<EmployeePermission> defaultPermissions() {
         return EnumSet.of(VIEW_DASHBOARD, MANAGE_GUESTS, SELL_PASSES, MANAGE_LOCKERS);
     }
 
     public static Set<EmployeePermission> optionalPermissions() {
-        return EnumSet.of(MANAGE_SCHEDULE, CREATE_LOCKERS, MANAGE_PASS_TYPES, MANAGE_WORK_SCHEDULE);
+        return EnumSet.of(MANAGE_SCHEDULE, CREATE_LOCKERS, MANAGE_PASS_TYPES, MANAGE_WORK_SCHEDULE, MANAGE_CLASSES);
     }
 
     public static Set<EmployeePermission> resolve(Collection<EmployeePermission> requested) {
@@ -41,6 +42,7 @@ public enum EmployeePermission {
             case MANAGE_PASS_TYPES -> "Zarządzanie ofertą karnetów";
             case MANAGE_SCHEDULE -> "Zarządzanie terminarzem";
             case MANAGE_WORK_SCHEDULE -> "Zarządzanie grafikiem pracy";
+            case MANAGE_CLASSES -> "Zarządzanie zajęciami grupowymi";
         };
     }
 }

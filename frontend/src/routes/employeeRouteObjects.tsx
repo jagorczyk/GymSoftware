@@ -14,6 +14,10 @@ import {
   EmployeePassTypesListPage,
   EmployeePassTypeCreatePage,
   EmployeePassTypeEditPage,
+  EmployeeClassesRoutePage,
+  EmployeeClassCreateRoutePage,
+  EmployeeClassEditRoutePage,
+  EmployeeClassDetailRoutePage,
 } from "../pages/employee/employeeRouteElements";
 
 export const employeeRouteObjects: RouteObject[] = [
@@ -32,4 +36,8 @@ export const employeeRouteObjects: RouteObject[] = [
   { path: "pass-types", Component: EmployeePassTypesListPage },
   { path: "pass-types/new", Component: EmployeePassTypeCreatePage },
   { path: "pass-types/:passTypeId", Component: EmployeePassTypeEditPage },
+  { path: "classes", Component: EmployeeClassesRoutePage },
+  { path: "classes/new", Component: EmployeeClassCreateRoutePage },
+  { path: "classes/:classId", Component: EmployeeClassDetailRoutePage },
+  { path: "classes/:classId/edit", Component: EmployeeClassEditRoutePage },
 ];
