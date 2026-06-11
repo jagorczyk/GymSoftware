@@ -1,0 +1,108 @@
+import { FormEvent, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Dumbbell, Mail, Lock } from "lucide-react";
+import { login } from "../api";
+import { useAuth } from "../authContext";
+import { useToast } from "../components/Toast";
+
+export function LoginPage() {
+  const { login: saveLogin } = useAuth();
+  const navigate = useNavigate();
+  const { showError } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    try {
+      const result = await login(email, password);
+      const next = saveLogin(result.token);
+      navigate(next.role === "OWNER" ? "/owner/dashboard" : "/employee/dashboard", {
+        replace: true,
+      });
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Błąd logowania");
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
+      <div className="md:w-[45%] bg-slate-900 text-white flex flex-col justify-center items-center p-8 md:p-12 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
+        
+        <div className="z-10 text-center max-w-md">
+          <div className="mx-auto w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center backdrop-blur-md mb-8 border border-white/10 shadow-2xl relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent rounded-[2rem]"></div>
+            <Dumbbell className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">Gym Management</h1>
+          <p className="text-slate-400 text-lg md:text-xl font-medium">
+            Nowoczesny system zarządzania siłownią, pracownikami i klientami.
+          </p>
+        </div>
+      </div>
+
+      <div className="md:w-[55%] flex items-center justify-center p-8">
+        <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-[0_2px_20px_-3px_rgba(6,81,237,0.1)] border-2 border-slate-100 p-8 md:p-12 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary-50 rounded-full blur-3xl opacity-50"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Witaj ponownie</h2>
+            <p className="text-slate-500 mb-10 font-medium">Zaloguj się na swoje konto, aby kontynuować</p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 block uppercase tracking-wide">Email</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900"
+                    placeholder="twoj@email.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 block uppercase tracking-wide">Hasło</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-6 bg-slate-900 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl hover:shadow-primary-500/30 focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center group"
+              >
+                Zaloguj się
+              </button>
+            </form>
+
+            <div className="mt-8 text-center text-sm font-medium text-slate-500">
+              Nie masz jeszcze konta?{" "}
+              <Link to="/register" className="text-primary-600 hover:text-primary-700 font-bold ml-1 transition-colors">
+                Zarejestruj się
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

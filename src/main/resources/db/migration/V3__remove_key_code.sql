@@ -1,0 +1,1 @@
+ALTER TABLE locker_assignments DROP COLUMN key_code;

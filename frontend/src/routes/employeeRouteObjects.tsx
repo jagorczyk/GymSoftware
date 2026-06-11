@@ -1,0 +1,35 @@
+import { Navigate, type RouteObject } from "react-router-dom";
+import {
+  EmployeeHomePage,
+  EmployeeGuestsListPage,
+  EmployeeGuestCreatePage,
+  EmployeeGuestDetailPage,
+  EmployeeLockersListPage,
+  EmployeeLockerCreatePage,
+  EmployeeLockerDetailPage,
+  EmployeePresentListPage,
+  EmployeePresentDetailPage,
+  EmployeeSchedulePage,
+  EmployeeWorkSchedulePage,
+  EmployeePassTypesListPage,
+  EmployeePassTypeCreatePage,
+  EmployeePassTypeEditPage,
+} from "../pages/employee/employeeRouteElements";
+
+export const employeeRouteObjects: RouteObject[] = [
+  { index: true, element: <Navigate to="dashboard" replace /> },
+  { path: "dashboard", Component: EmployeeHomePage },
+  { path: "guests", Component: EmployeeGuestsListPage },
+  { path: "guests/new", Component: EmployeeGuestCreatePage },
+  { path: "guests/:guestId", Component: EmployeeGuestDetailPage },
+  { path: "lockers", Component: EmployeeLockersListPage },
+  { path: "lockers/new", Component: EmployeeLockerCreatePage },
+  { path: "lockers/:lockerId", Component: EmployeeLockerDetailPage },
+  { path: "present", Component: EmployeePresentListPage },
+  { path: "present/:guestId", Component: EmployeePresentDetailPage },
+  { path: "schedule", Component: EmployeeSchedulePage },
+  { path: "work-schedule", Component: EmployeeWorkSchedulePage },
+  { path: "pass-types", Component: EmployeePassTypesListPage },
+  { path: "pass-types/new", Component: EmployeePassTypeCreatePage },
+  { path: "pass-types/:passTypeId", Component: EmployeePassTypeEditPage },
+];
