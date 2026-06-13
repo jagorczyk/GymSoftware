@@ -67,20 +67,20 @@ export function EmployeeClassesPage({ ctx }: { ctx: EmployeeContext }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {classes.map((c) => (
-            <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col hover:border-slate-300 transition-colors group">
+            <div key={c.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col hover:border-slate-300 dark:hover:border-slate-700 transition-colors group">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-slate-900 text-lg">{c.name}</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">{c.name}</h3>
                 {canManage && (
                   <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-1">
-                    <Link to={`/employee/classes/${c.id}/edit`} className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg"><Edit className="w-4 h-4" /></Link>
-                    <button onClick={() => handleDelete(c.id)} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    <Link to={`/employee/classes/${c.id}/edit`} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 rounded-lg"><Edit className="w-4 h-4" /></Link>
+                    <button onClick={() => handleDelete(c.id)} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 )}
               </div>
-              <p className="text-sm text-slate-500 mb-4 line-clamp-2 min-h-[40px]">{c.description || "Brak opisu"}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">{c.description || "Brak opisu"}</p>
               
               <div className="mt-auto space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-350">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>
                     {new Date(c.startTime).toLocaleString("pl-PL", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })}
@@ -88,15 +88,15 @@ export function EmployeeClassesPage({ ctx }: { ctx: EmployeeContext }) {
                     {new Date(c.endTime).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-350">
                   <Users className="w-4 h-4 text-slate-400" />
                   <span>Zapisani: {c.activeReservations} / {c.capacity}</span>
                 </div>
-                <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                  <span className="text-xs font-medium text-slate-500">Prowadzi: {c.instructorName}</span>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Prowadzi: {c.instructorName}</span>
                   <Link
                     to={`/employee/classes/${c.id}`}
-                    className="text-sm font-bold text-primary-600 hover:text-primary-700"
+                    className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
                   >
                     Zobacz listę &rarr;
                   </Link>

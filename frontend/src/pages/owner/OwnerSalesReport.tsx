@@ -73,13 +73,13 @@ export function OwnerSalesReport({ ctx }: { ctx: OwnerContext }) {
       ) : report ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl border border-slate-200 p-5">
-              <p className="text-sm text-slate-500">Łączna sprzedaż</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{formatMoney(Number(report.total))}</p>
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 transition-colors duration-200">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Łączna sprzedaż</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{formatMoney(Number(report.total))}</p>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 p-5">
-              <p className="text-sm text-slate-500">Liczba karnetów</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{report.passCount}</p>
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 transition-colors duration-200">
+              <p className="text-sm text-slate-500 dark:text-slate-400">Liczba karnetów</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{report.passCount}</p>
             </div>
           </div>
 
@@ -89,19 +89,19 @@ export function OwnerSalesReport({ ctx }: { ctx: OwnerContext }) {
                 .filter((d) => d.count > 0)
                 .map((d) => (
                   <div key={d.date} className="flex items-center gap-3 text-sm">
-                    <span className="w-24 text-slate-600">{d.date}</span>
-                    <div className="flex-1 h-6 bg-slate-100 rounded overflow-hidden">
+                    <span className="w-24 text-slate-600 dark:text-slate-350">{d.date}</span>
+                    <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-950/40 rounded overflow-hidden">
                       <div
                         className="h-full bg-primary-500 rounded"
                         style={{ width: `${(Number(d.total) / maxDayTotal) * 100}%` }}
                       />
                     </div>
-                    <span className="w-28 text-right font-medium">{formatMoney(Number(d.total))}</span>
-                    <span className="w-8 text-slate-500">{d.count}</span>
+                    <span className="w-28 text-right font-medium dark:text-slate-200">{formatMoney(Number(d.total))}</span>
+                    <span className="w-8 text-slate-500 dark:text-slate-400">{d.count}</span>
                   </div>
                 ))}
               {report.days.every((d) => d.count === 0) && (
-                <p className="text-slate-500 text-sm">Brak sprzedaży w wybranym okresie.</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Brak sprzedaży w wybranym okresie.</p>
               )}
             </div>
           </FormSection>
@@ -109,15 +109,15 @@ export function OwnerSalesReport({ ctx }: { ctx: OwnerContext }) {
           <FormSection title="Sprzedaż wg typu karnetu">
             <div className="space-y-2">
               {report.byPassType.map((row) => (
-                <div key={row.passType} className="flex justify-between text-sm border-b border-slate-100 py-2">
-                  <span className="font-medium text-slate-900">{row.passType}</span>
-                  <span>
-                    {formatMoney(Number(row.total))} <span className="text-slate-500">({row.count})</span>
+                <div key={row.passType} className="flex justify-between text-sm border-b border-slate-100 dark:border-slate-800 py-2">
+                  <span className="font-medium text-slate-900 dark:text-white">{row.passType}</span>
+                  <span className="dark:text-slate-300">
+                    {formatMoney(Number(row.total))} <span className="text-slate-500 dark:text-slate-400">({row.count})</span>
                   </span>
                 </div>
               ))}
               {report.byPassType.length === 0 && (
-                <p className="text-slate-500 text-sm">Brak danych.</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Brak danych.</p>
               )}
             </div>
           </FormSection>

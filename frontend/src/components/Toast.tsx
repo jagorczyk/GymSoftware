@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -45,8 +46,8 @@ function ToastNotification(props: {
         ${toast.exiting ? "toast-exit" : "toast-enter"}
         ${
           isSuccess
-            ? "bg-white border-emerald-200 text-emerald-900"
-            : "bg-white border-red-200 text-red-900"
+            ? "bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-300"
+            : "bg-white dark:bg-slate-900 border-red-200 dark:border-red-900/40 text-red-900 dark:text-red-300"
         }
       `}
     >
@@ -63,7 +64,7 @@ function ToastNotification(props: {
       <button
         type="button"
         onClick={() => onDismiss(toast.id)}
-        className="shrink-0 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+        className="shrink-0 rounded-lg p-1 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
         aria-label="Zamknij powiadomienie"
       >
         <X className="w-4 h-4" />
@@ -128,8 +129,10 @@ export function ToastProvider(props: { children: ReactNode }) {
     };
   }, []);
 
+  const contextValue = useMemo(() => ({ showSuccess, showError }), [showSuccess, showError]);
+
   return (
-    <ToastContext.Provider value={{ showSuccess, showError }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <div
         aria-label="Powiadomienia"

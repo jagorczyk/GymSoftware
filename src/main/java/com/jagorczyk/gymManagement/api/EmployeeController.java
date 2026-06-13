@@ -24,6 +24,12 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.WorkScheduleEntryView;
 import com.jagorczyk.gymManagement.service.CalendarService;
 import com.jagorczyk.gymManagement.service.CurrentUserService;
 import com.jagorczyk.gymManagement.service.EmployeeService;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView;
+import com.jagorczyk.gymManagement.domain.EmployeePermission;
+import com.jagorczyk.gymManagement.service.EmployeePermissionService;
+import com.jagorczyk.gymManagement.service.PosService;
 import com.jagorczyk.gymManagement.service.WorkScheduleService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -49,19 +55,28 @@ public class EmployeeController {
     private final WorkScheduleService workScheduleService;
     private final CurrentUserService currentUserService;
     private final PassService passService;
+    private final com.jagorczyk.gymManagement.security.JwtService jwtService;
+    private final PosService posService;
+    private final EmployeePermissionService employeePermissionService;
 
     public EmployeeController(
             EmployeeService employeeService,
             CalendarService calendarService,
             WorkScheduleService workScheduleService,
             CurrentUserService currentUserService,
-            PassService passService
+            PassService passService,
+            com.jagorczyk.gymManagement.security.JwtService jwtService,
+            PosService posService,
+            EmployeePermissionService employeePermissionService
     ) {
         this.employeeService = employeeService;
         this.calendarService = calendarService;
         this.workScheduleService = workScheduleService;
         this.currentUserService = currentUserService;
         this.passService = passService;
+        this.jwtService = jwtService;
+        this.posService = posService;
+        this.employeePermissionService = employeePermissionService;
     }
 
     @GetMapping("/gyms")
@@ -108,6 +123,28 @@ public class EmployeeController {
     public Map<String, String> checkOut(@PathVariable Long gymId, @PathVariable Long guestId) {
         employeeService.checkOut(currentUserService.getCurrentUser(), gymId, guestId);
         return Map.of("status", "checked_out");
+    }
+
+    @PostMapping("/gyms/{gymId}/scan-checkin")
+    public Map<String, String> scanCheckIn(
+            @PathVariable Long gymId,
+            @RequestBody Map<String, String> request
+    ) {
+        String token = request.get("token");
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Brak tokenu QR.");
+        }
+        var claims = jwtService.extractCheckInClaims(token);
+        Long userId = claims.get("uid", Long.class);
+
+        com.jagorczyk.gymManagement.domain.Guest guest = employeeService.findGuestByUserIdAndGymId(userId, gymId);
+        employeeService.checkIn(currentUserService.getCurrentUser(), gymId, guest.getId());
+
+        return Map.of(
+            "status", "checked_in",
+            "guestName", guest.getFirstName() + " " + guest.getLastName(),
+            "guestId", guest.getId().toString()
+        );
     }
 
     @PostMapping("/gyms/{gymId}/passes")
@@ -233,5 +270,22 @@ public class EmployeeController {
     public Map<String, String> deleteWorkScheduleEntry(@PathVariable Long gymId, @PathVariable Long entryId) {
         workScheduleService.deleteForEmployee(currentUserService.getCurrentUser(), gymId, entryId);
         return Map.of("status", "deleted");
+    }
+
+    @GetMapping("/gyms/{gymId}/products")
+    public java.util.List<ProductView> getProducts(@PathVariable Long gymId) {
+        employeePermissionService.requirePermission(
+                currentUserService.getCurrentUser(), gymId, EmployeePermission.SELL_PRODUCTS);
+        return posService.getGymProductsForEmployee(gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/sales/checkout")
+    public ProductSaleView checkout(
+            @PathVariable Long gymId,
+            @Valid @RequestBody ProductSaleRequest request
+    ) {
+        employeePermissionService.requirePermission(
+                currentUserService.getCurrentUser(), gymId, EmployeePermission.SELL_PRODUCTS);
+        return posService.checkout(currentUserService.getCurrentUser(), gymId, request);
     }
 }

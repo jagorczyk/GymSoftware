@@ -67,7 +67,7 @@ export function OwnerNotifications({ ctx }: { ctx: OwnerContext }) {
       <FormSection title="Ustawienia przypomnień" description="Powiadomienia w panelu tworzy zadanie nocne. E-mail wysyłany jest gdy włączysz opcję poniżej (w dev — log serwera).">
         {settings && (
           <form onSubmit={onSaveSettings} className="space-y-4 max-w-lg">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={settings.expiringPassEmailEnabled}
@@ -114,15 +114,15 @@ export function OwnerNotifications({ ctx }: { ctx: OwnerContext }) {
           {notifications.map((n) => (
             <div
               key={n.id}
-              className={`rounded-xl border p-4 ${n.readAt ? "border-slate-200 bg-white" : "border-primary-200 bg-primary-50/40"}`}
+              className={`rounded-xl border p-4 ${n.readAt ? "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" : "border-primary-200 dark:border-primary-950/40 bg-primary-50/40 dark:bg-primary-950/20"}`}
             >
               <div className="flex justify-between gap-2">
-                <p className="font-medium text-slate-900">{n.title}</p>
-                <span className="text-xs text-slate-500 whitespace-nowrap">
+                <p className="font-medium text-slate-900 dark:text-white">{n.title}</p>
+                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                   {new Date(n.createdAt).toLocaleString("pl-PL")}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 mt-1">{n.message}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{n.message}</p>
               {n.emailSentAt && (
                 <p className="text-xs text-emerald-700 mt-1">E-mail wysłany</p>
               )}
@@ -130,7 +130,7 @@ export function OwnerNotifications({ ctx }: { ctx: OwnerContext }) {
                 <button
                   type="button"
                   onClick={() => onMarkRead(n.id)}
-                  className="text-sm text-primary-600 font-medium mt-2 hover:text-primary-700"
+                  className="text-sm text-primary-600 dark:text-primary-400 font-medium mt-2 hover:text-primary-700 dark:hover:text-primary-300"
                 >
                   Oznacz jako przeczytane
                 </button>
@@ -138,7 +138,7 @@ export function OwnerNotifications({ ctx }: { ctx: OwnerContext }) {
             </div>
           ))}
           {notifications.length === 0 && (
-            <p className="text-sm text-slate-500">Brak powiadomień. Zadanie nocne utworzy wpisy dla karnetów wygasających w wybranym oknie.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Brak powiadomień. Zadanie nocne utworzy wpisy dla karnetów wygasających w wybranym oknie.</p>
           )}
         </div>
       </FormSection>

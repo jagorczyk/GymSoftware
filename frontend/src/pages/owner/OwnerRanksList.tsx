@@ -56,7 +56,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
           action={
             <Link
               to={`/owner/ranks/new`}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-white text-primary-600 font-bold border border-primary-200 rounded-xl hover:bg-primary-50 transition-colors"
+              className="mt-4 flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 font-bold border border-primary-200 dark:border-primary-800 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-950/20 transition-colors"
             >
               <Plus className="w-5 h-5" /> Dodaj pierwszą rangę
             </Link>
@@ -65,28 +65,28 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ranks.map((rank) => (
-            <div key={rank.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-slate-300 transition-colors group">
+            <div key={rank.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors group">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-primary-50 p-2.5 rounded-xl text-primary-600 border border-primary-100">
+                  <div className="bg-primary-50 dark:bg-primary-950/40 p-2.5 rounded-xl text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/40">
                     <Award className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-lg">{rank.name}</h3>
-                    <p className="text-sm text-slate-500">{rank.permissions.length} uprawnień</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{rank.name}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{rank.permissions.length} uprawnień</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     to={`/owner/ranks/${rank.id}`}
-                    className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 dark:text-slate-550 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/20 rounded-lg transition-colors"
                     title="Edytuj"
                   >
                     <Edit className="w-4 h-4" />
                   </Link>
                   <button
                     onClick={() => handleDelete(rank.id)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 dark:text-slate-550 hover:text-rose-600 dark:hover:text-rose-450 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors"
                     title="Usuń"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -95,7 +95,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {rank.permissions.map((p) => (
-                  <span key={p} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                  <span key={p} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-950/40 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-slate-800">
                     {p}
                   </span>
                 ))}

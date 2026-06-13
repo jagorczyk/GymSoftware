@@ -23,6 +23,11 @@ public class GymScheduledJobs {
         if (count > 0) {
             log.info("Automatycznie wygaszono {} karnetów.", count);
         }
+        
+        int unfreezeCount = passService.processPassFreezes();
+        if (unfreezeCount > 0) {
+            log.info("Automatycznie odwieszono {} zamrożonych karnetów.", unfreezeCount);
+        }
     }
 
     @Scheduled(cron = "${app.jobs.expiring-notifications-cron:0 0 8 * * *}")

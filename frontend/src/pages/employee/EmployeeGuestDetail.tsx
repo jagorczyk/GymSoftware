@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { LogIn, LogOut, Ticket, KeyRound, UserPen } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { LogIn, LogOut, Ticket, KeyRound, UserPen, ShoppingCart } from "lucide-react";
 import {
   assignLocker,
   checkInGuest,
@@ -35,6 +35,7 @@ import type { EmployeeContext } from "./types";
 export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
   const { auth, selectedGymId, overview, setMessage, setError, refreshOverview } = ctx;
   const { guestId } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<GuestDetail | null>(null);
   const [lockerQuery, setLockerQuery] = useState("");
@@ -228,7 +229,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
   if (!guest) {
     return (
       <DetailPageLayout backTo="/employee/guests" title="Klient nie znaleziony">
-        <p className="text-slate-500">Nie znaleziono klienta o podanym ID.</p>
+        <p className="text-slate-500 dark:text-slate-400">Nie znaleziono klienta o podanym ID.</p>
       </DetailPageLayout>
     );
   }
@@ -269,6 +270,15 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
             </button>
           )}
 
+          <button
+            type="button"
+            onClick={() => navigate(`/employee/pos?guestId=${guest.id}`)}
+            className={`${secondaryButtonClassName} !text-primary-550 !border-primary-100 dark:!border-primary-900/50 hover:!bg-primary-50 dark:hover:!bg-primary-950/20`}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Sprzedaj produkt
+          </button>
+
           {canEndVisit && (
             <button type="button" onClick={onLeaveGym} className={dangerButtonClassName}>
               Zakończ wizytę (wyjście + szafka)
@@ -277,21 +287,21 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
         </div>
       }
     >
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 mb-6 transition-colors duration-200">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {guest.avatarUrl ? (
-            <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-slate-200">
+            <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-850">
               <img src={guest.avatarUrl.startsWith("http") ? guest.avatarUrl : `http://localhost:8080${guest.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
           ) : (
-            <div className="w-14 h-14 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
+            <div className="w-14 h-14 bg-primary-100 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
               {(guest.firstName?.[0] || "K").toUpperCase()}
             </div>
           )}
           <div className="flex flex-wrap gap-2">
             <StatusChip status={guest.hasActivePass ? "ACTIVE" : "INACTIVE"} label={guest.hasActivePass ? "Aktywny karnet" : "Brak karnetu"} />
             {guest.hasActivePass && guest.activePassEndDate && (
-              <span className="text-xs font-medium px-2 py-1 bg-primary-50 text-primary-700 rounded-lg border border-primary-100 flex items-center gap-1">
+              <span className="text-xs font-medium px-2 py-1 bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-400 rounded-lg border border-primary-100 dark:border-primary-900/40 flex items-center gap-1">
                 <Ticket className="w-3 h-3" />
                 Do: {guest.activePassEndDate}
               </span>
@@ -301,7 +311,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
           </div>
         </div>
         {!guest.hasActivePass && (
-          <p className="text-sm text-amber-800 mt-3">Wejście na salę wymaga aktywnego karnetu — najpierw sprzedaj karnet.</p>
+          <p className="text-sm text-amber-800 dark:text-amber-400 mt-3">Wejście na salę wymaga aktywnego karnetu — najpierw sprzedaj karnet.</p>
         )}
       </div>
 
@@ -328,7 +338,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
             <button type="submit" className={primaryButtonClassName}>Zapisz</button>
           </form>
         ) : (
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {guest.phone && <>Tel: {guest.phone} • </>}
             {guest.notes || "Brak notatek"}
           </p>
@@ -367,7 +377,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
                 ))}
               </select>
             </div>
-            <input type="text" name="passType" required className={`${inputClassName} bg-gray-50`} placeholder="Nazwa karnetu" />
+            <input type="text" name="passType" required className={`${inputClassName} bg-gray-50 dark:bg-slate-950/40`} placeholder="Nazwa karnetu" />
             <input type="date" name="startDate" required defaultValue={new Date().toISOString().split("T")[0]} className={inputClassName} />
             <input type="date" name="endDate" required className={inputClassName} />
             <input type="number" name="price" required step="0.01" className={inputClassName} placeholder="Cena" />
@@ -377,7 +387,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
 
         <FormSection title="Nadanie szafki">
           {guest.hasLocker ? (
-            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <p className="text-sm text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl px-4 py-3">
               Klient ma już szafkę. Odbierz szafkę przy wyjściu.
             </p>
           ) : (

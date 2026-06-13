@@ -56,17 +56,17 @@ export function EmployeeHome({ ctx }: { ctx: EmployeeContext }) {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-8">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-8">
         <div className="flex items-center justify-between gap-3 mb-6">
-          <h3 className="text-xl font-bold text-slate-900 tracking-tight">Karnety wygasające w ciągu 7 dni</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Karnety wygasające w ciągu 7 dni</h3>
           {expiring.length > 0 && (
-            <Link to="/employee/guests" className="text-sm font-bold text-primary-600 hover:text-primary-700 bg-primary-50 px-4 py-2 rounded-xl transition-colors">
+            <Link to="/employee/guests" className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-950/20 px-4 py-2 rounded-xl transition-colors">
               Wszyscy klienci
             </Link>
           )}
         </div>
         <ExpiringPassesList items={expiring} guestLinkPrefix="/employee/guests" />
-        <p className="text-xs text-slate-400 mt-6 font-medium">Dane na żywo odświeżane co 10 s</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-6 font-medium">Dane na żywo odświeżane co 10 s</p>
       </div>
     </div>
   );

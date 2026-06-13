@@ -11,6 +11,7 @@ import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.GymPassRepository;
 import com.jagorczyk.gymManagement.repository.GymRepository;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +22,22 @@ public class PassService {
     private final EmployeePermissionService employeePermissionService;
     private final AuditLogService auditLogService;
     private final GuestPresenceService guestPresenceService;
+    private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
 
     public PassService(
             GymPassRepository gymPassRepository,
             GymRepository gymRepository,
             EmployeePermissionService employeePermissionService,
             AuditLogService auditLogService,
-            GuestPresenceService guestPresenceService
+            GuestPresenceService guestPresenceService,
+            com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository
     ) {
         this.gymPassRepository = gymPassRepository;
         this.gymRepository = gymRepository;
         this.employeePermissionService = employeePermissionService;
         this.auditLogService = auditLogService;
         this.guestPresenceService = guestPresenceService;
+        this.passFreezeRepository = passFreezeRepository;
     }
 
     @Transactional
@@ -73,6 +77,42 @@ public class PassService {
             auditLogService.log(pass.getGym(), null, "PASS_EXPIRED", "passId=" + pass.getId());
         }
         return toExpire.size();
+    }
+
+    @Transactional
+    public int processPassFreezes() {
+        LocalDate today = LocalDate.now();
+        int deactivatedCount = 0;
+
+        List<com.jagorczyk.gymManagement.domain.PassFreeze> unprocessed = passFreezeRepository.findAll().stream()
+                .filter(f -> !f.isProcessed())
+                .toList();
+
+        for (com.jagorczyk.gymManagement.domain.PassFreeze freeze : unprocessed) {
+            GymPass pass = freeze.getGymPass();
+            // Jeśli zamrożenie powinno trwać dzisiaj i karnet jest aktywny -> zawieszamy go
+            if (!today.isBefore(freeze.getStartDate()) && !today.isAfter(freeze.getEndDate())) {
+                if (pass.getStatus() == PassStatus.ACTIVE) {
+                    pass.setStatus(PassStatus.FROZEN);
+                    gymPassRepository.save(pass);
+                    auditLogService.log(pass.getGym(), null, "PASS_FROZEN_AUTO", "passId=" + pass.getId());
+                }
+            }
+            // Jeśli zamrożenie już się skończyło -> odwieszamy i przedłużamy ważność karnetu
+            else if (today.isAfter(freeze.getEndDate())) {
+                if (pass.getStatus() == PassStatus.FROZEN) {
+                    long daysFrozen = java.time.temporal.ChronoUnit.DAYS.between(freeze.getStartDate(), freeze.getEndDate()) + 1;
+                    pass.setEndDate(pass.getEndDate().plusDays(daysFrozen));
+                    pass.setStatus(PassStatus.ACTIVE);
+                    gymPassRepository.save(pass);
+                    auditLogService.log(pass.getGym(), null, "PASS_UNFROZEN_AUTO", "passId=" + pass.getId() + ",extendedByDays=" + daysFrozen);
+                    deactivatedCount++;
+                }
+                freeze.setProcessed(true);
+                passFreezeRepository.save(freeze);
+            }
+        }
+        return deactivatedCount;
     }
 
     private PassView renewPass(Gym gym, User actor, Long gymId, Long passId, RenewPassRequest request) {

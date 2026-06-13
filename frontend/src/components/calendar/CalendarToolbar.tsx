@@ -50,7 +50,7 @@ export function CalendarToolbar(props: CalendarToolbarProps) {
         <button type="button" onClick={goNext} className={secondaryButtonClassName} aria-label={nextLabel}>
           <ChevronRight className="w-4 h-4" />
         </button>
-        <h3 className="text-lg font-semibold text-slate-900 ml-2 capitalize">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white ml-2 capitalize">{title}</h3>
         {toolbarExtra}
       </div>
       <button type="button" onClick={onAdd} className={primaryButtonClassName}>

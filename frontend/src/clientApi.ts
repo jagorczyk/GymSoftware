@@ -108,3 +108,73 @@ export async function purchasePassOnline(
   if (!response.ok) await parseApiError(response, "Nie udało się utworzyć sesji płatniczej");
   return response.json();
 }
+
+export async function rateClass(
+  auth: AuthState,
+  gymId: number,
+  classId: number,
+  payload: { rating: number; comment: string }
+): Promise<void> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/classes/${classId}/rate`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się ocenić zajęć");
+}
+
+export async function freezePass(
+  auth: AuthState,
+  gymId: number,
+  passId: number,
+  payload: { startDate: string; endDate: string }
+): Promise<void> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/passes/${passId}/freeze`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zamrozić karnetu");
+}
+
+export async function simulatePaymentOnline(
+  auth: AuthState,
+  gymId: number,
+  payload: { passTypeId: number }
+): Promise<void> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/simulate-payment`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Błąd podczas symulacji płatności");
+}
+
+export async function downloadInvoicePdf(
+  auth: AuthState,
+  gymId: number,
+  passId: number
+): Promise<Blob> {
+  const response = await fetch(`${API_URL}/client/gyms/${gymId}/passes/${passId}/invoice`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać faktury");
+  return response.blob();
+}
+
+export async function getCheckInQrToken(auth: AuthState): Promise<{ qrToken: string }> {
+  const response = await fetch(`${API_URL}/client/checkin-qr-token`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wygenerować tokenu QR");
+  return response.json();
+}

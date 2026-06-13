@@ -52,16 +52,16 @@ export function ClientGymJoinPage() {
   return (
     <div className="max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-500">
       <div className="flex items-center gap-4 mb-8">
-        <Link to="/client/dashboard" className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors shadow-sm">
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+        <Link to="/client/dashboard" className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+          <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Dołącz do Klubu</h1>
-          <p className="text-slate-500 font-medium">Rozpocznij swoją treningową przygodę już dziś.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Dołącz do Klubu</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Rozpocznij swoją treningową przygodę już dziś.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 dark:border-slate-800">
         
         {/* Lewa strona - Informacyjna / Graficzna */}
         <div className="lg:col-span-2 relative bg-slate-900 p-10 text-white overflow-hidden flex flex-col justify-between">
@@ -104,13 +104,13 @@ export function ClientGymJoinPage() {
         <div className="lg:col-span-3 p-8 md:p-12">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-900 uppercase tracking-wider block">Wybierz siłownię</label>
+              <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Wybierz siłownię</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                 <select
                   value={selectedGymId}
                   onChange={(e) => setSelectedGymId(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-700 appearance-none"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-700 dark:text-slate-300 appearance-none"
                   required
                 >
                   <option value="" disabled>-- Wybierz z listy --</option>
@@ -118,7 +118,7 @@ export function ClientGymJoinPage() {
                     <option key={g.id} value={g.id}>{g.name} ({g.address})</option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
                   ▼
                 </div>
               </div>
@@ -126,29 +126,29 @@ export function ClientGymJoinPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-900 uppercase tracking-wider block">Imię</label>
+                <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Imię</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="np. Jan"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
                     required
                   />
                 </div>
               </div>
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-900 uppercase tracking-wider block">Nazwisko</label>
+                <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Nazwisko</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="np. Kowalski"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
                     required
                   />
                 </div>
@@ -156,15 +156,15 @@ export function ClientGymJoinPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-900 uppercase tracking-wider block">Numer telefonu <span className="text-slate-400 font-normal lowercase">(opcjonalnie)</span></label>
+              <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Numer telefonu <span className="text-slate-400 dark:text-slate-500 font-normal lowercase">(opcjonalnie)</span></label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+48 000 000 000"
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
                 />
               </div>
             </div>

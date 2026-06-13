@@ -38,7 +38,12 @@ export function ClientBuyPassPage() {
     try {
       const response = await purchasePassOnline(auth, Number(gymId), { passTypeId });
       if (response.checkoutUrl) {
-        window.location.href = response.checkoutUrl;
+        if (response.checkoutUrl.startsWith("http://localhost:5173")) {
+          const path = response.checkoutUrl.replace("http://localhost:5173", "");
+          navigate(path);
+        } else {
+          window.location.href = response.checkoutUrl;
+        }
       } else {
         showError("Błąd serwera: brak linku do płatności.");
         setIsProcessing(null);
@@ -55,12 +60,12 @@ export function ClientBuyPassPage() {
     <div className="max-w-6xl mx-auto space-y-12 relative animate-in fade-in zoom-in-95 duration-500">
       
       <div className="text-center space-y-4">
-        <Link to="/client/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 font-medium transition-colors mb-4">
+        <Link to="/client/dashboard" className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" />
           Wróć do Panelu
         </Link>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">Wybierz swój karnet</h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">Wybierz swój karnet</h1>
+        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
           Zostaniesz bezpiecznie przekierowany do bramki Stripe, aby sfinalizować transakcję.
         </p>
       </div>
@@ -69,26 +74,26 @@ export function ClientBuyPassPage() {
         {passTypes.map((pt, i) => (
           <div
             key={pt.id}
-            className="group relative bg-white rounded-[2rem] p-8 shadow-[0_2px_15px_-3px_rgba(6,81,237,0.1)] border-2 border-slate-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-indigo-500 flex flex-col"
+            className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-[0_2px_15px_-3px_rgba(6,81,237,0.1)] border-2 border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-indigo-500 flex flex-col"
             style={{ animationDelay: `${i * 100}ms` }}
           >
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">{pt.name}</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{pt.name}</h3>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">{pt.price}</span>
-                <span className="text-xl font-bold text-slate-500">zł</span>
+                <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{pt.price}</span>
+                <span className="text-xl font-bold text-slate-500 dark:text-slate-400">zł</span>
               </div>
               
               <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                   Ważny przez {pt.durationDays} dni
                 </li>
-                <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                   Pełny dostęp do stref
                 </li>
-                <li className="flex items-center gap-3 text-slate-700 font-medium">
+                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                   Wsparcie trenera dyżurnego
                 </li>
@@ -98,7 +103,7 @@ export function ClientBuyPassPage() {
             <button
               onClick={() => handleSelectPass(pt.id)}
               disabled={isProcessing === pt.id}
-              className="w-full bg-slate-900 text-white font-bold py-4 px-6 rounded-2xl transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/40 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:bg-slate-900"
+              className="w-full bg-slate-900 dark:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/40 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:bg-slate-900 dark:disabled:hover:bg-slate-800"
             >
               {isProcessing === pt.id ? (
                 <>

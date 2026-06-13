@@ -13,7 +13,8 @@ public class GroupClassDtos {
             LocalDateTime startTime,
             LocalDateTime endTime,
             Integer capacity,
-            long activeReservations
+            long activeReservations,
+            String userReservationStatus
     ) {}
 
     public record ClassReservationView(

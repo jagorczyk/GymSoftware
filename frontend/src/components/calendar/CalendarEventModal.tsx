@@ -74,18 +74,18 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
     mode === "create" ? "Nowy wpis" : mode === "view" || readOnly ? "Podgląd wpisu" : "Edytuj wpis";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200">
-        <div className="flex items-center justify-between p-4 border-b border-slate-100">
-          <h3 className="font-semibold text-lg text-slate-900">{heading}</h3>
-          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="font-semibold text-lg text-slate-900 dark:text-white">{heading}</h3>
+          <button type="button" onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-350">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {readOnly && event && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Autor: {event.createdByEmail}. {event.canEdit ? "" : "Nie masz uprawnień do edycji tego wpisu."}
             </p>
           )}
@@ -147,7 +147,7 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
                     type="button"
                     onClick={() => setColor(option.id)}
                     className={`w-8 h-8 rounded-lg border-2 ${option.className.split(" ")[0]} ${
-                      color === option.id ? "ring-2 ring-offset-2 ring-primary-500" : "border-transparent"
+                      color === option.id ? "ring-2 ring-offset-2 ring-primary-500 dark:ring-offset-slate-900" : "border-transparent"
                     }`}
                     aria-label={option.id}
                   />
@@ -156,7 +156,7 @@ export function CalendarEventModal(props: CalendarEventModalProps) {
             </div>
           )}
 
-          <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             {mode === "edit" && onDelete && event?.canEdit && (
               <button type="button" onClick={handleDelete} disabled={saving} className={dangerButtonClassName}>
                 <Trash2 className="w-4 h-4" />

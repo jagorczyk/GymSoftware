@@ -229,7 +229,7 @@ public class EmployeeService {
                         e.getGym().getId(),
                         e.getGym().getName(),
                         e.getGym().getAddress(),
-                        e.getPermissions().stream().map(Enum::name).sorted().toList()
+                        employeePermissionService.effectivePermissions(e).stream().map(Enum::name).sorted().toList()
                 ))
                 .toList();
     }
@@ -237,7 +237,7 @@ public class EmployeeService {
     @Transactional(readOnly = true)
     public EmployeeLiveOverview liveOverview(User currentUser, Long gymId) {
         Employee employee = employeePermissionService.requireEmployee(currentUser, gymId);
-        var permissions = employee.getPermissions();
+        var permissions = employeePermissionService.effectivePermissions(employee);
         if (!permissions.contains(EmployeePermission.VIEW_DASHBOARD)
                 && !permissions.contains(EmployeePermission.MANAGE_LOCKERS)
                 && !permissions.contains(EmployeePermission.SELL_PASSES)) {
@@ -446,5 +446,11 @@ public class EmployeeService {
 
         auditLogService.log(employee.getGym(), currentUser, "LOCKER_CREATED", "lockerNumber=" + locker.getLockerNumber());
         return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null);
+    }
+
+    @Transactional(readOnly = true)
+    public Guest findGuestByUserIdAndGymId(Long userId, Long gymId) {
+        return guestRepository.findByUserIdAndGymId(userId, gymId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zarejestrowanego gościa dla tego użytkownika w tym klubie."));
     }
 }

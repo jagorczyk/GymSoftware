@@ -11,4 +11,5 @@ public interface ClassReservationRepository extends JpaRepository<ClassReservati
     List<ClassReservation> findByGuestId(Long guestId);
     Optional<ClassReservation> findByGroupClassIdAndGuestId(Long classId, Long guestId);
     long countByGroupClassIdAndStatusNot(Long classId, com.jagorczyk.gymManagement.domain.ClassReservationStatus status);
+    List<ClassReservation> findByGroupClassIdAndStatusOrderByReservedAtAsc(Long classId, com.jagorczyk.gymManagement.domain.ClassReservationStatus status);
 }

@@ -201,18 +201,18 @@ export function WorkScheduleView(props: WorkScheduleViewProps) {
   );
 
   const viewModeToggle = (
-    <div className="flex rounded-xl border border-slate-200 overflow-hidden text-sm font-medium">
+    <div className="flex rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden text-sm font-medium">
       <button
         type="button"
         onClick={() => setViewMode("week")}
-        className={`px-3 py-2 ${viewMode === "week" ? "bg-primary-500 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+        className={`px-3 py-2 ${viewMode === "week" ? "bg-primary-500 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
       >
         Tydzień
       </button>
       <button
         type="button"
         onClick={() => setViewMode("month")}
-        className={`px-3 py-2 ${viewMode === "month" ? "bg-primary-500 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+        className={`px-3 py-2 ${viewMode === "month" ? "bg-primary-500 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"}`}
       >
         Miesiąc
       </button>
@@ -246,18 +246,18 @@ export function WorkScheduleView(props: WorkScheduleViewProps) {
 
   const conflictsBanner =
     conflicts.length > 0 ? (
-      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <div className="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-4">
         <div className="flex items-start gap-2">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="min-w-0">
-            <p className="font-semibold text-amber-900">Wykryto konflikty w grafiku ({conflicts.length})</p>
-            <ul className="mt-2 space-y-1 text-sm text-amber-800">
+            <p className="font-semibold text-amber-900 dark:text-amber-300">Wykryto konflikty w grafiku ({conflicts.length})</p>
+            <ul className="mt-2 space-y-1 text-sm text-amber-800 dark:text-amber-400">
               {conflicts.slice(0, 5).map((c, i) => (
                 <li key={`${c.entryA.id}-${c.entryB.id}-${i}`}>{c.message}</li>
               ))}
             </ul>
             {conflicts.length > 5 && (
-              <p className="text-xs text-amber-700 mt-1">…i {conflicts.length - 5} kolejnych</p>
+              <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">…i {conflicts.length - 5} kolejnych</p>
             )}
           </div>
         </div>

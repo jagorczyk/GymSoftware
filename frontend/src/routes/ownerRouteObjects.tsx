@@ -27,6 +27,7 @@ import {
   OwnerRanksListPage,
   OwnerRankCreatePage,
   OwnerRankEditPage,
+  OwnerProductsPage,
 } from "../pages/owner/ownerRouteElements";
 
 export const ownerRouteObjects: RouteObject[] = [
@@ -48,6 +49,7 @@ export const ownerRouteObjects: RouteObject[] = [
   { path: "pass-types/:passTypeId", Component: OwnerPassTypeEditPage },
   { path: "passes", Component: OwnerPassesListPage },
   { path: "passes/:passId", Component: OwnerPassDetailPage },
+  { path: "products", Component: OwnerProductsPage },
   { path: "lockers", Component: OwnerLockersListPage },
   { path: "lockers/new", Component: OwnerLockerCreatePage },
   { path: "lockers/:lockerId", Component: OwnerLockerDetailPage },

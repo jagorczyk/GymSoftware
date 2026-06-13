@@ -95,22 +95,23 @@ public class GroupClassService {
             throw new IllegalArgumentException("Musisz mieć aktywny karnet, aby zapisać się na zajęcia");
         }
 
-        long activeReservations = classRepository.countActiveReservations(classId);
-        if (activeReservations >= groupClass.getCapacity()) {
-            throw new IllegalArgumentException("Brak wolnych miejsc na te zajęcia.");
-        }
-
         reservationRepository.findByGroupClassIdAndGuestId(classId, guestId)
                 .ifPresent(r -> {
                     if (r.getStatus() != ClassReservationStatus.CANCELLED) {
-                        throw new IllegalArgumentException("Jesteś już zapisany na te zajęcia.");
+                        throw new IllegalArgumentException("Jesteś już zapisany na te zajęcia (status: " + r.getStatus() + ").");
                     }
                 });
 
-        ClassReservation reservation = reservationRepository.findByGroupClassIdAndGuestId(classId, guestId)
-                .orElse(new ClassReservation(groupClass, guest, ClassReservationStatus.RESERVED, LocalDateTime.now()));
+        long activeReservations = classRepository.countActiveReservations(classId);
+        ClassReservationStatus targetStatus = ClassReservationStatus.RESERVED;
+        if (activeReservations >= groupClass.getCapacity()) {
+            targetStatus = ClassReservationStatus.WAITLISTED;
+        }
 
-        reservation.setStatus(ClassReservationStatus.RESERVED);
+        ClassReservation reservation = reservationRepository.findByGroupClassIdAndGuestId(classId, guestId)
+                .orElse(new ClassReservation(groupClass, guest, targetStatus, LocalDateTime.now()));
+
+        reservation.setStatus(targetStatus);
         reservation.setReservedAt(LocalDateTime.now());
         
         reservationRepository.save(reservation);
@@ -129,8 +130,22 @@ public class GroupClassService {
             throw new IllegalArgumentException("Nie można anulować rezerwacji po rozpoczęciu zajęć");
         }
 
+        ClassReservationStatus oldStatus = reservation.getStatus();
         reservation.setStatus(ClassReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
+
+        if (oldStatus == ClassReservationStatus.RESERVED) {
+            promoteFirstFromWaitlist(classId);
+        }
+    }
+
+    private void promoteFirstFromWaitlist(Long classId) {
+        List<ClassReservation> waitlist = reservationRepository.findByGroupClassIdAndStatusOrderByReservedAtAsc(classId, ClassReservationStatus.WAITLISTED);
+        if (!waitlist.isEmpty()) {
+            ClassReservation firstWaitlisted = waitlist.get(0);
+            firstWaitlisted.setStatus(ClassReservationStatus.RESERVED);
+            reservationRepository.save(firstWaitlisted);
+        }
     }
 
     @Transactional

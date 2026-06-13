@@ -22,6 +22,7 @@ import { OwnerNotifications } from "./OwnerNotifications";
 import { AnalyticsDashboardPage } from "./AnalyticsDashboardPage";
 import { OwnerRanksList } from "./OwnerRanksList";
 import { OwnerRankForm } from "./OwnerRankForm";
+import { OwnerProducts } from "./OwnerProducts";
 
 export function OwnerStatsPage() {
   return <OwnerStats ctx={useOwnerDashboardContext()} />;
@@ -103,4 +104,8 @@ export function OwnerRankCreatePage() {
 }
 export function OwnerRankEditPage() {
   return <OwnerRankForm ctx={useOwnerDashboardContext()} mode="edit" />;
+}
+
+export function OwnerProductsPage() {
+  return <OwnerProducts ctx={useOwnerDashboardContext()} />;
 }

@@ -280,4 +280,55 @@ public final class GymDtos {
             @NotBlank String name,
             Set<EmployeePermission> permissions
     ) {}
+
+    public record ProductView(
+            Long id,
+            String name,
+            BigDecimal price,
+            Integer quantity,
+            String category
+    ) {}
+
+    public record CreateProductRequest(
+            @NotBlank String name,
+            @NotNull @DecimalMin("0.00") BigDecimal price,
+            @NotNull Integer quantity,
+            @NotBlank String category
+    ) {}
+
+    public record UpdateProductRequest(
+            @NotBlank String name,
+            @NotNull @DecimalMin("0.00") BigDecimal price,
+            @NotNull Integer quantity,
+            @NotBlank String category
+    ) {}
+
+    public record ProductSaleItemRequest(
+            @NotNull Long productId,
+            @NotNull Integer quantity
+    ) {}
+
+    public record ProductSaleRequest(
+            Long guestId,
+            @NotNull List<ProductSaleItemRequest> items,
+            @NotBlank String paymentMethod
+    ) {}
+
+    public record ProductSaleItemView(
+            Long id,
+            Long productId,
+            String productName,
+            Integer quantity,
+            BigDecimal unitPrice
+    ) {}
+
+    public record ProductSaleView(
+            Long id,
+            String soldByEmail,
+            String guestName,
+            BigDecimal totalAmount,
+            String paymentMethod,
+            LocalDateTime createdAt,
+            List<ProductSaleItemView> items
+    ) {}
 }

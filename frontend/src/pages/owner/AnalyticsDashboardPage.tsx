@@ -37,6 +37,11 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
 
   const { metrics, revenueOverTime, checkInsOverTime, passTypePopularity } = data;
 
+  const isDark = document.documentElement.classList.contains("dark");
+  const gridStroke = isDark ? "#334155" : "#e2e8f0";
+  const tooltipBg = isDark ? "#0f172a" : "#ffffff";
+  const tooltipColor = isDark ? "#ffffff" : "#0f172a";
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -46,40 +51,40 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-500 mb-1">Przychody (ten miesiąc)</h3>
-          <p className="text-2xl font-bold text-slate-900">{metrics.revenueThisMonth} PLN</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Przychody (ten miesiąc)</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.revenueThisMonth} PLN</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-500 mb-1">Aktywne Karnety</h3>
-          <p className="text-2xl font-bold text-slate-900">{metrics.activePasses}</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Aktywne Karnety</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.activePasses}</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-500 mb-1">Aktywni Klienci</h3>
-          <p className="text-2xl font-bold text-slate-900">{metrics.activeGuests}</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Aktywni Klienci</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.activeGuests}</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-500 mb-1">Nowi Klienci (ten miesiąc)</h3>
-          <p className="text-2xl font-bold text-slate-900">{metrics.newGuestsThisMonth}</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Nowi Klienci (ten miesiąc)</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.newGuestsThisMonth}</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-sm font-semibold text-slate-500 mb-1">Wejścia (dzisiaj)</h3>
-          <p className="text-2xl font-bold text-slate-900">{metrics.checkInsToday}</p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Wejścia (dzisiaj)</h3>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.checkInsToday}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-4">Przychody (ostatnie 30 dni)</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Przychody (ostatnie 30 dni)</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueOverTime}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} />
                 <YAxis tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} width={60} />
                 <Tooltip
-                  contentStyle={{ borderRadius: "0.75rem", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  contentStyle={{ borderRadius: "0.75rem", border: "none", backgroundColor: tooltipBg, color: tooltipColor, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#0ea5e9" strokeWidth={3} dot={false} activeDot={{ r: 8 }} />
               </LineChart>
@@ -88,16 +93,16 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
         </div>
 
         {/* Chart 2 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-4">Wizyty (ostatnie 30 dni)</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Wizyty (ostatnie 30 dni)</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={checkInsOverTime}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} />
                 <YAxis tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} width={40} />
                 <Tooltip
-                  contentStyle={{ borderRadius: "0.75rem", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  contentStyle={{ borderRadius: "0.75rem", border: "none", backgroundColor: tooltipBg, color: tooltipColor, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 8 }} />
               </LineChart>
@@ -106,8 +111,8 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
         </div>
 
         {/* Chart 3 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
-          <h3 className="text-lg font-bold text-slate-900 mb-4">Popularność karnetów</h3>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-2 transition-colors duration-200">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popularność karnetów</h3>
           <div className="h-80 w-full flex justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -126,7 +131,7 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ borderRadius: "0.75rem", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
+                  contentStyle={{ borderRadius: "0.75rem", border: "none", backgroundColor: tooltipBg, color: tooltipColor, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
                 />
                 <Legend />
               </PieChart>

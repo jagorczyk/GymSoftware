@@ -55,11 +55,11 @@ export function MonthCalendar<T extends GridCalendarEvent>(props: MonthCalendarP
         toolbarExtra={toolbarExtra}
       />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <div className="min-w-[700px]">
-          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
             {weekdays.map((w) => (
-              <div key={w} className="py-2 text-center text-xs font-semibold text-slate-500">
+              <div key={w} className="py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {w}
               </div>
             ))}
@@ -75,13 +75,13 @@ export function MonthCalendar<T extends GridCalendarEvent>(props: MonthCalendarP
                   key={dayKey(day)}
                   type="button"
                   onClick={() => onDayClick(day)}
-                  className={`min-h-[100px] border-b border-r border-slate-100 p-1.5 text-left align-top hover:bg-primary-50/30 transition-colors ${
-                    inMonth ? "bg-white" : "bg-slate-50/80"
+                  className={`min-h-[100px] border-b border-r border-slate-100 dark:border-slate-800/60 p-1.5 text-left align-top hover:bg-primary-50/30 dark:hover:bg-primary-950/20 transition-colors ${
+                    inMonth ? "bg-white dark:bg-slate-900" : "bg-slate-50/80 dark:bg-slate-950/20"
                   }`}
                 >
                   <span
                     className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold mb-1 ${
-                      isToday ? "bg-primary-500 text-white" : inMonth ? "text-slate-700" : "text-slate-400"
+                      isToday ? "bg-primary-500 text-white" : inMonth ? "text-slate-700 dark:text-slate-200" : "text-slate-400 dark:text-slate-500"
                     }`}
                   >
                     {day.getDate()}
@@ -113,7 +113,7 @@ export function MonthCalendar<T extends GridCalendarEvent>(props: MonthCalendarP
                       );
                     })}
                     {dayEvents.length > 3 && (
-                      <p className="text-[10px] text-slate-500 px-1">+{dayEvents.length - 3} więcej</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 px-1">+{dayEvents.length - 3} więcej</p>
                     )}
                   </div>
                 </button>

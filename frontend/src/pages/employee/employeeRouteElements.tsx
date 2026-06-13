@@ -18,6 +18,8 @@ import { EmployeePassTypeForm } from "./EmployeePassTypeForm";
 import { EmployeeClassesPage } from "./EmployeeClassesPage";
 import { EmployeeClassForm } from "./EmployeeClassForm";
 import { EmployeeClassDetail } from "./EmployeeClassDetail";
+import { EmployeeQRScannerSimulator } from "./EmployeeQRScannerSimulator";
+import { EmployeePOS } from "./EmployeePOS";
 
 function Guarded(props: { permissions: EmployeePermission[]; children: ReactElement }) {
   return <EmployeeRouteGuard permissions={props.permissions}>{props.children}</EmployeeRouteGuard>;
@@ -165,6 +167,24 @@ export function EmployeeClassDetailRoutePage() {
   return (
     <Guarded permissions={ctx.permissions}>
       <EmployeeClassDetail ctx={ctx} />
+    </Guarded>
+  );
+}
+
+export function EmployeeQRScannerSimulatorPage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeQRScannerSimulator ctx={ctx} />
+    </Guarded>
+  );
+}
+
+export function EmployeePOSPage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeePOS ctx={ctx} />
     </Guarded>
   );
 }

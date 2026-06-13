@@ -47,4 +47,24 @@ public final class ClientPortalDtos {
     public record PurchasePassResponse(
             String checkoutUrl
     ) {}
+
+    public record RateClassRequest(
+            Integer rating,
+            String comment
+    ) {}
+
+    public record ClassRatingView(
+            Long id,
+            Long groupClassId,
+            String className,
+            String guestName,
+            Integer rating,
+            String comment,
+            java.time.LocalDateTime createdAt
+    ) {}
+
+    public record FreezePassRequest(
+            java.time.LocalDate startDate,
+            java.time.LocalDate endDate
+    ) {}
 }

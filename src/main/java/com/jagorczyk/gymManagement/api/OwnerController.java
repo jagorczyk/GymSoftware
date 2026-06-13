@@ -28,6 +28,11 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdatePassTypeRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.RankView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.CreateRankRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateRankRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.CreateProductRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateProductRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView;
+import com.jagorczyk.gymManagement.service.PosService;
 import com.jagorczyk.gymManagement.service.NotificationService;
 import com.jagorczyk.gymManagement.service.PassService;
 import com.jagorczyk.gymManagement.service.SalesReportService;
@@ -67,6 +72,7 @@ public class OwnerController {
     private final PassService passService;
     private final SalesReportService salesReportService;
     private final NotificationService notificationService;
+    private final PosService posService;
 
     public OwnerController(
             OwnerService ownerService,
@@ -75,7 +81,8 @@ public class OwnerController {
             CurrentUserService currentUserService,
             PassService passService,
             SalesReportService salesReportService,
-            NotificationService notificationService
+            NotificationService notificationService,
+            PosService posService
     ) {
         this.ownerService = ownerService;
         this.calendarService = calendarService;
@@ -84,6 +91,7 @@ public class OwnerController {
         this.passService = passService;
         this.salesReportService = salesReportService;
         this.notificationService = notificationService;
+        this.posService = posService;
     }
 
     @GetMapping("/gyms")
@@ -340,5 +348,35 @@ public class OwnerController {
     public Map<String, String> deleteWorkScheduleEntry(@PathVariable Long gymId, @PathVariable Long entryId) {
         workScheduleService.deleteForOwner(currentUserService.getCurrentUser().getId(), gymId, entryId);
         return Map.of("status", "deleted");
+    }
+
+    @GetMapping("/gyms/{gymId}/products")
+    public List<ProductView> getProducts(@PathVariable Long gymId) {
+        return posService.getGymProductsForOwner(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/products")
+    public ProductView createProduct(@PathVariable Long gymId, @Valid @RequestBody CreateProductRequest request) {
+        return posService.createProduct(currentUserService.getCurrentUser().getId(), gymId, request);
+    }
+
+    @PutMapping("/gyms/{gymId}/products/{productId}")
+    public ProductView updateProduct(
+            @PathVariable Long gymId,
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateProductRequest request
+    ) {
+        return posService.updateProduct(currentUserService.getCurrentUser().getId(), gymId, productId, request);
+    }
+
+    @DeleteMapping("/gyms/{gymId}/products/{productId}")
+    public Map<String, String> deleteProduct(@PathVariable Long gymId, @PathVariable Long productId) {
+        posService.deleteProduct(currentUserService.getCurrentUser().getId(), gymId, productId);
+        return Map.of("status", "deleted");
+    }
+
+    @GetMapping("/gyms/{gymId}/sales/products")
+    public List<ProductSaleView> getProductSales(@PathVariable Long gymId) {
+        return posService.getGymSalesForOwner(currentUserService.getCurrentUser().getId(), gymId);
     }
 }

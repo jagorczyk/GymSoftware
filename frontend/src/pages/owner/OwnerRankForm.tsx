@@ -81,28 +81,28 @@ export function OwnerRankForm({ ctx, mode }: { ctx: OwnerContext; mode: "create"
         action={
           <Link
             to="/owner/ranks"
-            className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 font-bold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" /> Wróć
           </Link>
         }
       />
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 transition-colors duration-200">
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-1">Nazwa rangi</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nazwa rangi</label>
           <input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
+            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all dark:text-white"
             placeholder="np. Menadżer, Trener Personalny..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-3">Uprawnienia</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Uprawnienia</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {ALL_PERMISSIONS.map((p) => {
               const isSelected = selectedPermissions.includes(p);
@@ -111,13 +111,13 @@ export function OwnerRankForm({ ctx, mode }: { ctx: OwnerContext; mode: "create"
                   key={p}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                     isSelected
-                      ? "bg-primary-50 border-primary-200 text-primary-900"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                      ? "bg-primary-50 dark:bg-primary-950/20 border-primary-200 dark:border-primary-900/40 text-primary-900 dark:text-primary-300"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <input
                     type="checkbox"
-                    className="mt-1 w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+                    className="mt-1 w-4 h-4 text-primary-600 rounded border-slate-300 dark:border-slate-700 focus:ring-primary-500 dark:bg-slate-950"
                     checked={isSelected}
                     onChange={() => togglePermission(p)}
                   />

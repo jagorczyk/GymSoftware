@@ -113,7 +113,7 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
             <button
               onClick={loadGymsAndDetails}
               disabled={loading}
-              className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
             >
               <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
               Odśwież

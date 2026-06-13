@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { clearAuth, decodeRoleFromJwt, loadAuth, saveAuth, type AuthState } from "./auth";
+import { clearAuth, decodeRoleFromJwt, decodeEmailFromJwt, loadAuth, saveAuth, type AuthState } from "./auth";
 
 type AuthContextValue = {
   auth: AuthState | null;
@@ -14,7 +14,11 @@ export function AuthProvider(props: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthState | null>(() => loadAuth());
 
   const login = useCallback((token: string) => {
-    const next: AuthState = { token, role: decodeRoleFromJwt(token) };
+    const next: AuthState = {
+      token,
+      role: decodeRoleFromJwt(token),
+      email: decodeEmailFromJwt(token),
+    };
     saveAuth(next);
     setAuth(next);
     return next;

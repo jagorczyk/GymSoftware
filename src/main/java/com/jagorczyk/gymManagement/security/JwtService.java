@@ -36,11 +36,31 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateCheckInToken(CustomUserPrincipal principal) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(principal.getUsername())
+                .claim("uid", principal.getUserId())
+                .claim("purpose", "checkin")
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(60)))
+                .signWith(key)
+                .compact();
+    }
+
     public Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public Claims extractCheckInClaims(String token) {
+        Claims claims = extractClaims(token);
+        if (!"checkin".equals(claims.get("purpose"))) {
+            throw new IllegalArgumentException("Nieprawidłowy token QR.");
+        }
+        return claims;
     }
 }

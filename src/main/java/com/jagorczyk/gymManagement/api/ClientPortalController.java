@@ -6,6 +6,8 @@ import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientPassView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientPassTypeView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.JoinGymRequest;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.PurchasePassRequest;
+import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.RateClassRequest;
+import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.FreezePassRequest;
 import com.jagorczyk.gymManagement.security.CustomUserPrincipal;
 import com.jagorczyk.gymManagement.service.ClientPortalService;
 import java.util.List;
@@ -24,9 +26,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientPortalController {
 
     private final ClientPortalService clientPortalService;
+    private final com.jagorczyk.gymManagement.security.JwtService jwtService;
 
-    public ClientPortalController(ClientPortalService clientPortalService) {
+    public ClientPortalController(
+            ClientPortalService clientPortalService,
+            com.jagorczyk.gymManagement.security.JwtService jwtService
+    ) {
         this.clientPortalService = clientPortalService;
+        this.jwtService = jwtService;
+    }
+
+    @GetMapping("/checkin-qr-token")
+    public java.util.Map<String, String> getCheckInQrToken(@AuthenticationPrincipal CustomUserPrincipal principal) {
+        String token = jwtService.generateCheckInToken(principal);
+        return java.util.Map.of("qrToken", token);
     }
 
     @GetMapping("/gyms")
@@ -72,6 +85,15 @@ public class ClientPortalController {
         return clientPortalService.purchasePass(principal.getUserId(), gymId, request);
     }
 
+    @PostMapping("/gyms/{gymId}/simulate-payment")
+    public void simulatePayment(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @RequestBody PurchasePassRequest request
+    ) {
+        clientPortalService.activatePassFromStripe(principal.getUserId(), gymId, request.passTypeId());
+    }
+
     @GetMapping("/gyms/{gymId}/classes")
     public List<com.jagorczyk.gymManagement.api.dto.GroupClassDtos.GroupClassView> getClasses(
             @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -98,5 +120,42 @@ public class ClientPortalController {
             @PathVariable Long classId
     ) {
         clientPortalService.cancelBooking(principal.getUserId(), gymId, classId);
+    }
+
+    @PostMapping("/gyms/{gymId}/classes/{classId}/rate")
+    public void rateClass(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long classId,
+            @RequestBody RateClassRequest request
+    ) {
+        clientPortalService.rateClass(principal.getUserId(), gymId, classId, request.rating(), request.comment());
+    }
+
+    @PostMapping("/gyms/{gymId}/passes/{passId}/freeze")
+    public void freezePass(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long passId,
+            @RequestBody FreezePassRequest request
+    ) {
+        clientPortalService.freezePass(principal.getUserId(), gymId, passId, request.startDate(), request.endDate());
+    }
+
+    @GetMapping("/gyms/{gymId}/passes/{passId}/invoice")
+    public org.springframework.http.ResponseEntity<byte[]> downloadInvoice(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long passId
+    ) {
+        byte[] pdfBytes = clientPortalService.getInvoicePdf(principal.getUserId(), gymId, passId);
+        
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(org.springframework.http.ContentDisposition.builder("inline")
+                .filename("invoice-" + passId + ".pdf")
+                .build());
+                
+        return new org.springframework.http.ResponseEntity<>(pdfBytes, headers, org.springframework.http.HttpStatus.OK);
     }
 }

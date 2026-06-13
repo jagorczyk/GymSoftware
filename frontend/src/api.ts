@@ -875,6 +875,7 @@ export type GroupClassView = {
   endTime: string;
   capacity: number;
   activeReservations: number;
+  userReservationStatus?: string | null;
 };
 
 export type ClassReservationView = {
@@ -887,6 +888,11 @@ export type ClassReservationView = {
   status: string;
   reservedAt: string;
 };
+
+function formatIsoStringForApi(isoStr: string): string {
+  if (!isoStr) return isoStr;
+  return isoStr.replace("Z", "").split(".")[0];
+}
 
 function classBasePath(role: string, gymId: number) {
   return role === "OWNER"
@@ -901,8 +907,8 @@ export async function getClasses(
   to: string
 ): Promise<GroupClassView[]> {
   const url = new URL(classBasePath(auth.role, gymId));
-  url.searchParams.set("from", from);
-  url.searchParams.set("to", to);
+  url.searchParams.set("from", formatIsoStringForApi(from));
+  url.searchParams.set("to", formatIsoStringForApi(to));
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
@@ -982,8 +988,8 @@ export async function getClientClasses(
   to: string
 ): Promise<GroupClassView[]> {
   const url = new URL(`${API_URL}/client/gyms/${gymId}/classes`);
-  url.searchParams.set("from", from);
-  url.searchParams.set("to", to);
+  url.searchParams.set("from", formatIsoStringForApi(from));
+  url.searchParams.set("to", formatIsoStringForApi(to));
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
@@ -1053,4 +1059,97 @@ export async function deleteOwnerRank(auth: AuthState, gymId: number, rankId: nu
     headers: { Authorization: `Bearer ${auth.token}` },
   });
   if (!response.ok) await parseApiError(response, "Nie udało się usunąć rangi");
+}
+
+export interface ProductView {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  category: string;
+}
+
+export interface ProductSaleItemView {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface ProductSaleView {
+  id: number;
+  soldByEmail: string;
+  guestName: string;
+  totalAmount: number;
+  paymentMethod: string;
+  createdAt: string;
+  items: ProductSaleItemView[];
+}
+
+export async function getProducts(auth: AuthState, gymId: number, role: "owner" | "employee"): Promise<ProductView[]> {
+  const response = await fetch(`${API_URL}/${role}/gyms/${gymId}/products`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy produktów");
+  return response.json();
+}
+
+export async function createProduct(auth: AuthState, gymId: number, payload: { name: string; price: number; quantity: number; category: string }): Promise<ProductView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/products`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać produktu");
+  return response.json();
+}
+
+export async function updateProduct(auth: AuthState, gymId: number, productId: number, payload: { name: string; price: number; quantity: number; category: string }): Promise<ProductView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/products/${productId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować produktu");
+  return response.json();
+}
+
+export async function deleteProduct(auth: AuthState, gymId: number, productId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/products/${productId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć produktu");
+}
+
+export async function checkoutProducts(
+  auth: AuthState,
+  gymId: number,
+  payload: { guestId: number | null; items: Array<{ productId: number; quantity: number }>; paymentMethod: string }
+): Promise<ProductSaleView> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/sales/checkout`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Błąd podczas finalizacji sprzedaży");
+  return response.json();
+}
+
+export async function getProductSales(auth: AuthState, gymId: number): Promise<ProductSaleView[]> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/sales/products`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii sprzedaży");
+  return response.json();
 }

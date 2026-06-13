@@ -1,68 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  --color-primary-50: #f0f4ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #2155e5; /* Main Royal Sky-Blue */
+  --color-primary-600: #1e47c7;
+  --color-primary-700: #1c3ba9;
+  --color-primary-800: #1a308b;
+  --color-primary-900: #18266d;
+  --color-primary-950: #0f173f;
 
-  --font-sans: "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --color-slate-950: #0b111e;
+  --color-slate-900: #131a26;
+  --color-slate-800: #1d2736;
+  --color-slate-700: #334155;
+
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Outfit", sans-serif;
 }
+
+@variant dark (&:where(.dark, .dark *));
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    @apply bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-200;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(33, 85, 229, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+/* Custom Cyber/Tech Utilities for Blue theme */
+@utility bg-cyber-grid {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+}
+
+@utility bg-cyber-grid-light {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(33, 85, 229, 0.015) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(33, 85, 229, 0.015) 1px, transparent 1px);
+}
+
+@utility glass-panel {
+  @apply bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/40 shadow-xl dark:shadow-slate-950/20;
+}
+
+@utility glass-panel-hover {
+  @apply transition-all duration-300 hover:bg-white/95 dark:hover:bg-slate-900/80 hover:border-slate-300 dark:hover:border-primary-500/30 hover:shadow-2xl hover:-translate-y-0.5;
+}
+
+@utility glow-blue {
+  text-shadow: 0 0 12px rgba(33, 85, 229, 0.3), 0 0 24px rgba(33, 85, 229, 0.1);
+}
+
+@utility glow-box-blue {
+  box-shadow: 0 0 15px rgba(33, 85, 229, 0.15), inset 0 0 10px rgba(33, 85, 229, 0.03);
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@utility animate-tech-slide-up {
+  animation: tech-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(33, 85, 229, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(33, 85, 229, 0.25);
+  }
+}
+
+@keyframes tech-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes blob {
   0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
+  33% { transform: translate(40px, -60px) scale(1.15); }
+  66% { transform: translate(-30px, 30px) scale(0.9); }
   100% { transform: translate(0px, 0px) scale(1); }
 }
 
 @utility animate-blob {
-  animation: blob 7s infinite;
+  animation: blob 8s infinite ease-in-out;
 }
 
 @utility animation-delay-2000 {
   animation-delay: 2s;
 }
 
+@utility animation-delay-4000 {
+  animation-delay: 4s;
+}
+
 @keyframes toast-slide-in {
   from {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateY(-20px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes toast-slide-out {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateY(-20px) scale(0.95);
   }
 }
 
 .toast-enter {
-  animation: toast-slide-in 0.3s ease-out forwards;
+  animation: toast-slide-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .toast-exit {
-  animation: toast-slide-out 0.28s ease-in forwards;
+  animation: toast-slide-out 0.25s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
 }

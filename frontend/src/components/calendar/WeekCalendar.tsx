@@ -44,8 +44,8 @@ function TimeSlot(props: { day: Date; slotIndex: number; onSlotClick: (day: Date
       type="button"
       ref={setNodeRef}
       onClick={() => onSlotClick(day, slotIndex)}
-      className={`absolute left-0 right-0 border-t border-slate-100 hover:bg-primary-50/40 transition-colors ${
-        isOver ? "bg-primary-100/60" : ""
+      className={`absolute left-0 right-0 border-t border-slate-100 dark:border-slate-800/60 hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-colors ${
+        isOver ? "bg-primary-100/60 dark:bg-primary-950/45" : ""
       }`}
       style={{
         top: slotIndex * CALENDAR_SLOT_HEIGHT_PX,
@@ -106,10 +106,10 @@ function DayColumn<T extends GridCalendarEvent>(props: {
   const isToday = dayKey(day) === dayKey(new Date());
 
   return (
-    <div className="border-l border-slate-200 min-w-[100px]">
+    <div className="border-l border-slate-200 dark:border-slate-800 min-w-[100px]">
       <div
-        className={`sticky top-0 z-20 px-2 py-2 text-center text-xs font-semibold border-b border-slate-200 bg-white ${
-          isToday ? "text-primary-700 bg-primary-50" : "text-slate-700"
+        className={`sticky top-0 z-20 px-2 py-2 text-center text-xs font-semibold border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 ${
+          isToday ? "text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/30" : "text-slate-700 dark:text-slate-300"
         }`}
       >
         {formatDayHeader(day)}
@@ -178,16 +178,16 @@ export function WeekCalendar<T extends GridCalendarEvent>(props: WeekCalendarPro
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActiveEvent(null)}
       >
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <div className="flex min-w-[900px]">
-            <div className="w-16 shrink-0 border-r border-slate-200 bg-slate-50">
-              <div className="h-[41px] border-b border-slate-200" />
+            <div className="w-16 shrink-0 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
+              <div className="h-[41px] border-b border-slate-200 dark:border-slate-800" />
               <div className="relative" style={{ height: slotCount * CALENDAR_SLOT_HEIGHT_PX }}>
                 {Array.from({ length: slotCount }, (_, slotIndex) =>
                   slotIndex % 2 === 0 ? (
                     <div
                       key={slotIndex}
-                      className="absolute left-0 right-0 pr-2 text-[10px] text-slate-400 text-right"
+                      className="absolute left-0 right-0 pr-2 text-[10px] text-slate-400 dark:text-slate-500 text-right"
                       style={{ top: slotIndex * CALENDAR_SLOT_HEIGHT_PX + 4 }}
                     >
                       {formatTimeLabel(slotIndex)}

@@ -92,16 +92,16 @@ export function WorkScheduleEntryModal(props: WorkScheduleEntryModalProps) {
   const typeColor = workScheduleTypeColor(entryType);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70">
+      <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               {mode === "create" ? "Nowy wpis grafiku" : mode === "edit" ? "Edycja wpisu" : "Podgląd wpisu"}
             </h2>
-            <p className="text-sm text-slate-500">{WORK_SCHEDULE_TYPE_LABELS[entryType]}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{WORK_SCHEDULE_TYPE_LABELS[entryType]}</p>
           </div>
-          <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
+          <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -142,7 +142,7 @@ export function WorkScheduleEntryModal(props: WorkScheduleEntryModalProps) {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-slate-500 mt-1">Kolor: {typeColor}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Kolor: {typeColor}</p>
           </div>
 
           <div>

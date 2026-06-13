@@ -4,5 +4,6 @@ public enum ClassReservationStatus {
     RESERVED,
     CANCELLED,
     ATTENDED,
-    NO_SHOW
+    NO_SHOW,
+    WAITLISTED
 }

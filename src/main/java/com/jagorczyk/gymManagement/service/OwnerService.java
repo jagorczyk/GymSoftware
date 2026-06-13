@@ -466,7 +466,13 @@ public class OwnerService {
     }
 
     private EmployeeView toEmployeeView(Employee employee) {
-        java.util.Set<EmployeePermission> effectivePerms = employee.getRank() != null ? employee.getRank().getPermissions() : employee.getPermissions();
+        java.util.Set<EmployeePermission> effectivePerms;
+        if (employee.getRank() != null) {
+            effectivePerms = new java.util.HashSet<>(employee.getRank().getPermissions());
+            effectivePerms.addAll(employee.getPermissions());
+        } else {
+            effectivePerms = employee.getPermissions();
+        }
         List<String> permissions = effectivePerms.stream()
                 .map(Enum::name)
                 .sorted()
