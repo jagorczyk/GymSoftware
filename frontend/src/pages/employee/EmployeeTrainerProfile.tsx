@@ -82,19 +82,54 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
     }
   }
 
-  // Map profile.availabilities to WeekCalendar events
   const calendarEvents = useMemo(() => {
-    if (!profile?.availabilities) return [];
-    return profile.availabilities.map((a: any) => ({
-      id: a._tempId,
-      title: `${a.slotDurationMinutes || 60} min`,
-      startAt: `${a.date}T${a.startTime}`,
-      endAt: `${a.date}T${a.endTime}`,
-      color: "emerald",
-      canEdit: true,
-      original: a,
-    }));
-  }, [profile?.availabilities]);
+    const events: any[] = [];
+    if (profile?.availabilities) {
+      profile.availabilities.forEach((a: any) => {
+        events.push({
+          id: a._tempId,
+          title: `${a.slotDurationMinutes || 60} min`,
+          startAt: `${a.date}T${a.startTime}`,
+          endAt: `${a.date}T${a.endTime}`,
+          color: "emerald",
+          canEdit: true,
+          original: a,
+          isTraining: false,
+        });
+      });
+    }
+
+    if (trainings) {
+      trainings.forEach((t: any) => {
+        const dateStr = t.scheduledAt.split("T")[0];
+        const timeStr = t.scheduledAt.split("T")[1];
+        
+        let durationMinutes = 60;
+        const avail = profile?.availabilities?.find((a: any) => a.date === dateStr && a.startTime <= timeStr && a.endTime > timeStr);
+        if (avail?.slotDurationMinutes) {
+          durationMinutes = avail.slotDurationMinutes;
+        }
+
+        const startD = new Date(t.scheduledAt);
+        const endD = new Date(startD.getTime() + durationMinutes * 60000);
+
+        const pad = (n: number) => n.toString().padStart(2, "0");
+        const endStr = `${endD.getFullYear()}-${pad(endD.getMonth() + 1)}-${pad(endD.getDate())}T${pad(endD.getHours())}:${pad(endD.getMinutes())}:00`;
+
+        events.push({
+          id: `training-${t.id}`,
+          title: `Zajęte: ${t.clientFirstName} ${t.clientLastName}`,
+          startAt: t.scheduledAt,
+          endAt: endStr,
+          color: "rose",
+          canEdit: false,
+          original: t,
+          isTraining: true,
+        });
+      });
+    }
+    return events;
+  }, [profile?.availabilities, trainings]);
 
   async function handleSave(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -148,6 +183,10 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
   }
 
   function handleEventClick(event: any) {
+    if (event.isTraining) {
+      handleCancelTraining(event.original.id);
+      return;
+    }
     setModal({
       open: true,
       mode: "edit",
@@ -299,61 +338,7 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
             </div>
           </FormSection>
 
-          <FormSection
-            title="Nadchodzące treningi"
-            description="Treningi zarezerwowane przez Twoich klientów."
-          >
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-              {trainings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-slate-400 dark:text-slate-500">
-                  <Calendar className="w-10 h-10 mb-3 opacity-30" />
-                  <p className="text-sm font-medium">Nie masz żadnych nadchodzących treningów</p>
-                </div>
-              ) : (
-                trainings.map((t, i) => {
-                  const date = new Date(t.scheduledAt);
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-2xl"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/30 flex items-center justify-center flex-shrink-0">
-                          <Calendar className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white text-sm">
-                            {t.clientFirstName} {t.clientLastName}
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            {date.toLocaleDateString("pl-PL", { weekday: "short", month: "short", day: "numeric" })}
-                            {" · "}
-                            {date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="inline-block px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
-                          {t.status === "SCHEDULED" ? "Zaplanowany" : t.status}
-                        </span>
-                        {t.status === "SCHEDULED" && (
-                          <div className="mt-2">
-                            <button
-                              type="button"
-                              onClick={() => handleCancelTraining(t.id)}
-                              className="text-xs font-bold text-rose-600 hover:text-rose-500 hover:underline"
-                            >
-                              Odwołaj
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </FormSection>
+          {/* Usunięto listę nadchodzących treningów, od teraz są widoczne na kalendarzu */}
         </div>
 
         <FormSection
