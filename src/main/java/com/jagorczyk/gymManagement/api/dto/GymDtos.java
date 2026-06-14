@@ -35,7 +35,7 @@ public final class GymDtos {
     ) {}
 
     public record GuestDetailView(GuestView guest, List<PassView> passes, List<CheckInView> recentCheckIns, List<PassFreezeView> activeFreezes) {}
-    public record EmployeeView(Long id, Long userId, String email, List<String> permissions, Long rankId, String rankName, String avatarUrl) {}
+    public record EmployeeView(Long id, Long userId, String email, String firstName, String lastName, List<String> permissions, Long rankId, String rankName, String avatarUrl) {}
     public record PassView(Long id, Long guestId, String passType, PassStatus status, LocalDate startDate, LocalDate endDate, BigDecimal price) {}
     public record LockerView(Long id, String lockerNumber, LockerStatus status, Long guestId) {}
     public record AuditLogView(Long id, String action, String payload, LocalDateTime createdAt, String actorEmail) {}
@@ -78,6 +78,8 @@ public final class GymDtos {
     public record CreateEmployeeRequest(
             @Email @NotBlank String email,
             @NotBlank String password,
+            String firstName,
+            String lastName,
             Set<EmployeePermission> permissions,
             Long rankId,
             String avatarUrl
@@ -91,6 +93,8 @@ public final class GymDtos {
     public record UpdateEmployeeRequest(
             @Email @NotBlank String email,
             String password,
+            String firstName,
+            String lastName,
             Set<EmployeePermission> permissions,
             Long rankId,
             String avatarUrl
@@ -356,5 +360,28 @@ public final class GymDtos {
             String status,
             LocalDateTime createdAt,
             LocalDateTime sentAt
+    ) {}
+
+    public record TrainerProfileView(
+            Long id,
+            Long employeeId,
+            String firstName,
+            String lastName,
+            String bio,
+            String specialization,
+            BigDecimal hourlyRate
+    ) {}
+
+    public record CreateTrainerProfileRequest(
+            @NotNull Long employeeId,
+            String bio,
+            String specialization,
+            @NotNull @DecimalMin("0.00") BigDecimal hourlyRate
+    ) {}
+
+    public record UpdateTrainerProfileRequest(
+            String bio,
+            String specialization,
+            @NotNull @DecimalMin("0.00") BigDecimal hourlyRate
     ) {}
 }

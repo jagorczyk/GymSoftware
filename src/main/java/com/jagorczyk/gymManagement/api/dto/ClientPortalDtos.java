@@ -67,4 +67,43 @@ public final class ClientPortalDtos {
             java.time.LocalDate startDate,
             java.time.LocalDate endDate
     ) {}
+
+    public record TrainerProfileView(
+            Long id,
+            Long employeeId,
+            String firstName,
+            String lastName,
+            String bio,
+            String specialization,
+            BigDecimal hourlyRate
+    ) {}
+
+    public record PersonalTrainingView(
+            Long id,
+            Long trainerId,
+            String trainerFirstName,
+            String trainerLastName,
+            java.time.LocalDateTime scheduledAt,
+            BigDecimal price,
+            boolean isPaid,
+            String status
+    ) {}
+
+    public record BookTrainingRequest(
+            java.time.LocalDateTime scheduledAt
+    ) {}
+
+    public record AvailableSlotView(
+            java.time.LocalTime time
+    ) {}
+
+    public record ScheduleSlotView(
+            java.time.LocalTime time,
+            boolean available
+    ) {}
+
+    public record TrainerScheduleDayView(
+            java.time.LocalDate date,
+            java.util.List<ScheduleSlotView> slots
+    ) {}
 }

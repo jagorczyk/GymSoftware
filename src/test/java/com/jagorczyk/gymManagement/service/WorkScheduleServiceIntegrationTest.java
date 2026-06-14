@@ -44,7 +44,7 @@ class WorkScheduleServiceIntegrationTest {
         var created = ownerService.createEmployee(
                 owner.getId(),
                 gym.getId(),
-                new CreateEmployeeRequest("employee-ws@test.com", "secret123", EnumSet.noneOf(EmployeePermission.class), null, null)
+                new CreateEmployeeRequest("employee-ws@test.com", "secret123", null, null, EnumSet.noneOf(EmployeePermission.class), null, null)
         );
 
         LocalDateTime start = LocalDateTime.of(2026, 6, 10, 9, 0);
@@ -78,6 +78,8 @@ class WorkScheduleServiceIntegrationTest {
                 new CreateEmployeeRequest(
                         "employee-ws-a@test.com",
                         "secret123",
+                        null,
+                        null,
                         EnumSet.of(EmployeePermission.MANAGE_WORK_SCHEDULE),
                         null,
                         null
@@ -86,7 +88,7 @@ class WorkScheduleServiceIntegrationTest {
         var employeeB = ownerService.createEmployee(
                 owner.getId(),
                 gym.getId(),
-                new CreateEmployeeRequest("employee-ws-b@test.com", "secret123", EnumSet.noneOf(EmployeePermission.class), null, null)
+                new CreateEmployeeRequest("employee-ws-b@test.com", "secret123", null, null, EnumSet.noneOf(EmployeePermission.class), null, null)
         );
 
         User userA = userRepository.findByEmail("employee-ws-a@test.com").orElseThrow();
@@ -159,7 +161,7 @@ class WorkScheduleServiceIntegrationTest {
         ownerService.createEmployee(
                 owner.getId(),
                 gym.getId(),
-                new CreateEmployeeRequest("employee-ws-no@test.com", "secret123", EnumSet.noneOf(EmployeePermission.class), null, null)
+                new CreateEmployeeRequest("employee-ws-no@test.com", "secret123", null, null, EnumSet.noneOf(EmployeePermission.class), null, null)
         );
         User user = userRepository.findByEmail("employee-ws-no@test.com").orElseThrow();
 
@@ -187,3 +189,4 @@ class WorkScheduleServiceIntegrationTest {
         return gym;
     }
 }
+

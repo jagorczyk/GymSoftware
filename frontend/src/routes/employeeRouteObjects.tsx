@@ -20,6 +20,7 @@ import {
   EmployeeClassDetailRoutePage,
   EmployeeQRScannerSimulatorPage,
   EmployeePOSPage,
+  EmployeeTrainerProfilePage,
 } from "../pages/employee/employeeRouteElements";
 
 export const employeeRouteObjects: RouteObject[] = [
@@ -44,4 +45,5 @@ export const employeeRouteObjects: RouteObject[] = [
   { path: "classes/:classId/edit", Component: EmployeeClassEditRoutePage },
   { path: "qr-scanner", Component: EmployeeQRScannerSimulatorPage },
   { path: "pos", Component: EmployeePOSPage },
+  { path: "trainer-profile", Component: EmployeeTrainerProfilePage },
 ];

@@ -60,6 +60,7 @@ public class EmployeeController {
     private final com.jagorczyk.gymManagement.security.JwtService jwtService;
     private final PosService posService;
     private final EmployeePermissionService employeePermissionService;
+    private final com.jagorczyk.gymManagement.service.TrainerService trainerService;
 
     public EmployeeController(
             EmployeeService employeeService,
@@ -69,7 +70,8 @@ public class EmployeeController {
             PassService passService,
             com.jagorczyk.gymManagement.security.JwtService jwtService,
             PosService posService,
-            EmployeePermissionService employeePermissionService
+            EmployeePermissionService employeePermissionService,
+            com.jagorczyk.gymManagement.service.TrainerService trainerService
     ) {
         this.employeeService = employeeService;
         this.calendarService = calendarService;
@@ -79,6 +81,7 @@ public class EmployeeController {
         this.jwtService = jwtService;
         this.posService = posService;
         this.employeePermissionService = employeePermissionService;
+        this.trainerService = trainerService;
     }
 
     @GetMapping("/gyms")
@@ -311,5 +314,39 @@ public class EmployeeController {
         employeePermissionService.requirePermission(
                 currentUserService.getCurrentUser(), gymId, EmployeePermission.SELL_PRODUCTS);
         return posService.getProductByBarcode(gymId, code);
+    }
+
+    @GetMapping("/gyms/{gymId}/trainer-profile")
+    public com.jagorczyk.gymManagement.api.dto.TrainerDtos.MyTrainerProfileView getMyProfile(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.jagorczyk.gymManagement.security.CustomUserPrincipal principal,
+            @PathVariable Long gymId
+    ) {
+        return trainerService.getMyProfile(principal.getUserId(), gymId);
+    }
+
+    @PutMapping("/gyms/{gymId}/trainer-profile")
+    public com.jagorczyk.gymManagement.api.dto.TrainerDtos.MyTrainerProfileView updateMyProfile(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.jagorczyk.gymManagement.security.CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @RequestBody com.jagorczyk.gymManagement.api.dto.TrainerDtos.UpdateTrainerProfileRequest request
+    ) {
+        return trainerService.updateMyProfile(principal.getUserId(), gymId, request);
+    }
+
+    @GetMapping("/gyms/{gymId}/trainer-profile/trainings")
+    public java.util.List<com.jagorczyk.gymManagement.api.dto.TrainerDtos.TrainerTrainingView> getMyTrainings(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.jagorczyk.gymManagement.security.CustomUserPrincipal principal,
+            @PathVariable Long gymId
+    ) {
+        return trainerService.getUpcomingTrainings(principal.getUserId(), gymId);
+    }
+    @DeleteMapping("/gyms/{gymId}/trainer-profile/trainings/{trainingId}")
+    public java.util.Map<String, String> cancelTraining(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.jagorczyk.gymManagement.security.CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long trainingId
+    ) {
+        trainerService.cancelTraining(principal.getUserId(), gymId, trainingId);
+        return java.util.Map.of("status", "cancelled");
     }
 }

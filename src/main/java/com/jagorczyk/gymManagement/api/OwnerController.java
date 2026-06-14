@@ -417,4 +417,35 @@ public class OwnerController {
                 .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
                 .body(bytes);
     }
+
+    @GetMapping("/gyms/{gymId}/trainers")
+    public List<com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView> getTrainers(@PathVariable Long gymId) {
+        return ownerService.getTrainers(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/trainers")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView createTrainer(
+            @PathVariable Long gymId,
+            @Valid @RequestBody com.jagorczyk.gymManagement.api.dto.GymDtos.CreateTrainerProfileRequest request
+    ) {
+        return ownerService.createTrainer(currentUserService.getCurrentUser().getId(), gymId, request);
+    }
+
+    @PutMapping("/gyms/{gymId}/trainers/{trainerId}")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView updateTrainer(
+            @PathVariable Long gymId,
+            @PathVariable Long trainerId,
+            @Valid @RequestBody com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateTrainerProfileRequest request
+    ) {
+        return ownerService.updateTrainer(currentUserService.getCurrentUser().getId(), gymId, trainerId, request);
+    }
+
+    @DeleteMapping("/gyms/{gymId}/trainers/{trainerId}")
+    public Map<String, String> deleteTrainer(
+            @PathVariable Long gymId,
+            @PathVariable Long trainerId
+    ) {
+        ownerService.deleteTrainer(currentUserService.getCurrentUser().getId(), gymId, trainerId);
+        return Map.of("status", "deleted");
+    }
 }

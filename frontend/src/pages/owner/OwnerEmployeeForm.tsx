@@ -31,6 +31,8 @@ export function OwnerEmployeeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
 
   const [email, setEmail] = useState(employee?.email ?? "");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState(employee?.firstName ?? "");
+  const [lastName, setLastName] = useState(employee?.lastName ?? "");
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(employee?.avatarUrl);
   const [optionalPermissions, setOptionalPermissions] = useState<EmployeePermission[]>(() =>
     optionalPermissionsFromList(employee?.permissions)
@@ -75,6 +77,8 @@ export function OwnerEmployeeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
         await createOwnerEmployee(auth, Number(selectedGymId), {
           email,
           password,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
           permissions: selectedRankId ? undefined : resolvedPermissions,
           rankId: selectedRankId || undefined,
           avatarUrl,
@@ -84,6 +88,8 @@ export function OwnerEmployeeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
         await updateOwnerEmployee(auth, Number(selectedGymId), employee.id, {
           email,
           password: password || undefined,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
           permissions: selectedRankId ? undefined : resolvedPermissions,
           rankId: selectedRankId || undefined,
           avatarUrl,
@@ -131,6 +137,16 @@ export function OwnerEmployeeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
             onUploadSuccess={setAvatarUrl}
             className="mb-6"
           />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClassName}>Imię</label>
+              <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} placeholder="Jan" />
+            </div>
+            <div>
+              <label className={labelClassName}>Nazwisko</label>
+              <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClassName} placeholder="Kowalski" />
+            </div>
+          </div>
           <div>
             <label className={labelClassName}>Email</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClassName} required />

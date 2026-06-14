@@ -28,6 +28,7 @@ import {
   Package,
   Star,
   Megaphone,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "./authContext";
 import { useEmployeePermissions } from "./employeePermissionsContext";
@@ -60,6 +61,7 @@ export function AppShell() {
         { label: "Grafik", to: "/employee/work-schedule", icon: <CalendarClock className="w-5 h-5" /> },
         { label: "Kasa (POS)", to: "/employee/pos", icon: <ShoppingCart className="w-5 h-5" /> },
         { label: "Skaner QR", to: "/employee/qr-scanner", icon: <QrCode className="w-5 h-5" /> },
+        { label: "Profil Trenera", to: "/employee/trainer-profile", icon: <UserCircle className="w-5 h-5" /> },
       ].filter((item) => {
         if (item.to === "/employee/lockers") {
           return (
@@ -76,6 +78,7 @@ export function AppShell() {
     () => [
       { label: "Dashboard", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
       { label: "Zajęcia", to: "/client/classes", icon: <CalendarDays className="w-5 h-5" /> },
+      { label: "Treningi", to: "/client/trainers", icon: <UserCircle className="w-5 h-5" /> },
       { label: "Dołącz do siłowni", to: "/client/gyms/join", icon: <Store className="w-5 h-5" /> },
     ],
     []
@@ -88,6 +91,7 @@ export function AppShell() {
           { label: "Siłownie", to: "/owner/gyms", icon: <Store className="w-5 h-5" /> },
           { label: "Klienci", to: "/owner/guests", icon: <Users className="w-5 h-5" /> },
           { label: "Pracownicy", to: "/owner/employees", icon: <BadgeCheck className="w-5 h-5" /> },
+          { label: "Trenerzy", to: "/owner/trainers", icon: <UserCircle className="w-5 h-5" /> },
           { label: "Rangi", to: "/owner/ranks", icon: <Award className="w-5 h-5" /> },
           { label: "Oferta", to: "/owner/pass-types", icon: <ListPlus className="w-5 h-5" /> },
           { label: "Karnety", to: "/owner/passes", icon: <Ticket className="w-5 h-5" /> },

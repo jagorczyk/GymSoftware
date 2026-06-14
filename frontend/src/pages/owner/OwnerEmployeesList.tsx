@@ -16,7 +16,10 @@ export function OwnerEmployeesList({ ctx }: { ctx: OwnerContext }) {
     if (!details) return [];
     const q = query.trim().toLowerCase();
     if (!q) return details.employees;
-    return details.employees.filter((e: any) => e.email.toLowerCase().includes(q));
+    return details.employees.filter((e: any) => {
+      const fullName = `${e.firstName ?? ""} ${e.lastName ?? ""}`.toLowerCase();
+      return e.email.toLowerCase().includes(q) || fullName.includes(q);
+    });
   }, [details, query]);
 
   if (!details) return <SelectGymPrompt />;
@@ -26,7 +29,7 @@ export function OwnerEmployeesList({ ctx }: { ctx: OwnerContext }) {
       <ListToolbar
         searchValue={query}
         onSearchChange={setQuery}
-        searchPlaceholder="Szukaj pracownika..."
+        searchPlaceholder="Szukaj pracownika po imieniu, nazwisku lub emailu..."
         addLabel="Dodaj pracownika"
         addTo="/owner/employees/new"
       />
@@ -34,14 +37,17 @@ export function OwnerEmployeesList({ ctx }: { ctx: OwnerContext }) {
         {filtered.map((e: any) => {
           const extras = optionalPermissionsFromList(e.permissions as EmployeePermission[]);
           const extraLabels = extras.map((p) => PERMISSION_LABELS[p]).join(", ");
+          const fullName = [e.firstName, e.lastName].filter(Boolean).join(" ");
           return (
             <EntityListCard
               key={e.id}
-              title={e.email}
+              title={fullName || e.email}
               subtitle={
-                extraLabels
-                  ? `ID: ${e.id} • Dodatkowo: ${extraLabels}`
-                  : `ID: ${e.id} • Tylko uprawnienia podstawowe`
+                fullName
+                  ? `${e.email}${extraLabels ? ` • ${extraLabels}` : ""}`
+                  : extraLabels
+                    ? `ID: ${e.id} • Dodatkowo: ${extraLabels}`
+                    : `ID: ${e.id} • Tylko uprawnienia podstawowe`
               }
               avatarUrl={e.avatarUrl}
               onClick={() => navigate(`/owner/employees/${e.id}`)}

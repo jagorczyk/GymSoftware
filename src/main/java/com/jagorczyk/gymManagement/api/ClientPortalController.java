@@ -158,4 +158,50 @@ public class ClientPortalController {
                 
         return new org.springframework.http.ResponseEntity<>(pdfBytes, headers, org.springframework.http.HttpStatus.OK);
     }
+
+    @GetMapping("/dashboard/global-stats")
+    public java.util.Map<String, Integer> getGlobalStats(@AuthenticationPrincipal CustomUserPrincipal principal) {
+        return clientPortalService.getGlobalStats(principal.getUserId());
+    }
+
+    @GetMapping("/gyms/{gymId}/trainers")
+    public List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerProfileView> getTrainers(
+            @PathVariable Long gymId
+    ) {
+        return clientPortalService.getTrainers(gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/trainers/{trainerId}/book")
+    public void bookPersonalTraining(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long trainerId,
+            @RequestBody com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.BookTrainingRequest request
+    ) {
+        clientPortalService.bookPersonalTraining(principal.getUserId(), gymId, trainerId, request);
+    }
+
+    @GetMapping("/gyms/{gymId}/trainers/{trainerId}/available-slots")
+    public List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.AvailableSlotView> getAvailableSlots(
+            @PathVariable Long gymId,
+            @PathVariable Long trainerId,
+            @org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date
+    ) {
+        return clientPortalService.getAvailableSlots(gymId, trainerId, date);
+    }
+
+    @GetMapping("/trainings")
+    public List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.PersonalTrainingView> getTrainings(
+            @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
+        return clientPortalService.getTrainings(principal.getUserId());
+    }
+
+    @GetMapping("/gyms/{gymId}/trainers/{trainerId}/schedule")
+    public List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView> getTrainerSchedule(
+            @PathVariable Long gymId,
+            @PathVariable Long trainerId
+    ) {
+        return clientPortalService.getFullSchedule(gymId, trainerId);
+    }
 }

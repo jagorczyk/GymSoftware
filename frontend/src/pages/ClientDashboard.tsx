@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Copy,
   CheckCircle2,
+  UserCircle,
 } from "lucide-react";
 
 export function ClientDashboard() {
@@ -25,6 +26,7 @@ export function ClientDashboard() {
   const { showError, showSuccess } = useToast();
   const [gyms, setGyms] = useState<ClientGymView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [globalStats, setGlobalStats] = useState({ activePasses: 0, workoutsThisMonth: 0 });
 
   // QR Modal states
   const [selectedGymForQr, setSelectedGymForQr] = useState<{ id: number; name: string } | null>(null);
@@ -38,10 +40,19 @@ export function ClientDashboard() {
 
   useEffect(() => {
     if (!auth) return;
-    getClientGyms(auth)
-      .then((data) => setGyms(data))
-      .catch((err) => showError(err.message))
-      .finally(() => setLoading(false));
+    
+    Promise.all([
+      getClientGyms(auth),
+      fetch("http://localhost:8080/api/client/dashboard/global-stats", {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      }).then(r => r.json())
+    ])
+    .then(([gymData, statsData]) => {
+      setGyms(gymData);
+      if (statsData) setGlobalStats(statsData);
+    })
+    .catch((err) => showError(err.message || "Błąd ładowania danych"))
+    .finally(() => setLoading(false));
   }, [auth, showError]);
 
   // Handle QR code generation & refresh
@@ -178,26 +189,35 @@ export function ClientDashboard() {
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">Znajdź klub</span>
             </Link>
 
-            <div className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-emerald-500/10 dark:hover:bg-emerald-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-emerald-500/20 dark:hover:border-emerald-500/10 cursor-pointer">
+            <Link
+              to={gyms.length > 0 ? `/client/gyms/${gyms[0].id}/passes` : "/client/gyms/join"}
+              className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-emerald-500/10 dark:hover:bg-emerald-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-emerald-500/20 dark:hover:border-emerald-500/10"
+            >
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100 dark:border-slate-800">
                 <Ticket className="w-5 h-5 text-emerald-500" />
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">Karnety</span>
-            </div>
+            </Link>
 
-            <div className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-orange-500/10 dark:hover:bg-orange-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-orange-500/20 dark:hover:border-orange-500/10 cursor-pointer">
+            <Link
+              to="/client/classes"
+              className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-orange-500/10 dark:hover:bg-orange-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-orange-500/20 dark:hover:border-orange-500/10"
+            >
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100 dark:border-slate-800">
                 <Calendar className="w-5 h-5 text-orange-500" />
               </div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-orange-600 dark:group-hover:text-orange-400">Harmonogram</span>
-            </div>
+            </Link>
 
-            <div className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-rose-500/10 dark:hover:bg-rose-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-rose-500/20 dark:hover:border-rose-500/10 cursor-pointer">
+            <Link
+              to="/client/trainers"
+              className="group bg-slate-50/50 dark:bg-slate-950/40 hover:bg-rose-500/10 dark:hover:bg-rose-500/5 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all border border-transparent hover:border-rose-500/20 dark:hover:border-rose-500/10 cursor-pointer"
+            >
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100 dark:border-slate-800">
-                <CreditCard className="w-5 h-5 text-rose-500" />
+                <UserCircle className="w-5 h-5 text-rose-500" />
               </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600 dark:group-hover:text-rose-400">Płatności</span>
-            </div>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-rose-600 dark:group-hover:text-rose-400">Trenerzy</span>
+            </Link>
           </div>
         </div>
 
@@ -216,9 +236,9 @@ export function ClientDashboard() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <TrendingUp className="w-4 h-4 text-primary-500" />
-                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400">+1 od zeszłego msc</span>
+                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400">Teraz</span>
                 </div>
-                <div className="text-6xl font-display font-black text-slate-900 dark:text-white tracking-tighter">1</div>
+                <div className="text-6xl font-display font-black text-slate-900 dark:text-white tracking-tighter">{globalStats.activePasses}</div>
               </div>
               <div className="w-24 h-12 bg-primary-500/10 rounded-full flex items-center justify-center relative overflow-hidden border border-primary-500/20">
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 bg-primary-500/40"></div>
@@ -237,9 +257,9 @@ export function ClientDashboard() {
             <div className="flex items-end justify-between relative z-10">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Zalecane: 12</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Zalecane: min. 10</span>
                 </div>
-                <div className="text-6xl font-display font-black text-slate-900 dark:text-white tracking-tighter">8</div>
+                <div className="text-6xl font-display font-black text-slate-900 dark:text-white tracking-tighter">{globalStats.workoutsThisMonth}</div>
               </div>
               <div className="relative w-16 h-16">
                 <svg viewBox="0 0 36 36" className="w-16 h-16 transform -rotate-90">

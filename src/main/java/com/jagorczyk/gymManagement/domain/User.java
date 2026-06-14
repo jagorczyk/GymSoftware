@@ -42,4 +42,10 @@ public class User {
 
     @Column(name = "verification_code", length = 6)
     private String verificationCode;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
 }

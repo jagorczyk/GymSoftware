@@ -91,6 +91,19 @@ public class ClientPortalService {
         this.invoiceService = invoiceService;
     }
 
+    private PersonalTrainerProfileRepository personalTrainerProfileRepository;
+    private PersonalTrainingRepository personalTrainingRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setPersonalTrainerProfileRepository(PersonalTrainerProfileRepository personalTrainerProfileRepository) {
+        this.personalTrainerProfileRepository = personalTrainerProfileRepository;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setPersonalTrainingRepository(PersonalTrainingRepository personalTrainingRepository) {
+        this.personalTrainingRepository = personalTrainingRepository;
+    }
+
     @Transactional(readOnly = true)
     public List<ClientGymView> getMyGyms(Long userId) {
         return guestRepository.findByUserId(userId).stream()
@@ -334,5 +347,184 @@ public class ClientPortalService {
     private Guest getGuest(Long userId, Long gymId) {
         return guestRepository.findByUserIdAndGymId(userId, gymId)
                 .orElseThrow(() -> new IllegalArgumentException("Nie jesteś zapisany do tej siłowni"));
+    }
+
+    public java.util.Map<String, Integer> getGlobalStats(Long userId) {
+        List<Guest> guests = guestRepository.findByUserId(userId);
+        if (guests.isEmpty()) {
+            return java.util.Map.of("activePasses", 0, "workoutsThisMonth", 0);
+        }
+        
+        int activePassesCount = 0;
+        
+        for (Guest g : guests) {
+            long passes = gymPassRepository.findByGuestId(g.getId()).stream()
+                    .filter(p -> p.getStatus() == com.jagorczyk.gymManagement.domain.PassStatus.ACTIVE)
+                    .count();
+            activePassesCount += (int) passes;
+        }
+        
+        return java.util.Map.of("activePasses", activePassesCount, "workoutsThisMonth", 0);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TrainerProfileView> getTrainers(Long gymId) {
+        return personalTrainerProfileRepository.findByGymId(gymId).stream()
+                .map(p -> new TrainerProfileView(
+                        p.getId(),
+                        p.getEmployee().getId(),
+                        p.getEmployee().getUser().getFirstName(),
+                        p.getEmployee().getUser().getLastName(),
+                        p.getBio(),
+                        p.getSpecialization(),
+                        p.getHourlyRate()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public void bookPersonalTraining(Long userId, Long gymId, Long trainerId, BookTrainingRequest requestDto) {
+        Guest guest = getGuest(userId, gymId);
+
+        PersonalTrainerProfile profile = personalTrainerProfileRepository.findById(trainerId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Trener nie jest dostępny na tej siłowni"));
+
+        // Validate availability
+        java.time.LocalDate date = requestDto.scheduledAt().toLocalDate();
+        java.time.LocalTime time = requestDto.scheduledAt().toLocalTime();
+        
+        boolean isAvailable = getAvailableSlots(gymId, trainerId, date).stream()
+                .anyMatch(s -> s.time().equals(time));
+
+        if (!isAvailable) {
+            throw new IllegalArgumentException("Trener nie jest dostępny w wybranym terminie.");
+        }
+
+        PersonalTraining training = new PersonalTraining();
+        training.setGym(profile.getGym());
+        training.setClient(guest);
+        training.setTrainer(profile.getEmployee());
+        training.setScheduledAt(requestDto.scheduledAt());
+        training.setPrice(profile.getHourlyRate());
+        training.setPaid(true); // Wg założeń zadania
+        training.setStatus("SCHEDULED");
+
+        personalTrainingRepository.save(training);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AvailableSlotView> getAvailableSlots(Long gymId, Long trainerId, java.time.LocalDate date) {
+        PersonalTrainerProfile profile = personalTrainerProfileRepository.findById(trainerId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Trener nie jest dostępny na tej siłowni"));
+
+        List<TrainerAvailability> availabilities = profile.getAvailabilities().stream()
+                .filter(a -> a.getDate() != null && a.getDate().equals(date))
+                .toList();
+
+        if (availabilities.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<PersonalTraining> existingTrainings = personalTrainingRepository.findAll().stream()
+                .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
+                .filter(t -> t.getScheduledAt().toLocalDate().equals(date))
+                .toList();
+
+        List<AvailableSlotView> slots = new java.util.ArrayList<>();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        for (TrainerAvailability availability : availabilities) {
+            java.time.LocalTime currentSlot = availability.getStartTime();
+            java.time.LocalTime endTime = availability.getEndTime();
+            int durationMinutes = availability.getSlotDurationMinutes() != null ? availability.getSlotDurationMinutes() : 60;
+
+            while (currentSlot.plusMinutes(durationMinutes).isBefore(endTime) || currentSlot.plusMinutes(durationMinutes).equals(endTime)) {
+                java.time.LocalDateTime slotDateTime = java.time.LocalDateTime.of(date, currentSlot);
+
+                if (slotDateTime.isAfter(now)) {
+                    final java.time.LocalTime slotTime = currentSlot;
+                    boolean conflict = existingTrainings.stream().anyMatch(t -> {
+                        java.time.LocalTime tTime = t.getScheduledAt().toLocalTime();
+                        return tTime.equals(slotTime);
+                    });
+
+                    if (!conflict) {
+                        slots.add(new AvailableSlotView(currentSlot));
+                    }
+                }
+
+                currentSlot = currentSlot.plusMinutes(durationMinutes);
+            }
+        }
+
+        return slots;
+    }
+
+    @Transactional(readOnly = true)
+    public List<PersonalTrainingView> getTrainings(Long userId) {
+        // Fetch all guests for this user (across different gyms)
+        List<Guest> guests = guestRepository.findByUserId(userId);
+        
+        return guests.stream()
+                .flatMap(guest -> personalTrainingRepository.findByClientId(guest.getId()).stream())
+                .filter(t -> t.getScheduledAt().isAfter(java.time.LocalDateTime.now()))
+                .map(t -> new PersonalTrainingView(
+                        t.getId(),
+                        t.getTrainer().getId(),
+                        t.getTrainer().getUser().getFirstName(),
+                        t.getTrainer().getUser().getLastName(),
+                        t.getScheduledAt(),
+                        t.getPrice(),
+                        t.isPaid(),
+                        t.getStatus()
+                ))
+                .sorted(java.util.Comparator.comparing(PersonalTrainingView::scheduledAt))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView> getFullSchedule(Long gymId, Long trainerId) {
+        PersonalTrainerProfile profile = personalTrainerProfileRepository.findById(trainerId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Trener nie jest dostępny na tej siłowni"));
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+
+        List<PersonalTraining> allTrainings = personalTrainingRepository.findAll().stream()
+                .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
+                .toList();
+
+        List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView> result = new java.util.ArrayList<>();
+
+        for (TrainerAvailability avail : profile.getAvailabilities()) {
+            java.time.LocalDate date = avail.getDate();
+            if (date == null) continue;
+
+            java.util.Set<java.time.LocalTime> bookedTimes = allTrainings.stream()
+                    .filter(t -> t.getScheduledAt().toLocalDate().equals(date))
+                    .map(t -> t.getScheduledAt().toLocalTime())
+                    .collect(java.util.stream.Collectors.toSet());
+
+            List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView> slots = new java.util.ArrayList<>();
+            java.time.LocalTime current = avail.getStartTime();
+            java.time.LocalTime endTime = avail.getEndTime();
+
+            int durationMinutes = avail.getSlotDurationMinutes() != null ? avail.getSlotDurationMinutes() : 60;
+
+            while (current.plusMinutes(durationMinutes).isBefore(endTime) || current.plusMinutes(durationMinutes).equals(endTime)) {
+                java.time.LocalDateTime slotDateTime = java.time.LocalDateTime.of(date, current);
+                boolean inPast = !slotDateTime.isAfter(now);
+                boolean booked = bookedTimes.contains(current);
+                slots.add(new com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView(current, !inPast && !booked));
+                current = current.plusMinutes(durationMinutes);
+            }
+
+            result.add(new com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView(date, slots));
+        }
+
+        result.sort(java.util.Comparator.comparing(com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView::date));
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import { ClientGymPassesPage } from "../pages/ClientGymPassesPage";
 import { ClientBuyPassPage } from "../pages/ClientBuyPassPage";
 import { ClientClassesPage } from "../pages/ClientClassesPage";
 import { ClientCheckoutSimulation } from "../pages/ClientCheckoutSimulation";
+import { ClientTrainersPage } from "../pages/ClientTrainersPage";
 
 export const clientRouteObjects: RouteObject[] = [
   { path: "dashboard", Component: ClientDashboard },
@@ -13,4 +14,5 @@ export const clientRouteObjects: RouteObject[] = [
   { path: "gyms/:gymId/buy", Component: ClientBuyPassPage },
   { path: "gyms/:gymId/checkout-simulation", Component: ClientCheckoutSimulation },
   { path: "classes", Component: ClientClassesPage },
+  { path: "trainers", Component: ClientTrainersPage },
 ];

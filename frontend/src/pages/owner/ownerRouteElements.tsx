@@ -25,7 +25,8 @@ import { OwnerRankForm } from "./OwnerRankForm";
 import { OwnerProducts } from "./OwnerProducts";
 import { OwnerClassRatings } from "./OwnerClassRatings";
 import { OwnerCrm } from "./OwnerCrm";
-
+import { OwnerTrainersList } from "./OwnerTrainersList";
+import { OwnerTrainerForm } from "./OwnerTrainerForm";
 export function OwnerStatsPage() {
   return <OwnerStats ctx={useOwnerDashboardContext()} />;
 }
@@ -116,3 +117,13 @@ export function OwnerClassRatingsPage() {
   return <OwnerClassRatings ctx={useOwnerDashboardContext()} />;
 }
 export function OwnerCrmPage() { return <OwnerCrm ctx={useOwnerDashboardContext()} />; }
+
+export function OwnerTrainersListPage() {
+  return <OwnerTrainersList ctx={useOwnerDashboardContext()} />;
+}
+export function OwnerTrainerCreatePage() {
+  return <OwnerTrainerForm ctx={useOwnerDashboardContext()} />;
+}
+export function OwnerTrainerEditPage() {
+  return <OwnerTrainerForm ctx={useOwnerDashboardContext()} />;
+}

@@ -60,6 +60,7 @@ public class OwnerService {
     private final com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository;
     private final com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository;
     private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
+    private final com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository;
 
     public OwnerService(
             GymRepository gymRepository,
@@ -76,7 +77,8 @@ public class OwnerService {
             GuestPresenceService guestPresenceService,
             com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository,
             com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository,
-            com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository
+            com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository,
+            com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -93,6 +95,7 @@ public class OwnerService {
         this.rankRepository = rankRepository;
         this.guestCheckInRepository = guestCheckInRepository;
         this.passFreezeRepository = passFreezeRepository;
+        this.personalTrainerProfileRepository = personalTrainerProfileRepository;
     }
 
     public List<GymSummary> ownerGyms(Long ownerUserId) {
@@ -174,6 +177,12 @@ public class OwnerService {
         employeeUser.setEmail(request.email());
         employeeUser.setPasswordHash(passwordEncoder.encode(request.password()));
         employeeUser.setRole(Role.EMPLOYEE);
+        if (request.firstName() != null) {
+            employeeUser.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            employeeUser.setLastName(request.lastName());
+        }
         if (request.avatarUrl() != null) {
             employeeUser.setAvatarUrl(request.avatarUrl());
         }
@@ -192,8 +201,30 @@ public class OwnerService {
         }
         employee = employeeRepository.save(employee);
 
+        syncTrainerProfile(gym, employee);
+
         auditLogService.log(gym, gym.getOwnerUser(), "EMPLOYEE_CREATED", "employeeUserId=" + employeeUser.getId());
         return toEmployeeView(employee);
+    }
+
+    private void syncTrainerProfile(Gym gym, Employee employee) {
+        boolean isTrainer = false;
+        if (employee.getRank() != null) {
+            isTrainer = employee.getRank().getPermissions().contains(EmployeePermission.PERSONAL_TRAINER);
+        }
+        if (employee.getPermissions() != null && employee.getPermissions().contains(EmployeePermission.PERSONAL_TRAINER)) {
+            isTrainer = true;
+        }
+
+        if (isTrainer && personalTrainerProfileRepository.findByEmployeeId(employee.getId()).isEmpty()) {
+            com.jagorczyk.gymManagement.domain.PersonalTrainerProfile profile = new com.jagorczyk.gymManagement.domain.PersonalTrainerProfile();
+            profile.setGym(gym);
+            profile.setEmployee(employee);
+            profile.setBio("");
+            profile.setSpecialization("");
+            profile.setHourlyRate(java.math.BigDecimal.ZERO);
+            personalTrainerProfileRepository.save(profile);
+        }
     }
 
     @Transactional
@@ -238,6 +269,12 @@ public class OwnerService {
             }
         });
         user.setEmail(request.email());
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
         if (request.password() != null && !request.password().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.password()));
         }
@@ -259,6 +296,7 @@ public class OwnerService {
         }
         if (changedPermissions) {
             employeeRepository.save(employee);
+            syncTrainerProfile(gym, employee);
             auditLogService.log(gym, gym.getOwnerUser(), "EMPLOYEE_PERMISSIONS_UPDATED", "employeeId=" + employeeId);
         }
         auditLogService.log(gym, gym.getOwnerUser(), "EMPLOYEE_UPDATED", "employeeId=" + employeeId);
@@ -459,6 +497,11 @@ public class OwnerService {
         rank.setName(request.name());
         rank.setPermissions(EmployeePermission.resolve(request.permissions()));
         rank = rankRepository.save(rank);
+        if (rank.getPermissions().contains(EmployeePermission.PERSONAL_TRAINER)) {
+            employeeRepository.findByGymId(gymId).stream()
+                .filter(e -> e.getRank() != null && e.getRank().getId().equals(rankId))
+                .forEach(e -> syncTrainerProfile(gym, e));
+        }
         auditLogService.log(gym, gym.getOwnerUser(), "RANK_UPDATED", "rankId=" + rankId);
         return toRankView(rank);
     }
@@ -500,10 +543,95 @@ public class OwnerService {
                 employee.getId(),
                 employee.getUser().getId(),
                 employee.getUser().getEmail(),
+                employee.getUser().getFirstName(),
+                employee.getUser().getLastName(),
                 permissions,
                 employee.getRank() != null ? employee.getRank().getId() : null,
                 employee.getRank() != null ? employee.getRank().getName() : null,
                 employee.getUser().getAvatarUrl()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView> getTrainers(Long ownerUserId, Long gymId) {
+        requireOwnerGym(ownerUserId, gymId);
+        return personalTrainerProfileRepository.findByGymId(gymId).stream()
+                .map(p -> new com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView(
+                        p.getId(),
+                        p.getEmployee().getId(),
+                        p.getEmployee().getUser().getFirstName(),
+                        p.getEmployee().getUser().getLastName(),
+                        p.getBio(),
+                        p.getSpecialization(),
+                        p.getHourlyRate()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView createTrainer(Long ownerUserId, Long gymId, com.jagorczyk.gymManagement.api.dto.GymDtos.CreateTrainerProfileRequest request) {
+        Gym gym = requireOwnerGym(ownerUserId, gymId);
+        Employee employee = employeeRepository.findByIdAndGymId(request.employeeId(), gymId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono pracownika w tej siłowni."));
+
+        if (!personalTrainerProfileRepository.findByEmployeeId(request.employeeId()).isEmpty()) {
+            throw new IllegalArgumentException("Ten pracownik jest już trenerem.");
+        }
+
+        com.jagorczyk.gymManagement.domain.PersonalTrainerProfile profile = new com.jagorczyk.gymManagement.domain.PersonalTrainerProfile();
+        profile.setGym(gym);
+        profile.setEmployee(employee);
+        profile.setBio(request.bio());
+        profile.setSpecialization(request.specialization());
+        profile.setHourlyRate(request.hourlyRate());
+        
+        profile = personalTrainerProfileRepository.save(profile);
+        auditLogService.log(gym, gym.getOwnerUser(), "TRAINER_CREATED", "trainerId=" + profile.getId());
+
+        return new com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView(
+                profile.getId(),
+                profile.getEmployee().getId(),
+                profile.getEmployee().getUser().getFirstName(),
+                profile.getEmployee().getUser().getLastName(),
+                profile.getBio(),
+                profile.getSpecialization(),
+                profile.getHourlyRate()
+        );
+    }
+
+    @Transactional
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView updateTrainer(Long ownerUserId, Long gymId, Long trainerId, com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateTrainerProfileRequest request) {
+        Gym gym = requireOwnerGym(ownerUserId, gymId);
+        com.jagorczyk.gymManagement.domain.PersonalTrainerProfile profile = personalTrainerProfileRepository.findById(trainerId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono profilu trenera w tej siłowni."));
+
+        profile.setBio(request.bio());
+        profile.setSpecialization(request.specialization());
+        profile.setHourlyRate(request.hourlyRate());
+        
+        profile = personalTrainerProfileRepository.save(profile);
+        auditLogService.log(gym, gym.getOwnerUser(), "TRAINER_UPDATED", "trainerId=" + profile.getId());
+
+        return new com.jagorczyk.gymManagement.api.dto.GymDtos.TrainerProfileView(
+                profile.getId(),
+                profile.getEmployee().getId(),
+                profile.getEmployee().getUser().getFirstName(),
+                profile.getEmployee().getUser().getLastName(),
+                profile.getBio(),
+                profile.getSpecialization(),
+                profile.getHourlyRate()
+        );
+    }
+
+    @Transactional
+    public void deleteTrainer(Long ownerUserId, Long gymId, Long trainerId) {
+        Gym gym = requireOwnerGym(ownerUserId, gymId);
+        com.jagorczyk.gymManagement.domain.PersonalTrainerProfile profile = personalTrainerProfileRepository.findById(trainerId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono profilu trenera w tej siłowni."));
+
+        personalTrainerProfileRepository.delete(profile);
+        auditLogService.log(gym, gym.getOwnerUser(), "TRAINER_DELETED", "trainerId=" + trainerId);
     }
 }

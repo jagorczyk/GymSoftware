@@ -50,7 +50,7 @@ class EmployeePermissionIntegrationTest {
         var created = ownerService.createEmployee(
                 owner.getId(),
                 gymId,
-                new CreateEmployeeRequest("employee-perm@test.com", "secret123", EnumSet.of(EmployeePermission.MANAGE_SCHEDULE), null, null)
+                new CreateEmployeeRequest("employee-perm@test.com", "secret123", null, null, EnumSet.of(EmployeePermission.MANAGE_SCHEDULE), null, null)
         );
         assertThat(created.permissions()).contains(
                 "VIEW_DASHBOARD",
@@ -98,6 +98,8 @@ class EmployeePermissionIntegrationTest {
                 new CreateEmployeeRequest(
                         "employee-extra@test.com",
                         "secret123",
+                        null,
+                        null,
                         EnumSet.of(EmployeePermission.CREATE_LOCKERS, EmployeePermission.MANAGE_PASS_TYPES),
                         null,
                         null
@@ -134,3 +136,4 @@ class EmployeePermissionIntegrationTest {
         return userRepository.save(user);
     }
 }
+

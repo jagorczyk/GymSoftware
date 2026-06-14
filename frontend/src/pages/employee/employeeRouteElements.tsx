@@ -188,3 +188,13 @@ export function EmployeePOSPage() {
     </Guarded>
   );
 }
+import { EmployeeTrainerProfile } from "./EmployeeTrainerProfile";
+
+export function EmployeeTrainerProfilePage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeTrainerProfile ctx={ctx} />
+    </Guarded>
+  );
+}

@@ -50,7 +50,7 @@ class AssignLockerIntegrationTest {
         ownerService.createEmployee(
                 owner.getId(),
                 gym.getId(),
-                new CreateEmployeeRequest("employee-assign@test.com", "secret123", EnumSet.noneOf(EmployeePermission.class), null, null)
+                new CreateEmployeeRequest("employee-assign@test.com", "secret123", null, null, EnumSet.noneOf(EmployeePermission.class), null, null)
         );
         User employeeUser = userRepository.findByEmail("employee-assign@test.com").orElseThrow();
 
@@ -99,7 +99,7 @@ class AssignLockerIntegrationTest {
         ownerService.createEmployee(
                 owner.getId(),
                 gym.getId(),
-                new CreateEmployeeRequest("employee-assign2@test.com", "secret123", EnumSet.noneOf(EmployeePermission.class), null, null)
+                new CreateEmployeeRequest("employee-assign2@test.com", "secret123", null, null, EnumSet.noneOf(EmployeePermission.class), null, null)
         );
         User employeeUser = userRepository.findByEmail("employee-assign2@test.com").orElseThrow();
 
@@ -158,3 +158,4 @@ class AssignLockerIntegrationTest {
         return locker;
     }
 }
+

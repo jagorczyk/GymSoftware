@@ -1,11 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
-import { OwnerDashboardContextType } from "../../ownerDashboardContext";
+import { OwnerContext } from "./types";
 import { createEmailCampaign, EmailCampaignView, getEmailCampaigns } from "../../api";
 import { Megaphone, Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
 
-export function OwnerCrm({ ctx }: { ctx: OwnerDashboardContextType }) {
+export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
   const { selectedGymId } = ctx;
   const { auth } = useAuth();
   const { showError, showSuccess } = useToast();

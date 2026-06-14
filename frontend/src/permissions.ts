@@ -9,7 +9,8 @@ export type EmployeePermission =
   | "MANAGE_WORK_SCHEDULE"
   | "MANAGE_CLASSES"
   | "MANAGE_PRODUCTS"
-  | "SELL_PRODUCTS";
+  | "SELL_PRODUCTS"
+  | "PERSONAL_TRAINER";
 
 export const DEFAULT_EMPLOYEE_PERMISSIONS: EmployeePermission[] = [
   "VIEW_DASHBOARD",
@@ -26,6 +27,7 @@ export const OPTIONAL_EMPLOYEE_PERMISSIONS: EmployeePermission[] = [
   "MANAGE_PASS_TYPES",
   "MANAGE_CLASSES",
   "MANAGE_PRODUCTS",
+  "PERSONAL_TRAINER",
 ];
 
 export const PERMISSION_LABELS: Record<EmployeePermission, string> = {
@@ -40,6 +42,7 @@ export const PERMISSION_LABELS: Record<EmployeePermission, string> = {
   MANAGE_CLASSES: "Zarządzanie zajęciami grupowymi",
   MANAGE_PRODUCTS: "Zarządzanie bazą produktów i magazynem",
   SELL_PRODUCTS: "Sprzedaż produktów (POS)",
+  PERSONAL_TRAINER: "Profil trenera personalnego",
 };
 
 export const EMPLOYEE_ROUTE_PERMISSIONS: Record<string, EmployeePermission> = {
@@ -54,6 +57,7 @@ export const EMPLOYEE_ROUTE_PERMISSIONS: Record<string, EmployeePermission> = {
   "/employee/work-schedule": "MANAGE_WORK_SCHEDULE",
   "/employee/classes": "MANAGE_CLASSES",
   "/employee/pos": "SELL_PRODUCTS",
+  "/employee/trainer-profile": "PERSONAL_TRAINER",
 };
 
 export function hasEmployeePermission(

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { getAllGymsForClient, joinGym, ClientGymView } from "../clientApi";
-import { ArrowLeft, MapPin, Sparkles, User, Phone, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, User, Phone, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function ClientGymJoinPage() {
@@ -47,139 +47,125 @@ export function ClientGymJoinPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Ładowanie formularza...</div>;
+  if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Ładowanie dostępnych klubów...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto animate-in fade-in zoom-in-95 duration-500">
+    <div className="max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-12">
       <div className="flex items-center gap-4 mb-8">
         <Link to="/client/dashboard" className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Dołącz do Klubu</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">Rozpocznij swoją treningową przygodę już dziś.</p>
+          <h1 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white tracking-tight">Dołącz do Klubu</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Wybierz lokalizację i uzupełnij dane, aby kontynuować.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 dark:border-slate-800">
-        
-        {/* Lewa strona - Informacyjna / Graficzna */}
-        <div className="lg:col-span-2 relative bg-slate-900 p-10 text-white overflow-hidden flex flex-col justify-between">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-600/50 to-primary-800/80 mix-blend-overlay"></div>
-          <div className="absolute -top-32 -left-32 w-80 h-80 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-          
-          <div className="relative z-10 mb-12">
-            <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/20">
-              <Sparkles className="w-7 h-7 text-yellow-300" />
+      <div className="space-y-10">
+        {/* Krok 1: Wybór Siłowni */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">1</div>
+            Wybierz lokalizację
+          </h2>
+          {gyms.length === 0 ? (
+            <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-center text-slate-500">
+              Brak dostępnych klubów.
             </div>
-            <h2 className="text-3xl font-bold mb-4">Twój Krok do Formy</h2>
-            <p className="text-slate-300 text-lg">
-              Połącz swoje konto z wybranym klubem fitness, aby kupować karnety, rezerwować wejścia i śledzić postępy.
-            </p>
-          </div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="font-medium text-slate-200">Szybki i bezproblemowy zapis online</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {gyms.map((g) => (
+                <div
+                  key={g.id}
+                  onClick={() => setSelectedGymId(g.id)}
+                  className={`relative p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col gap-2 ${
+                    selectedGymId === g.id
+                      ? "border-primary-500 bg-primary-50 dark:bg-primary-900/10 shadow-md"
+                      : "border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-xl ${selectedGymId === g.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{g.name}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{g.address}</p>
+                      </div>
+                    </div>
+                    {selectedGymId === g.id && (
+                      <CheckCircle2 className="w-6 h-6 text-primary-500 animate-in zoom-in" />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="font-medium text-slate-200">Pełen dostęp do wirtualnego portfela karnetów</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="font-medium text-slate-200">Szybkie płatności za usługi</p>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Prawa strona - Formularz */}
-        <div className="lg:col-span-3 p-8 md:p-12">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Wybierz siłownię</label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                <select
-                  value={selectedGymId}
-                  onChange={(e) => setSelectedGymId(e.target.value === "" ? "" : Number(e.target.value))}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-700 dark:text-slate-300 appearance-none"
-                  required
-                >
-                  <option value="" disabled>-- Wybierz z listy --</option>
-                  {gyms.map((g) => (
-                    <option key={g.id} value={g.id}>{g.name} ({g.address})</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
-                  ▼
-                </div>
-              </div>
-            </div>
-
+        {/* Krok 2: Formularz Danych */}
+        <div className={`transition-all duration-500 ${selectedGymId ? 'opacity-100 translate-y-0' : 'opacity-30 pointer-events-none translate-y-4'}`}>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
+            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">2</div>
+            Twoje dane
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Imię</label>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Imię</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="np. Jan"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
+                    placeholder="Wpisz imię"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
                     required
                   />
                 </div>
               </div>
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Nazwisko</label>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Nazwisko</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="np. Kowalski"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
+                    placeholder="Wpisz nazwisko"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
                     required
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Numer telefonu <span className="text-slate-400 dark:text-slate-500 font-normal lowercase">(opcjonalnie)</span></label>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                Numer telefonu <span className="text-slate-400 font-normal">(opcjonalnie)</span>
+              </label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+48 000 000 000"
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
                 />
               </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full relative group overflow-hidden bg-slate-900 text-white font-bold text-lg py-4 px-6 rounded-2xl transition-all shadow-xl shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-1 outline-none disabled:opacity-70 disabled:hover:translate-y-0"
+                disabled={isSubmitting || selectedGymId === ""}
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isSubmitting ? "Przetwarzanie..." : "Zapisz mnie do Klubu"}
-                  {!isSubmitting && <ArrowLeft className="w-5 h-5 rotate-180" />}
-                </span>
+                {isSubmitting ? "Przetwarzanie..." : "Dołącz do Klubu"}
               </button>
             </div>
           </form>

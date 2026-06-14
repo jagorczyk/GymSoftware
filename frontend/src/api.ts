@@ -129,8 +129,8 @@ export async function getOwnerGymDetails(auth: AuthState, gymId: number): Promis
 export async function createOwnerEmployee(
   auth: AuthState,
   gymId: number,
-  payload: { email: string; password: string; permissions?: EmployeePermission[]; rankId?: number; avatarUrl?: string | null }
-): Promise<{ id: number; userId: number; email: string; permissions: string[]; rankId?: number; rankName?: string; avatarUrl?: string }> {
+  payload: { email: string; password: string; firstName?: string; lastName?: string; permissions?: EmployeePermission[]; rankId?: number; avatarUrl?: string | null }
+): Promise<{ id: number; userId: number; email: string; firstName?: string; lastName?: string; permissions: string[]; rankId?: number; rankName?: string; avatarUrl?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/employees`, {
     method: "POST",
     headers: {
@@ -147,8 +147,8 @@ export async function updateOwnerEmployee(
   auth: AuthState,
   gymId: number,
   employeeId: number,
-  payload: { email: string; password?: string; permissions?: EmployeePermission[]; rankId?: number; avatarUrl?: string | null }
-): Promise<{ id: number; userId: number; email: string; permissions: string[]; rankId?: number; rankName?: string; avatarUrl?: string }> {
+  payload: { email: string; password?: string; firstName?: string; lastName?: string; permissions?: EmployeePermission[]; rankId?: number; avatarUrl?: string | null }
+): Promise<{ id: number; userId: number; email: string; firstName?: string; lastName?: string; permissions: string[]; rankId?: number; rankName?: string; avatarUrl?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/employees/${employeeId}`, {
     method: "PUT",
     headers: {
@@ -799,8 +799,42 @@ export async function createWorkScheduleEntry(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udało się dodać wpisu do grafiku pracy");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać wpisu");
   return response.json();
+}
+
+export async function getTrainerProfile(auth: AuthState, gymId: number): Promise<any> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać profilu trenera");
+  return response.json();
+}
+
+export async function updateTrainerProfile(auth: AuthState, gymId: number, payload: any): Promise<any> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać profilu trenera");
+  return response.json();
+}
+
+export async function getTrainerTrainings(auth: AuthState, gymId: number): Promise<any[]> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile/trainings`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać treningów");
+  return response.json();
+}
+
+export async function cancelTrainerTraining(auth: AuthState, gymId: number, trainingId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile/trainings/${trainingId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się odwołać treningu");
 }
 
 export async function updateWorkScheduleEntry(
@@ -1271,4 +1305,65 @@ export async function createEmailCampaign(auth: AuthState, gymId: number, payloa
   });
   if (!response.ok) await parseApiError(response, "Nie udało się utworzyć kampanii");
   return response.json();
+}
+
+export type TrainerProfileView = {
+  id: number;
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  bio: string | null;
+  specialization: string | null;
+  hourlyRate: number;
+};
+
+export async function getOwnerTrainers(auth: AuthState, gymId: number): Promise<TrainerProfileView[]> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/trainers`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać trenerów");
+  return response.json();
+}
+
+export async function createOwnerTrainer(
+  auth: AuthState,
+  gymId: number,
+  payload: { employeeId: number; bio?: string; specialization?: string; hourlyRate: number }
+): Promise<TrainerProfileView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/trainers`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać trenera");
+  return response.json();
+}
+
+export async function updateOwnerTrainer(
+  auth: AuthState,
+  gymId: number,
+  trainerId: number,
+  payload: { bio?: string; specialization?: string; hourlyRate: number }
+): Promise<TrainerProfileView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/trainers/${trainerId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować profilu trenera");
+  return response.json();
+}
+
+export async function deleteOwnerTrainer(auth: AuthState, gymId: number, trainerId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/trainers/${trainerId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć trenera");
 }

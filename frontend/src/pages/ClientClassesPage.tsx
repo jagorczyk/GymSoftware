@@ -116,107 +116,111 @@ export function ClientClassesPage() {
           description="Na ten moment nie zaplanowano żadnych nowych zajęć."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classes.map((c) => {
-            const isFull = c.activeReservations >= c.capacity;
-            const startDate = new Date(c.startTime);
-            const endDate = new Date(c.endTime);
+        <div className="space-y-10">
+          {Object.entries(
+            classes.reduce((acc, c) => {
+              const d = new Date(c.startTime);
+              // Tworzy klucz w formacie YYYY-MM-DD
+              const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              if (!acc[dateKey]) acc[dateKey] = [];
+              acc[dateKey].push(c);
+              return acc;
+            }, {} as Record<string, typeof classes>)
+          ).sort(([a], [b]) => a.localeCompare(b)).map(([dateStr, dayClasses]) => {
+            const dateObj = new Date(dateStr);
+            const isToday = dateObj.toDateString() === new Date().toDateString();
+            
             return (
-              <div key={c.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex flex-col hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg transition-all duration-300 relative overflow-hidden">
-                {c.userReservationStatus && (
-                  <div className={`absolute top-0 right-0 left-0 h-1 bg-gradient-to-r ${
-                    c.userReservationStatus === "RESERVED"
-                      ? "from-emerald-400 to-teal-500"
-                      : c.userReservationStatus === "WAITLISTED"
-                      ? "from-blue-400 to-indigo-500"
-                      : "from-slate-300 to-slate-400"
-                  }`}></div>
-                )}
-                
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">{c.name}</h3>
-                  <div className={`text-xs font-bold px-2.5 py-1 rounded-lg border ${
-                    isFull 
-                      ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/40" 
-                      : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
-                  }`}>
-                    {c.activeReservations} / {c.capacity} miejsc
+              <div key={dateStr} className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className={`p-2 rounded-lg ${isToday ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                    <CalendarDays className="w-5 h-5" />
                   </div>
-                </div>
+                  {isToday ? "Dzisiaj" : dateObj.toLocaleDateString("pl-PL", { weekday: "long", day: "numeric", month: "long" })}
+                </h3>
                 
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 min-h-[40px] leading-relaxed">{c.description || "Brak opisu zajęć"}</p>
-                
-                <div className="mt-auto space-y-3 bg-slate-50 dark:bg-slate-950/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    <span>
-                      {startDate.toLocaleString("pl-PL", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })}
-                      {" - "}
-                      {endDate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-sm font-medium text-slate-600 dark:text-slate-400">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span>Prowadzi: <span className="font-semibold text-slate-700 dark:text-slate-300">{c.instructorName}</span></span>
-                  </div>
-                </div>
+                <div className="flex flex-col gap-3">
+                  {dayClasses.map((c) => {
+                    const isFull = c.activeReservations >= c.capacity;
+                    const startDate = new Date(c.startTime);
+                    const endDate = new Date(c.endTime);
 
-                <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
-                  {c.userReservationStatus === "RESERVED" ? (
-                    <div className="flex flex-col gap-2 w-full">
-                      <div className="text-center bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 py-2.5 rounded-xl text-sm font-bold">
-                        Zarezerwowano miejsce
+                    return (
+                      <div key={c.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 hover:shadow-md transition-shadow">
+                        
+                        {/* Godzina */}
+                        <div className="flex flex-col items-start sm:items-end min-w-[80px]">
+                          <span className="font-display font-black text-xl text-slate-900 dark:text-white">
+                            {startDate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-400">
+                            {endDate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="hidden sm:block w-px h-12 bg-slate-100 dark:bg-slate-800"></div>
+
+                        {/* Info o zajęciach */}
+                        <div className="flex-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-900 dark:text-white text-lg">{c.name}</h4>
+                            {c.userReservationStatus && (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                c.userReservationStatus === "RESERVED" ? "bg-emerald-100 text-emerald-700" :
+                                c.userReservationStatus === "WAITLISTED" ? "bg-blue-100 text-blue-700" :
+                                "bg-slate-100 text-slate-700"
+                              }`}>
+                                {c.userReservationStatus === "RESERVED" ? "Zapisano" : c.userReservationStatus === "WAITLISTED" ? "Rezerwa" : "Odbyte"}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Prowadzi: <span className="font-semibold text-slate-700 dark:text-slate-300">{c.instructorName}</span></p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-500">{c.activeReservations}/{c.capacity} zajętych miejsc</span>
+                          </div>
+                        </div>
+
+                        {/* Akcje */}
+                        <div className="w-full sm:w-auto flex-shrink-0">
+                          {c.userReservationStatus === "RESERVED" || c.userReservationStatus === "WAITLISTED" ? (
+                            <button
+                              onClick={() => handleCancel(c.id)}
+                              className="w-full sm:w-auto px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/30 dark:hover:bg-rose-900/50 dark:text-rose-400 font-bold text-sm rounded-xl transition-colors"
+                            >
+                              Anuluj
+                            </button>
+                          ) : c.userReservationStatus === "ATTENDED" ? (
+                            <button
+                              onClick={() => openRatingModal(c.id, c.name)}
+                              className="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                            >
+                              <Star className="w-4 h-4" /> Oceń
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleBook(c.id)}
+                              className={`w-full sm:w-auto px-6 py-2.5 font-bold text-sm rounded-xl transition-colors text-white ${
+                                isFull 
+                                  ? "bg-slate-800 hover:bg-slate-900 shadow-sm" 
+                                  : "bg-slate-900 hover:bg-slate-800 shadow-md"
+                              }`}
+                            >
+                              {isFull ? "Lista Rezerwowa" : "Zapisz się"}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleCancel(c.id)}
-                        className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors"
-                      >
-                        Zrezygnuj z zajęć
-                      </button>
-                    </div>
-                  ) : c.userReservationStatus === "WAITLISTED" ? (
-                    <div className="flex flex-col gap-2 w-full">
-                      <div className="text-center bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-blue-700 dark:text-blue-400 py-2.5 rounded-xl text-sm font-bold">
-                        Na liście rezerwowej
-                      </div>
-                      <button
-                        onClick={() => handleCancel(c.id)}
-                        className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors"
-                      >
-                        Zrezygnuj z listy
-                      </button>
-                    </div>
-                  ) : c.userReservationStatus === "ATTENDED" ? (
-                    <div className="flex flex-col gap-2 w-full">
-                      <div className="text-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-2 rounded-xl text-xs font-bold">
-                        Obecność potwierdzona
-                      </div>
-                      <button
-                        onClick={() => openRatingModal(c.id, c.name)}
-                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1"
-                      >
-                        <Star className="w-3.5 h-3.5 fill-white" />
-                        Oceń te zajęcia
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleBook(c.id)}
-                      className={`w-full py-3 rounded-xl text-sm font-bold transition-all text-white shadow-sm ${
-                        isFull 
-                          ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/10" 
-                          : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10"
-                      }`}
-                    >
-                      {isFull ? "Zapisz się na listę rezerwową" : "Zarezerwuj miejsce"}
-                    </button>
-                  )}
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
 
       {/* RATING MODAL */}
       {ratingModalOpen && (
