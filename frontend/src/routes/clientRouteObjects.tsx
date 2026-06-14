@@ -1,4 +1,4 @@
-import { RouteObject } from "react-router-dom";
+import { RouteObject, Navigate } from "react-router-dom";
 import { ClientDashboard } from "../pages/ClientDashboard";
 import { ClientGymJoinPage } from "../pages/ClientGymJoinPage";
 import { ClientGymPassesPage } from "../pages/ClientGymPassesPage";
@@ -8,6 +8,7 @@ import { ClientCheckoutSimulation } from "../pages/ClientCheckoutSimulation";
 import { ClientTrainersPage } from "../pages/ClientTrainersPage";
 
 export const clientRouteObjects: RouteObject[] = [
+  { index: true, element: <Navigate to="dashboard" replace /> },
   { path: "dashboard", Component: ClientDashboard },
   { path: "gyms/join", Component: ClientGymJoinPage },
   { path: "gyms/:gymId/passes", Component: ClientGymPassesPage },
