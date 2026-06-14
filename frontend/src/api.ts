@@ -33,13 +33,22 @@ export async function login(email: string, password: string): Promise<{ token: s
   return response.json();
 }
 
-export async function register(email: string, password: string, role: string): Promise<{ token: string }> {
+export async function register(email: string, password: string, role: string): Promise<void> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, role }),
   });
   if (!response.ok) await parseApiError(response, "Rejestracja nie powiodła się");
+}
+
+export async function verifyEmail(email: string, code: string): Promise<{ token: string }> {
+  const response = await fetch(`${API_URL}/auth/verify-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code }),
+  });
+  if (!response.ok) await parseApiError(response, "Weryfikacja nie powiodła się");
   return response.json();
 }
 
@@ -1234,4 +1243,32 @@ export function buildSalesReportCsvUrl(gymId: number, from?: string, to?: string
   if (from) params += `?from=${from}`;
   if (to) params += (params ? `&to=${to}` : `?to=${to}`);
   return `${API_URL}/owner/gyms/${gymId}/sales-report/export.csv${params}`;
+}
+
+export interface EmailCampaignView {
+  id: number;
+  subject: string;
+  body: string;
+  targetSegment: string;
+  status: string;
+  createdAt: string;
+  sentAt: string | null;
+}
+
+export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise<EmailCampaignView[]> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/crm/campaigns`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać kampanii");
+  return response.json();
+}
+
+export async function createEmailCampaign(auth: AuthState, gymId: number, payload: { subject: string; body: string; targetSegment: string }): Promise<EmailCampaignView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/crm/campaigns`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się utworzyć kampanii");
+  return response.json();
 }

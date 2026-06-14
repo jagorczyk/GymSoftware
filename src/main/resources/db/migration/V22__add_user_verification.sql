@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN verification_code VARCHAR(6);

@@ -22,6 +22,12 @@ public final class AuthDtos {
     ) {
     }
 
+    public record VerifyEmailRequest(
+            @Email @NotBlank String email,
+            @NotBlank String code
+    ) {
+    }
+
     public record AuthResponse(
             String token
     ) {

@@ -3,6 +3,7 @@ package com.jagorczyk.gymManagement.api;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.AuthResponse;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.LoginRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.RegisterRequest;
+import com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest;
 import com.jagorczyk.gymManagement.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/verify-email")
+    public AuthResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return authService.verifyEmail(request);
     }
 
     @PostMapping("/login")

@@ -341,4 +341,20 @@ public final class GymDtos {
     public record ClassRatingView(Long id, Long classId, Long guestId, String guestName, Integer rating, String comment, LocalDateTime createdAt) {}
     public record ClassRatingSummary(Long classId, String className, String instructorName, Double avgRating, Long ratingCount) {}
     public record FreezePassRequest(@NotNull LocalDate startDate, @NotNull LocalDate endDate) {}
+
+    public record CreateEmailCampaignRequest(
+            @NotBlank String subject,
+            @NotBlank String body,
+            @NotBlank String targetSegment
+    ) {}
+
+    public record EmailCampaignView(
+            Long id,
+            String subject,
+            String body,
+            String targetSegment,
+            String status,
+            LocalDateTime createdAt,
+            LocalDateTime sentAt
+    ) {}
 }

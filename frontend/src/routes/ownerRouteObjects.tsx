@@ -29,6 +29,7 @@ import {
   OwnerRankEditPage,
   OwnerProductsPage,
   OwnerClassRatingsPage,
+  OwnerCrmPage,
 } from "../pages/owner/ownerRouteElements";
 
 export const ownerRouteObjects: RouteObject[] = [
@@ -61,5 +62,6 @@ export const ownerRouteObjects: RouteObject[] = [
   { path: "sales-report", Component: OwnerSalesReportPage },
   { path: "analytics", Component: OwnerAnalyticsPage },
   { path: "class-ratings", Component: OwnerClassRatingsPage },
+  { path: "crm", Component: OwnerCrmPage },
   { path: "notifications", Component: OwnerNotificationsPage },
 ];

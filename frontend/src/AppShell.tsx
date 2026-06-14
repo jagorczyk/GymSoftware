@@ -27,6 +27,7 @@ import {
   ShoppingCart,
   Package,
   Star,
+  Megaphone,
 } from "lucide-react";
 import { useAuth } from "./authContext";
 import { useEmployeePermissions } from "./employeePermissionsContext";
@@ -96,6 +97,7 @@ export function AppShell() {
           { label: "Grafik", to: "/owner/work-schedule", icon: <CalendarClock className="w-5 h-5" /> },
           { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" /> },
           { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" /> },
+          { label: "Marketing i CRM", to: "/owner/crm", icon: <Megaphone className="w-5 h-5" /> },
           { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" /> },
           { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" /> },
           { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" /> },

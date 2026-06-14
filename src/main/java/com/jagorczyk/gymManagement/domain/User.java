@@ -36,4 +36,10 @@ public class User {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "verification_code", length = 6)
+    private String verificationCode;
 }
