@@ -496,7 +496,7 @@ public class ClientPortalService {
                 .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
                 .toList();
 
-        List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView> result = new java.util.ArrayList<>();
+        java.util.Map<java.time.LocalDate, List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView>> dayMap = new java.util.HashMap<>();
 
         for (TrainerAvailability avail : profile.getAvailabilities()) {
             java.time.LocalDate date = avail.getDate();
@@ -507,7 +507,7 @@ public class ClientPortalService {
                     .map(t -> t.getScheduledAt().toLocalTime())
                     .collect(java.util.stream.Collectors.toSet());
 
-            List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView> slots = new java.util.ArrayList<>();
+            List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView> slots = dayMap.computeIfAbsent(date, k -> new java.util.ArrayList<>());
             java.time.LocalTime current = avail.getStartTime();
             java.time.LocalTime endTime = avail.getEndTime();
 
@@ -520,11 +520,17 @@ public class ClientPortalService {
                 slots.add(new com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView(current, !inPast && !booked));
                 current = current.plusMinutes(durationMinutes);
             }
-
-            result.add(new com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView(date, slots));
         }
 
-        result.sort(java.util.Comparator.comparing(com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView::date));
+        List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView> result = dayMap.entrySet().stream()
+                .map(e -> {
+                    List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView> sortedSlots = new java.util.ArrayList<>(e.getValue());
+                    sortedSlots.sort(java.util.Comparator.comparing(com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView::time));
+                    return new com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView(e.getKey(), sortedSlots);
+                })
+                .sorted(java.util.Comparator.comparing(com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.TrainerScheduleDayView::date))
+                .toList();
+
         return result;
     }
 }
