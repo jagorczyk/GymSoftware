@@ -7,7 +7,7 @@ export function LoginRoute() {
   if (auth) {
     return (
       <Navigate
-        to={auth.role === "OWNER" ? "/owner/dashboard" : "/employee/dashboard"}
+        to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
         replace
       />
     );
@@ -27,7 +27,7 @@ export function RequireRole(props: { role: Role }) {
   if (auth.role !== props.role) {
     return (
       <Navigate
-        to={auth.role === "OWNER" ? "/owner/dashboard" : "/employee/dashboard"}
+        to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
         replace
       />
     );
@@ -40,7 +40,7 @@ export function RootRedirect() {
   if (!auth) return <Navigate to="/login" replace />;
   return (
     <Navigate
-      to={auth.role === "OWNER" ? "/owner/dashboard" : "/employee/dashboard"}
+      to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
       replace
     />
   );

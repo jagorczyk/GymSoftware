@@ -17,7 +17,8 @@ export function LoginPage() {
     try {
       const result = await login(email, password);
       const next = saveLogin(result.token);
-      navigate(next.role === "OWNER" ? "/owner/dashboard" : "/employee/dashboard", {
+      const dest = next.role === "OWNER" ? "/owner/dashboard" : next.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard";
+      navigate(dest, {
         replace: true,
       });
     } catch (err) {

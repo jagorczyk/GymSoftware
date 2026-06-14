@@ -15,7 +15,7 @@ export function OwnerDashboardWrapper() {
 
   if (!auth) return <Navigate to="/login" replace />;
   if (auth.role !== "OWNER") {
-    return <Navigate to="/employee/dashboard" replace />;
+    return <Navigate to={auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"} replace />;
   }
   if (location.pathname === "/owner" || location.pathname === "/owner/") {
     return <Navigate to="/owner/dashboard" replace />;
@@ -34,7 +34,7 @@ export function EmployeeDashboardWrapper() {
 
   if (!auth) return <Navigate to="/login" replace />;
   if (auth.role !== "EMPLOYEE") {
-    return <Navigate to="/owner/dashboard" replace />;
+    return <Navigate to={auth.role === "OWNER" ? "/owner/dashboard" : "/client/dashboard"} replace />;
   }
   if (location.pathname === "/employee" || location.pathname === "/employee/") {
     return <Navigate to="/employee/dashboard" replace />;
