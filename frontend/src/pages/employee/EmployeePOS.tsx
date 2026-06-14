@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Plus, Minus, Trash2, Search, User, CreditCard, Coins, ShoppingCart, RefreshCcw } from "lucide-react";
-import { getProducts, getEmployeeGuests, checkoutProducts, getEmployeeGuestDetail, type ProductView } from "../../api";
+import { getProducts, getEmployeeGuests, checkoutProducts, getEmployeeGuestDetail, getMyProductSalesHistory, getProductByBarcode, type ProductView, type ProductSaleView } from "../../api";
 import { secondaryButtonClassName, inputClassName, labelClassName } from "../../components/formStyles";
 import { SelectGymDashboardPrompt } from "./EmployeeHome";
 import type { EmployeeContext } from "./types";
@@ -33,6 +33,18 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
   const [searchedGuests, setSearchedGuests] = useState<any[]>([]);
   const [searchingGuests, setSearchingGuests] = useState(false);
 
+  // History & tabs
+  const [activeTab, setActiveTab] = useState<"catalog" | "history">("catalog");
+  const [salesHistory, setSalesHistory] = useState<ProductSaleView[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Cash calculator
+  const [receivedAmount, setReceivedAmount] = useState<string>("");
+
+  // Barcode scanner
+  const [barcodeQuery, setBarcodeQuery] = useState("");
+  const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
+
   // Load products
   async function loadProducts() {
     if (!selectedGymId) return;
@@ -63,6 +75,57 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
       setSearchingGuests(false);
     }
   }
+
+  async function loadHistory() {
+    if (!selectedGymId) return;
+    setHistoryLoading(true);
+    try {
+      const data = await getMyProductSalesHistory(auth, Number(selectedGymId));
+      setSalesHistory(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nie udało się pobrać historii");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === "history") {
+      loadHistory();
+    }
+  }, [activeTab, selectedGymId]);
+
+  async function handleBarcodeSubmit(code: string) {
+    if (!code.trim() || !selectedGymId) return;
+    try {
+      const product = await getProductByBarcode(auth, Number(selectedGymId), code.trim());
+      
+      setBasket((prev) => {
+        const existing = prev.find((item) => item.product.id === product.id);
+        const currentQty = existing ? existing.quantity : 0;
+        if (currentQty >= product.quantity) {
+          setError(`Brak większej ilości produktu '${product.name}' na magazynie.`);
+          return prev;
+        }
+        if (existing) {
+          return prev.map((item) => item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+        }
+        return [...prev, { product, quantity: 1 }];
+      });
+      setBarcodeQuery("");
+    } catch (err) {
+      setError("Nie znaleziono produktu: " + code);
+    }
+  }
+
+  useEffect(() => {
+    if (barcodeQuery.length >= 8) {
+      const timeout = setTimeout(() => {
+        handleBarcodeSubmit(barcodeQuery);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [barcodeQuery]);
 
   // Load preselected guest if urlGuestId is provided
   useEffect(() => {
@@ -204,6 +267,8 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
     }
   };
 
+  const isCheckoutDisabled = basket.length === 0 || loading || (paymentMethod === "CASH" && (Number(receivedAmount || 0) < totalAmount));
+
   if (!selectedGymId) return <SelectGymDashboardPrompt />;
 
   // Present guests for selection dropdown
@@ -211,29 +276,72 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-8rem)]">
-      {/* Products list area */}
-      <div className="flex-1 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Szukaj produktu..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`${inputClassName} !pl-10 !py-2.5`}
-            />
-          </div>
+      {/* Products list / History area */}
+      <div className="flex-1 flex flex-col space-y-4">
+        <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800 pb-2">
           <button
-            onClick={loadProducts}
-            disabled={loading}
-            className={`${secondaryButtonClassName} !py-2.5`}
-            title="Odśwież listę produktów"
+            onClick={() => setActiveTab("catalog")}
+            className={`pb-2 px-2 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === "catalog"
+                ? "border-primary-500 text-primary-600 dark:text-primary-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            }`}
           >
-            <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Odśwież
+            Katalog
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={`pb-2 px-2 text-sm font-bold border-b-2 transition-colors ${
+              activeTab === "history"
+                ? "border-primary-500 text-primary-600 dark:text-primary-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            }`}
+          >
+            Historia sprzedaży
           </button>
         </div>
+
+        {activeTab === "catalog" && (
+          <>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div className="flex flex-1 gap-2 flex-col sm:flex-row">
+                <div className="relative w-full sm:max-w-xs">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Szukaj produktu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`${inputClassName} !pl-10 !py-2.5`}
+                  />
+                </div>
+                <div className="relative w-full sm:max-w-xs">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-slate-400 text-[10px] uppercase font-bold">Kod</div>
+                  <input
+                    type="text"
+                    placeholder="Zeskanuj lub wpisz EAN..."
+                    value={barcodeQuery}
+                    onChange={(e) => setBarcodeQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleBarcodeSubmit(barcodeQuery);
+                      }
+                    }}
+                    className={`${inputClassName} !pl-10 !py-2.5 font-mono text-sm`}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={loadProducts}
+                disabled={loading}
+                className={`${secondaryButtonClassName} !py-2.5`}
+                title="Odśwież listę produktów"
+              >
+                <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                Odśwież
+              </button>
+            </div>
 
         {/* Categories chips */}
         <div className="flex flex-wrap gap-2">
@@ -276,6 +384,11 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
                     <span className="inline-block text-[10px] uppercase tracking-wide font-extrabold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 mb-2">
                       {p.category}
                     </span>
+                    {p.barcode && (
+                      <span className="inline-block text-[10px] font-mono tracking-wider ml-2 px-2 py-0.5 rounded-md bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 mb-2 border border-primary-100 dark:border-primary-800/50">
+                        {p.barcode}
+                      </span>
+                    )}
                     <h3 className="font-bold text-slate-900 dark:text-white line-clamp-2" title={p.name}>
                       {p.name}
                     </h3>
@@ -318,6 +431,48 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
                 </div>
               );
             })}
+          </div>
+        )}
+          </>
+        )}
+
+        {activeTab === "history" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 dark:text-white">Ostatnie 50 transakcji</h3>
+              <button onClick={loadHistory} disabled={historyLoading} className={secondaryButtonClassName}>
+                <RefreshCcw className={`w-4 h-4 ${historyLoading ? "animate-spin" : ""}`} /> Odśwież
+              </button>
+            </div>
+            {salesHistory.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-10 text-center text-slate-500 dark:text-slate-400">
+                Brak historii sprzedaży
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {salesHistory.map(sale => (
+                  <div key={sale.id} className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 rounded-xl">
+                    <div className="flex justify-between items-start cursor-pointer" onClick={() => setExpandedSaleId(expandedSaleId === sale.id ? null : sale.id)}>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white">{new Date(sale.createdAt).toLocaleString()}</div>
+                        <div className="text-sm text-slate-500">{sale.paymentMethod} • Klient: {sale.guestName}</div>
+                      </div>
+                      <div className="font-black text-primary-600">{sale.totalAmount.toFixed(2)} PLN</div>
+                    </div>
+                    {expandedSaleId === sale.id && (
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                        {sale.items.map(item => (
+                          <div key={item.id} className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+                            <span>{item.quantity}x {item.productName}</span>
+                            <span>{(item.quantity * item.unitPrice).toFixed(2)} PLN</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -520,10 +675,31 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
             </span>
           </div>
 
+          {paymentMethod === "CASH" && (
+            <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-100 dark:border-slate-800">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">Kwota otrzymana (PLN)</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                value={receivedAmount} 
+                onChange={(e) => setReceivedAmount(e.target.value)} 
+                className={inputClassName} 
+                placeholder="0.00" 
+              />
+              {receivedAmount && Number(receivedAmount) > 0 && (
+                <div className={`text-sm font-bold ${Number(receivedAmount) >= totalAmount ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {Number(receivedAmount) >= totalAmount 
+                    ? `Reszta: ${(Number(receivedAmount) - totalAmount).toFixed(2)} PLN`
+                    : `Za mało o: ${(totalAmount - Number(receivedAmount)).toFixed(2)} PLN`}
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={basket.length === 0 || loading}
+            disabled={isCheckoutDisabled}
             className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-2xl font-bold transition-all shadow-md hover:shadow-lg hover:shadow-primary-500/35 disabled:opacity-40 disabled:shadow-none flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? "Przetwarzanie..." : "Sfinalizuj transakcję"}

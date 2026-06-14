@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByGymId(Long gymId);
+    java.util.Optional<Product> findByGymIdAndBarcode(Long gymId, String barcode);
 }

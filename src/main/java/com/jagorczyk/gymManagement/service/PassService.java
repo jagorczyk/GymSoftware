@@ -62,6 +62,58 @@ public class PassService {
     }
 
     @Transactional
+    public PassView freezePassForEmployee(User currentUser, Long gymId, Long passId, com.jagorczyk.gymManagement.api.dto.GymDtos.FreezePassRequest request) {
+        Employee employee = employeePermissionService.requireEmployee(currentUser, gymId);
+        employeePermissionService.requirePermission(currentUser, gymId, EmployeePermission.SELL_PASSES);
+        GymPass pass = gymPassRepository.findById(passId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karnetu w tej siłowni."));
+        if (pass.getStatus() != PassStatus.ACTIVE) {
+            throw new IllegalArgumentException("Karnet musi być aktywny aby go zamrozić.");
+        }
+        com.jagorczyk.gymManagement.domain.PassFreeze freeze = new com.jagorczyk.gymManagement.domain.PassFreeze();
+        freeze.setGymPass(pass);
+        freeze.setStartDate(request.startDate());
+        freeze.setEndDate(request.endDate());
+        freeze.setProcessed(false);
+        passFreezeRepository.save(freeze);
+        
+        LocalDate today = LocalDate.now();
+        if (!today.isBefore(request.startDate()) && !today.isAfter(request.endDate())) {
+            pass.setStatus(PassStatus.FROZEN);
+            gymPassRepository.save(pass);
+        }
+        
+        auditLogService.log(pass.getGym(), currentUser, "PASS_FROZEN", "passId=" + pass.getId());
+        return guestPresenceService.toPassView(pass);
+    }
+
+    @Transactional
+    public PassView unfreezePassForEmployee(User currentUser, Long gymId, Long passId) {
+        Employee employee = employeePermissionService.requireEmployee(currentUser, gymId);
+        employeePermissionService.requirePermission(currentUser, gymId, EmployeePermission.SELL_PASSES);
+        GymPass pass = gymPassRepository.findById(passId)
+                .filter(p -> p.getGym().getId().equals(gymId))
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karnetu w tej siłowni."));
+        
+        List<com.jagorczyk.gymManagement.domain.PassFreeze> freezes = passFreezeRepository.findAll().stream()
+                .filter(f -> f.getGymPass().getId().equals(passId) && (!f.isProcessed() || pass.getStatus() == PassStatus.FROZEN))
+                .toList();
+                
+        for (com.jagorczyk.gymManagement.domain.PassFreeze f : freezes) {
+            f.setProcessed(true);
+            passFreezeRepository.save(f);
+        }
+        
+        if (pass.getStatus() == PassStatus.FROZEN) {
+            pass.setStatus(PassStatus.ACTIVE);
+            gymPassRepository.save(pass);
+            auditLogService.log(pass.getGym(), currentUser, "PASS_UNFROZEN", "passId=" + pass.getId());
+        }
+        return guestPresenceService.toPassView(pass);
+    }
+
+    @Transactional
     public PassView cancelPassForOwner(Long ownerUserId, Long gymId, Long passId) {
         Gym gym = requireOwnerGym(ownerUserId, gymId);
         return cancelPass(gym, gym.getOwnerUser(), gymId, passId);

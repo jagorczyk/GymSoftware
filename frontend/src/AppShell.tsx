@@ -26,6 +26,7 @@ import {
   Moon,
   ShoppingCart,
   Package,
+  Star,
 } from "lucide-react";
 import { useAuth } from "./authContext";
 import { useEmployeePermissions } from "./employeePermissionsContext";
@@ -95,6 +96,7 @@ export function AppShell() {
           { label: "Grafik", to: "/owner/work-schedule", icon: <CalendarClock className="w-5 h-5" /> },
           { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" /> },
           { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" /> },
+          { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" /> },
           { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" /> },
           { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" /> },
         ]
@@ -128,7 +130,7 @@ export function AppShell() {
     ) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex transition-colors duration-200 relative overflow-hidden">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex transition-colors duration-200 relative overflow-hidden">
       {drawerOpen && (
         <div
           className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden"
@@ -232,7 +234,7 @@ export function AppShell() {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className="lg:hidden h-16 bg-white dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/60 flex items-center px-4 justify-between sticky top-0 z-30">
           <button
             type="button"
@@ -270,7 +272,7 @@ export function AppShell() {
           )}
         </header>
 
-        <div className="flex-1 overflow-x-hidden p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 max-w-7xl mx-auto w-full">
           <Outlet />
         </div>
       </main>

@@ -28,6 +28,7 @@ import {
   OwnerRankCreatePage,
   OwnerRankEditPage,
   OwnerProductsPage,
+  OwnerClassRatingsPage,
 } from "../pages/owner/ownerRouteElements";
 
 export const ownerRouteObjects: RouteObject[] = [
@@ -59,5 +60,6 @@ export const ownerRouteObjects: RouteObject[] = [
   { path: "work-schedule", Component: OwnerWorkSchedulePage },
   { path: "sales-report", Component: OwnerSalesReportPage },
   { path: "analytics", Component: OwnerAnalyticsPage },
+  { path: "class-ratings", Component: OwnerClassRatingsPage },
   { path: "notifications", Component: OwnerNotificationsPage },
 ];

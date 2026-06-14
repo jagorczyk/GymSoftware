@@ -10,7 +10,8 @@ public class AnalyticsDtos {
             long activeGuests,
             long newGuestsThisMonth,
             long checkInsToday,
-            BigDecimal revenueThisMonth
+            BigDecimal revenueThisMonth,
+            BigDecimal productRevenueThisMonth
     ) {}
 
     public record ChartDataPoint(

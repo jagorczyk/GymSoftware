@@ -62,6 +62,7 @@ public class PosService {
         product.setPrice(request.price());
         product.setQuantity(request.quantity());
         product.setCategory(request.category());
+        product.setBarcode(request.barcode());
 
         Product saved = productRepository.save(product);
         auditLogService.log(gym, gym.getOwnerUser(), "CREATE_PRODUCT", 
@@ -82,6 +83,7 @@ public class PosService {
         product.setPrice(request.price());
         product.setQuantity(request.quantity());
         product.setCategory(request.category());
+        product.setBarcode(request.barcode());
 
         Product saved = productRepository.save(product);
         auditLogService.log(gym, gym.getOwnerUser(), "UPDATE_PRODUCT", 
@@ -115,6 +117,22 @@ public class PosService {
     public List<ProductView> getGymProductsForEmployee(Long gymId) {
         return productRepository.findByGymId(gymId).stream()
                 .map(this::toProductView)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductView getProductByBarcode(Long gymId, String barcode) {
+        return productRepository.findByGymIdAndBarcode(gymId, barcode)
+                .map(this::toProductView)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono produktu o kodzie kreskowym: " + barcode));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductSaleView> getEmployeeSalesHistory(Long soldByUserId, Long gymId) {
+        return productSaleRepository.findByGymIdOrderByCreatedAtDesc(gymId).stream()
+                .filter(s -> s.getSoldBy() != null && s.getSoldBy().getId().equals(soldByUserId))
+                .limit(50)
+                .map(this::toProductSaleView)
                 .toList();
     }
 
@@ -188,7 +206,8 @@ public class PosService {
                 product.getName(),
                 product.getPrice(),
                 product.getQuantity(),
-                product.getCategory()
+                product.getCategory(),
+                product.getBarcode()
         );
     }
 

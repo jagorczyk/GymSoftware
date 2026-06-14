@@ -34,4 +34,7 @@ public class Product {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(length = 50, unique = true)
+    private String barcode;
 }

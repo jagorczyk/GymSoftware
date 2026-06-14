@@ -167,6 +167,10 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
     return products.reduce((sum, p) => sum + p.price * p.quantity, 0);
   }, [products]);
 
+  const totalQuantity = useMemo(() => {
+    return products.reduce((sum, p) => sum + p.quantity, 0);
+  }, [products]);
+
   const totalSalesRevenue = useMemo(() => {
     return sales.reduce((sum, s) => sum + s.totalAmount, 0);
   }, [sales]);
@@ -192,16 +196,21 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-sm">
-          <div className={`p-3 rounded-xl ${lowStockCount > 0 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-500" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500"}`}>
-            <AlertTriangle className="w-6 h-6" />
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-xl">
+            <Package className="w-6 h-6" />
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
-              Niski stan magazynowy
+              Asortyment w magazynie
             </p>
-            <p className={`text-xl font-black mt-0.5 ${lowStockCount > 0 ? "text-amber-500" : "text-emerald-500"}`}>
-              {lowStockCount} {lowStockCount === 1 ? "produkt" : lowStockCount > 1 && lowStockCount < 5 ? "produkty" : "produktów"}
+            <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+              {totalQuantity} {totalQuantity === 1 ? "sztuka" : totalQuantity > 1 && totalQuantity < 5 ? "sztuki" : "sztuk"}
             </p>
+            {lowStockCount > 0 && (
+              <p className="text-[10px] font-bold text-amber-500 mt-1 uppercase tracking-wide">
+                Uwaga: {lowStockCount} na wyczerpaniu
+              </p>
+            )}
           </div>
         </div>
 

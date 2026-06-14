@@ -27,6 +27,8 @@ import com.jagorczyk.gymManagement.service.EmployeeService;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.FreezePassRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView;
 import com.jagorczyk.gymManagement.domain.EmployeePermission;
 import com.jagorczyk.gymManagement.service.EmployeePermissionService;
 import com.jagorczyk.gymManagement.service.PosService;
@@ -287,5 +289,27 @@ public class EmployeeController {
         employeePermissionService.requirePermission(
                 currentUserService.getCurrentUser(), gymId, EmployeePermission.SELL_PRODUCTS);
         return posService.checkout(currentUserService.getCurrentUser(), gymId, request);
+    }
+
+    @PostMapping("/gyms/{gymId}/passes/{passId}/freeze")
+    public PassView freezePass(@PathVariable Long gymId, @PathVariable Long passId, @Valid @RequestBody FreezePassRequest request) {
+        return passService.freezePassForEmployee(currentUserService.getCurrentUser(), gymId, passId, request);
+    }
+
+    @PostMapping("/gyms/{gymId}/passes/{passId}/unfreeze")
+    public PassView unfreezePass(@PathVariable Long gymId, @PathVariable Long passId) {
+        return passService.unfreezePassForEmployee(currentUserService.getCurrentUser(), gymId, passId);
+    }
+
+    @GetMapping("/gyms/{gymId}/sales/my-history")
+    public java.util.List<ProductSaleView> myProductSalesHistory(@PathVariable Long gymId) {
+        return employeeService.getMyProductSales(currentUserService.getCurrentUser(), gymId);
+    }
+
+    @GetMapping("/gyms/{gymId}/products/by-barcode")
+    public ProductView getProductByBarcode(@PathVariable Long gymId, @RequestParam String code) {
+        employeePermissionService.requirePermission(
+                currentUserService.getCurrentUser(), gymId, EmployeePermission.SELL_PRODUCTS);
+        return posService.getProductByBarcode(gymId, code);
     }
 }

@@ -22,10 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class SalesReportService {
     private final GymPassRepository gymPassRepository;
     private final GymRepository gymRepository;
+    private final com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository;
 
-    public SalesReportService(GymPassRepository gymPassRepository, GymRepository gymRepository) {
+    public SalesReportService(GymPassRepository gymPassRepository, GymRepository gymRepository, com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository) {
         this.gymPassRepository = gymPassRepository;
         this.gymRepository = gymRepository;
+        this.productSaleRepository = productSaleRepository;
     }
 
     @Transactional(readOnly = true)
@@ -45,13 +47,28 @@ public class SalesReportService {
         Map<LocalDate, List<GymPass>> byDay = passes.stream()
                 .collect(Collectors.groupingBy(GymPass::getStartDate, LinkedHashMap::new, Collectors.toList()));
 
+        List<com.jagorczyk.gymManagement.domain.ProductSale> productSales = productSaleRepository.findAll().stream()
+                .filter(ps -> ps.getGym().getId().equals(gymId))
+                .filter(ps -> !ps.getCreatedAt().toLocalDate().isBefore(rangeFrom) && !ps.getCreatedAt().toLocalDate().isAfter(rangeTo))
+                .toList();
+
+        Map<LocalDate, List<com.jagorczyk.gymManagement.domain.ProductSale>> productSalesByDay = productSales.stream()
+                .collect(Collectors.groupingBy(ps -> ps.getCreatedAt().toLocalDate(), LinkedHashMap::new, Collectors.toList()));
+
         List<SalesReportDay> days = new ArrayList<>();
         for (LocalDate day = rangeFrom; !day.isAfter(rangeTo); day = day.plusDays(1)) {
             List<GymPass> dayPasses = byDay.getOrDefault(day, List.of());
-            BigDecimal total = dayPasses.stream()
+            List<com.jagorczyk.gymManagement.domain.ProductSale> dayProductSales = productSalesByDay.getOrDefault(day, List.of());
+            
+            BigDecimal passesTotal = dayPasses.stream()
                     .map(GymPass::getPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            days.add(new SalesReportDay(day, total, dayPasses.size()));
+            BigDecimal productsTotal = dayProductSales.stream()
+                    .map(com.jagorczyk.gymManagement.domain.ProductSale::getTotalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    
+            BigDecimal total = passesTotal.add(productsTotal);
+            days.add(new SalesReportDay(day, total, dayPasses.size() + dayProductSales.size()));
         }
 
         Map<String, List<GymPass>> byType = passes.stream()
@@ -66,11 +83,17 @@ public class SalesReportService {
                 .sorted(Comparator.comparing(SalesByPassType::total).reversed())
                 .toList();
 
-        BigDecimal total = passes.stream()
+        BigDecimal passesRevenue = passes.stream()
                 .map(GymPass::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal productRevenue = productSales.stream()
+                .map(com.jagorczyk.gymManagement.domain.ProductSale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                
+        BigDecimal totalRevenue = passesRevenue.add(productRevenue);
 
-        return new SalesReport(rangeFrom, rangeTo, total, passes.size(), days, byPassType);
+        return new SalesReport(rangeFrom, rangeTo, totalRevenue, productRevenue, passes.size(), days, byPassType);
     }
 
     private void requireOwnerGym(Long ownerUserId, Long gymId) {

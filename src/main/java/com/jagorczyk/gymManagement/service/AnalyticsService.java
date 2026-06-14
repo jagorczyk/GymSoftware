@@ -22,17 +22,20 @@ public class AnalyticsService {
     private final GuestRepository guestRepository;
     private final GymPassRepository passRepository;
     private final GuestCheckInRepository checkInRepository;
+    private final ProductSaleRepository productSaleRepository;
 
     public AnalyticsService(
             GymRepository gymRepository,
             GuestRepository guestRepository,
             GymPassRepository passRepository,
-            GuestCheckInRepository checkInRepository
+            GuestCheckInRepository checkInRepository,
+            ProductSaleRepository productSaleRepository
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
         this.passRepository = passRepository;
         this.checkInRepository = checkInRepository;
+        this.productSaleRepository = productSaleRepository;
     }
 
     @Transactional(readOnly = true)
@@ -61,8 +64,13 @@ public class AnalyticsService {
                 .map(GymPass::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        BigDecimal productRevenueThisMonth = productSaleRepository.findAll().stream()
+                .filter(ps -> ps.getGym().getId().equals(gymId) && !ps.getCreatedAt().isBefore(monthStart))
+                .map(com.jagorczyk.gymManagement.domain.ProductSale::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         DashboardMetrics metrics = new DashboardMetrics(
-                activePasses, activeGuests, newGuestsThisMonth, checkInsToday, revenueThisMonth
+                activePasses, activeGuests, newGuestsThisMonth, checkInsToday, revenueThisMonth, productRevenueThisMonth
         );
 
         // revenue over time (last 30 days)

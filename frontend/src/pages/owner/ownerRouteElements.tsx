@@ -23,6 +23,7 @@ import { AnalyticsDashboardPage } from "./AnalyticsDashboardPage";
 import { OwnerRanksList } from "./OwnerRanksList";
 import { OwnerRankForm } from "./OwnerRankForm";
 import { OwnerProducts } from "./OwnerProducts";
+import { OwnerClassRatings } from "./OwnerClassRatings";
 
 export function OwnerStatsPage() {
   return <OwnerStats ctx={useOwnerDashboardContext()} />;
@@ -108,4 +109,8 @@ export function OwnerRankEditPage() {
 
 export function OwnerProductsPage() {
   return <OwnerProducts ctx={useOwnerDashboardContext()} />;
+}
+
+export function OwnerClassRatingsPage() {
+  return <OwnerClassRatings ctx={useOwnerDashboardContext()} />;
 }

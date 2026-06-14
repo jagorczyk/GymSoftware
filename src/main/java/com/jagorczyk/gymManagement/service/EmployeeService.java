@@ -53,6 +53,8 @@ public class EmployeeService {
     private final PassTypeRepository passTypeRepository;
     private final GuestCheckInRepository guestCheckInRepository;
     private final GuestPresenceService guestPresenceService;
+    private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
+    private final com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository;
 
     public EmployeeService(
             EmployeeRepository employeeRepository,
@@ -64,7 +66,9 @@ public class EmployeeService {
             AuditLogService auditLogService,
             PassTypeRepository passTypeRepository,
             GuestCheckInRepository guestCheckInRepository,
-            GuestPresenceService guestPresenceService
+            GuestPresenceService guestPresenceService,
+            com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository,
+            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository
     ) {
         this.employeeRepository = employeeRepository;
         this.employeePermissionService = employeePermissionService;
@@ -76,6 +80,8 @@ public class EmployeeService {
         this.passTypeRepository = passTypeRepository;
         this.guestCheckInRepository = guestCheckInRepository;
         this.guestPresenceService = guestPresenceService;
+        this.passFreezeRepository = passFreezeRepository;
+        this.productSaleRepository = productSaleRepository;
     }
 
     @Transactional
@@ -316,7 +322,44 @@ public class EmployeeService {
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .map(guestPresenceService::toPassView)
                 .toList();
-        return new GuestDetailView(view, passViews);
+
+        List<com.jagorczyk.gymManagement.api.dto.GymDtos.CheckInView> recentCheckIns = guestCheckInRepository.findAll().stream()
+                .filter(c -> c.getGuest().getId().equals(guestId))
+                .sorted((a, b) -> b.getCheckedInAt().compareTo(a.getCheckedInAt()))
+                .limit(10)
+                .map(c -> new com.jagorczyk.gymManagement.api.dto.GymDtos.CheckInView(c.getId(), c.getCheckedInAt(), c.getCheckedOutAt()))
+                .toList();
+
+        List<com.jagorczyk.gymManagement.api.dto.GymDtos.PassFreezeView> activeFreezes = passFreezeRepository.findAll().stream()
+                .filter(f -> f.getGymPass().getGuest().getId().equals(guestId) && !f.isProcessed())
+                .map(f -> new com.jagorczyk.gymManagement.api.dto.GymDtos.PassFreezeView(f.getId(), f.getGymPass().getId(), f.getStartDate(), f.getEndDate(), f.isProcessed()))
+                .toList();
+
+        return new GuestDetailView(view, passViews, recentCheckIns, activeFreezes);
+    }
+
+    @Transactional(readOnly=true)
+    public List<com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView> getMyProductSales(User currentUser, Long gymId) {
+        Employee employee = employeePermissionService.requireEmployee(currentUser, gymId);
+        return productSaleRepository.findAll().stream()
+                .filter(s -> s.getGym().getId().equals(gymId) && s.getSoldBy() != null && s.getSoldBy().getId().equals(currentUser.getId()))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(50)
+                .map(s -> new com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView(
+                        s.getId(),
+                        s.getSoldBy().getEmail(),
+                        s.getGuest() != null ? s.getGuest().getFirstName() + " " + s.getGuest().getLastName() : "Anonim",
+                        s.getTotalAmount(),
+                        s.getPaymentMethod(),
+                        s.getCreatedAt(),
+                        s.getItems().stream().map(i -> new com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleItemView(
+                                i.getId(),
+                                i.getProduct().getId(),
+                                i.getProduct().getName(),
+                                i.getQuantity(),
+                                i.getUnitPrice()
+                        )).toList()
+                )).toList();
     }
 
     @Transactional

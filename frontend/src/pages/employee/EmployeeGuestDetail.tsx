@@ -181,6 +181,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     }
     
     try {
+      if (!window.confirm(`Automatycznie przypisać pierwszą wolną szafkę? (szafka nr ${firstFree.lockerNumber})`)) return;
       await assignLocker(auth, Number(selectedGymId), { lockerId: firstFree.id, guestId: guest.id });
       setError("");
       setMessage(`Nadano szafkę nr ${firstFree.lockerNumber} klientowi ${guest.firstName} ${guest.lastName}`);
@@ -330,11 +331,26 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
               onUploadSuccess={setAvatarUrl}
               className="mb-4"
             />
-            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} placeholder="Imię" required />
-            <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClassName} placeholder="Nazwisko" required />
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClassName} placeholder="Email" />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClassName} placeholder="Telefon" />
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className={inputClassName} placeholder="Notatki" rows={2} />
+            <div>
+              <label htmlFor="editFirstName" className={labelClassName}>Imię</label>
+              <input id="editFirstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} placeholder="Imię" required />
+            </div>
+            <div>
+              <label htmlFor="editLastName" className={labelClassName}>Nazwisko</label>
+              <input id="editLastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClassName} placeholder="Nazwisko" required />
+            </div>
+            <div>
+              <label htmlFor="editEmail" className={labelClassName}>Email</label>
+              <input id="editEmail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClassName} placeholder="Email" />
+            </div>
+            <div>
+              <label htmlFor="editPhone" className={labelClassName}>Telefon</label>
+              <input id="editPhone" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClassName} placeholder="Telefon" />
+            </div>
+            <div>
+              <label htmlFor="editNotes" className={labelClassName}>Notatki</label>
+              <textarea id="editNotes" value={notes} onChange={(e) => setNotes(e.target.value)} className={inputClassName} placeholder="Notatki" rows={2} />
+            </div>
             <button type="submit" className={primaryButtonClassName}>Zapisz</button>
           </form>
         ) : (
@@ -345,14 +361,36 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
         )}
       </FormSection>
 
+      {detail && detail.recentCheckIns && detail.recentCheckIns.length > 0 && (
+        <FormSection title="Ostatnie wizyty" className="mt-6">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {detail.recentCheckIns.map(checkIn => {
+              const checkInDate = new Date(checkIn.checkedInAt);
+              const dateStr = checkInDate.toLocaleDateString();
+              const timeIn = checkInDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              const timeOut = checkIn.checkedOutAt ? new Date(checkIn.checkedOutAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Na sali";
+              
+              return (
+                <li key={checkIn.id} className="py-3 flex justify-between items-center text-sm">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{dateStr}</span>
+                  <span className="text-slate-500 dark:text-slate-400">{timeIn} — {timeOut}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </FormSection>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <FormSection title="Sprzedaż karnetu">
           <form onSubmit={onSellPass} className="space-y-4">
             <div>
-              <label className={labelClassName}>Wybierz ofertę</label>
+              <label htmlFor="passTypeSelect" className={labelClassName}>Wybierz ofertę</label>
               <select
+                id="passTypeSelect"
                 name="passTypeId"
                 className={inputClassName}
+                required
                 onChange={(e) => {
                   const ptId = Number(e.target.value);
                   const pt = overview?.passTypes?.find((x: any) => x.id === ptId);
@@ -377,10 +415,18 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
                 ))}
               </select>
             </div>
-            <input type="text" name="passType" required className={`${inputClassName} bg-gray-50 dark:bg-slate-950/40`} placeholder="Nazwa karnetu" />
-            <input type="date" name="startDate" required defaultValue={new Date().toISOString().split("T")[0]} className={inputClassName} />
-            <input type="date" name="endDate" required className={inputClassName} />
-            <input type="number" name="price" required step="0.01" className={inputClassName} placeholder="Cena" />
+            <input type="hidden" name="passType" required />
+            <input type="hidden" name="price" required />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startDatePass" className={labelClassName}>Data od</label>
+                <input id="startDatePass" type="date" name="startDate" required defaultValue={new Date().toISOString().split("T")[0]} className={inputClassName} />
+              </div>
+              <div>
+                <label htmlFor="endDatePass" className={labelClassName}>Data do</label>
+                <input id="endDatePass" type="date" name="endDate" required className={inputClassName} />
+              </div>
+            </div>
             <button type="submit" className={`${primaryButtonClassName} w-full`}>Sprzedaj karnet</button>
           </form>
         </FormSection>
@@ -419,9 +465,9 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       </div>
 
       {detail && detail.passes.length > 0 && (
-        <FormSection title="Karnety klienta" description="Przedłużenie lub anulowanie.">
+        <FormSection title="Karnety klienta" description="Przedłużenie, zamrożenie lub anulowanie." className="mt-6">
           <div className="space-y-3 mt-4">
-            {detail.passes.map((pass) => (
+            {[...detail.passes].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((pass) => (
               <GuestPassActions
                 key={pass.id}
                 auth={auth}

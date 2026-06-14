@@ -34,7 +34,7 @@ public final class GymDtos {
             String avatarUrl
     ) {}
 
-    public record GuestDetailView(GuestView guest, List<PassView> passes) {}
+    public record GuestDetailView(GuestView guest, List<PassView> passes, List<CheckInView> recentCheckIns, List<PassFreezeView> activeFreezes) {}
     public record EmployeeView(Long id, Long userId, String email, List<String> permissions, Long rankId, String rankName, String avatarUrl) {}
     public record PassView(Long id, Long guestId, String passType, PassStatus status, LocalDate startDate, LocalDate endDate, BigDecimal price) {}
     public record LockerView(Long id, String lockerNumber, LockerStatus status, Long guestId) {}
@@ -173,6 +173,7 @@ public final class GymDtos {
             LocalDate from,
             LocalDate to,
             BigDecimal total,
+            BigDecimal productRevenue,
             int passCount,
             List<SalesReportDay> days,
             List<SalesByPassType> byPassType
@@ -286,21 +287,24 @@ public final class GymDtos {
             String name,
             BigDecimal price,
             Integer quantity,
-            String category
+            String category,
+            String barcode
     ) {}
 
     public record CreateProductRequest(
             @NotBlank String name,
             @NotNull @DecimalMin("0.00") BigDecimal price,
             @NotNull Integer quantity,
-            @NotBlank String category
+            @NotBlank String category,
+            String barcode
     ) {}
 
     public record UpdateProductRequest(
             @NotBlank String name,
             @NotNull @DecimalMin("0.00") BigDecimal price,
             @NotNull Integer quantity,
-            @NotBlank String category
+            @NotBlank String category,
+            String barcode
     ) {}
 
     public record ProductSaleItemRequest(
@@ -331,4 +335,10 @@ public final class GymDtos {
             LocalDateTime createdAt,
             List<ProductSaleItemView> items
     ) {}
+
+    public record PassFreezeView(Long id, Long passId, LocalDate startDate, LocalDate endDate, boolean processed) {}
+    public record CheckInView(Long id, LocalDateTime checkedInAt, LocalDateTime checkedOutAt) {}
+    public record ClassRatingView(Long id, Long classId, Long guestId, String guestName, Integer rating, String comment, LocalDateTime createdAt) {}
+    public record ClassRatingSummary(Long classId, String className, String instructorName, Double avgRating, Long ratingCount) {}
+    public record FreezePassRequest(@NotNull LocalDate startDate, @NotNull LocalDate endDate) {}
 }

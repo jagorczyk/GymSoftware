@@ -16,18 +16,21 @@ public class GroupClassService {
     private final EmployeeRepository employeeRepository;
     private final GuestRepository guestRepository;
     private final GymPassRepository gymPassRepository;
+    private final ClassRatingRepository ratingRepository;
 
     public GroupClassService(
             GroupClassRepository classRepository,
             ClassReservationRepository reservationRepository,
             EmployeeRepository employeeRepository,
             GuestRepository guestRepository,
-            GymPassRepository gymPassRepository) {
+            GymPassRepository gymPassRepository,
+            ClassRatingRepository ratingRepository) {
         this.classRepository = classRepository;
         this.reservationRepository = reservationRepository;
         this.employeeRepository = employeeRepository;
         this.guestRepository = guestRepository;
         this.gymPassRepository = gymPassRepository;
+        this.ratingRepository = ratingRepository;
     }
 
     public List<GroupClass> getClasses(Long gymId, LocalDateTime from, LocalDateTime to) {
@@ -174,5 +177,43 @@ public class GroupClassService {
             throw new IllegalArgumentException("Klient nie należy do tej siłowni");
         }
         return reservationRepository.findByGuestId(guestId);
+    }
+
+    @Transactional(readOnly=true)
+    public List<com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingView> getRatingsForOwner(Long ownerUserId, Long gymId, Long classId) {
+        // Validation could be added here to check if ownerUserId matches gym
+        GroupClass groupClass = getClassById(gymId, classId);
+        return ratingRepository.findByGroupClassIdOrderByCreatedAtDesc(classId).stream()
+                .map(r -> new com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingView(
+                        r.getId(),
+                        r.getGroupClass().getId(),
+                        r.getGuest().getId(),
+                        r.getGuest().getFirstName() + " " + r.getGuest().getLastName(),
+                        r.getRating(),
+                        r.getComment(),
+                        r.getCreatedAt()
+                )).toList();
+    }
+
+    @Transactional(readOnly=true)
+    public List<com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingSummary> getRatingsSummaryForOwner(Long ownerUserId, Long gymId) {
+        List<GroupClass> classes = classRepository.findByGymIdAndStartTimeBetweenOrderByStartTimeAsc(gymId, LocalDateTime.now().minusYears(1), LocalDateTime.now().plusYears(1));
+        List<com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingSummary> summaries = new java.util.ArrayList<>();
+        for (GroupClass gc : classes) {
+            List<ClassRating> ratings = ratingRepository.findByGroupClassIdOrderByCreatedAtDesc(gc.getId());
+            if (!ratings.isEmpty()) {
+                double avg = ratings.stream().mapToInt(ClassRating::getRating).average().orElse(0.0);
+                summaries.add(new com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingSummary(
+                        gc.getId(),
+                        gc.getName(),
+                        gc.getInstructor().getUser().getEmail(),
+                        avg,
+                        (long) ratings.size()
+                ));
+            }
+        }
+        return summaries.stream()
+                .sorted((a, b) -> Double.compare(b.avgRating(), a.avgRating()))
+                .toList();
     }
 }

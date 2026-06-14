@@ -58,6 +58,8 @@ public class OwnerService {
     private final PassTypeRepository passTypeRepository;
     private final GuestPresenceService guestPresenceService;
     private final com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository;
+    private final com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository;
+    private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
 
     public OwnerService(
             GymRepository gymRepository,
@@ -72,7 +74,9 @@ public class OwnerService {
             AuditLogService auditLogService,
             PassTypeRepository passTypeRepository,
             GuestPresenceService guestPresenceService,
-            com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository
+            com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository,
+            com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository,
+            com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -87,6 +91,8 @@ public class OwnerService {
         this.passTypeRepository = passTypeRepository;
         this.guestPresenceService = guestPresenceService;
         this.rankRepository = rankRepository;
+        this.guestCheckInRepository = guestCheckInRepository;
+        this.passFreezeRepository = passFreezeRepository;
     }
 
     public List<GymSummary> ownerGyms(Long ownerUserId) {
@@ -364,7 +370,20 @@ public class OwnerService {
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .map(guestPresenceService::toPassView)
                 .toList();
-        return new GuestDetailView(view, passViews);
+
+        List<com.jagorczyk.gymManagement.api.dto.GymDtos.CheckInView> recentCheckIns = guestCheckInRepository.findAll().stream()
+                .filter(c -> c.getGuest().getId().equals(guestId))
+                .sorted((a, b) -> b.getCheckedInAt().compareTo(a.getCheckedInAt()))
+                .limit(10)
+                .map(c -> new com.jagorczyk.gymManagement.api.dto.GymDtos.CheckInView(c.getId(), c.getCheckedInAt(), c.getCheckedOutAt()))
+                .toList();
+
+        List<com.jagorczyk.gymManagement.api.dto.GymDtos.PassFreezeView> activeFreezes = passFreezeRepository.findAll().stream()
+                .filter(f -> f.getGymPass().getGuest().getId().equals(guestId) && !f.isProcessed())
+                .map(f -> new com.jagorczyk.gymManagement.api.dto.GymDtos.PassFreezeView(f.getId(), f.getGymPass().getId(), f.getStartDate(), f.getEndDate(), f.isProcessed()))
+                .toList();
+
+        return new GuestDetailView(view, passViews, recentCheckIns, activeFreezes);
     }
 
     @Transactional

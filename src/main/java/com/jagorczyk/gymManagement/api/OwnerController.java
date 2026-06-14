@@ -32,6 +32,8 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.CreateProductRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateProductRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.ProductSaleView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ClassRatingSummary;
 import com.jagorczyk.gymManagement.service.PosService;
 import com.jagorczyk.gymManagement.service.NotificationService;
 import com.jagorczyk.gymManagement.service.PassService;
@@ -73,6 +75,7 @@ public class OwnerController {
     private final SalesReportService salesReportService;
     private final NotificationService notificationService;
     private final PosService posService;
+    private final com.jagorczyk.gymManagement.service.GroupClassService groupClassService;
 
     public OwnerController(
             OwnerService ownerService,
@@ -82,7 +85,8 @@ public class OwnerController {
             PassService passService,
             SalesReportService salesReportService,
             NotificationService notificationService,
-            PosService posService
+            PosService posService,
+            com.jagorczyk.gymManagement.service.GroupClassService groupClassService
     ) {
         this.ownerService = ownerService;
         this.calendarService = calendarService;
@@ -92,6 +96,7 @@ public class OwnerController {
         this.salesReportService = salesReportService;
         this.notificationService = notificationService;
         this.posService = posService;
+        this.groupClassService = groupClassService;
     }
 
     @GetMapping("/gyms")
@@ -378,5 +383,38 @@ public class OwnerController {
     @GetMapping("/gyms/{gymId}/sales/products")
     public List<ProductSaleView> getProductSales(@PathVariable Long gymId) {
         return posService.getGymSalesForOwner(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @GetMapping("/gyms/{gymId}/classes/ratings-summary")
+    public List<ClassRatingSummary> getRatingsSummary(@PathVariable Long gymId) {
+        return groupClassService.getRatingsSummaryForOwner(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @GetMapping("/gyms/{gymId}/classes/{classId}/ratings")
+    public List<ClassRatingView> getClassRatings(@PathVariable Long gymId, @PathVariable Long classId) {
+        return groupClassService.getRatingsForOwner(currentUserService.getCurrentUser().getId(), gymId, classId);
+    }
+
+    @GetMapping("/gyms/{gymId}/sales-report/export.csv")
+    public org.springframework.http.ResponseEntity<byte[]> exportSalesReportCsv(
+            @PathVariable Long gymId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        SalesReport report = salesReportService.salesReport(currentUserService.getCurrentUser().getId(), gymId, from, to);
+        StringBuilder sb = new StringBuilder();
+        // BOM for UTF-8
+        sb.append('\ufeff');
+        sb.append("Data,Cena,Liczba\n");
+        for (com.jagorczyk.gymManagement.api.dto.GymDtos.SalesReportDay day : report.days()) {
+            sb.append(day.date()).append(",")
+              .append(day.total()).append(",")
+              .append(day.count()).append("\n");
+        }
+        byte[] bytes = sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return org.springframework.http.ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"raport.csv\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                .body(bytes);
     }
 }

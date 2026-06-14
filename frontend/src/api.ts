@@ -372,11 +372,15 @@ export type PassView = {
   startDate: string;
   endDate: string;
   price: number;
+  freezeStartDate?: string;
+  freezeEndDate?: string;
 };
 
 export type GuestDetail = {
   guest: GuestView;
   passes: PassView[];
+  recentCheckIns?: Array<{id:number; checkedInAt:string; checkedOutAt:string|null}>;
+  activeFreezes?: Array<{id:number; passId:number; startDate:string; endDate:string; processed:boolean}>;
 };
 
 export async function getEmployeeGuestDetail(
@@ -513,6 +517,7 @@ export type SalesReport = {
   to: string;
   total: number;
   passCount: number;
+  productRevenue?: number;
   days: Array<{ date: string; total: number; count: number }>;
   byPassType: Array<{ passType: string; total: number; count: number }>;
 };
@@ -1067,6 +1072,7 @@ export interface ProductView {
   price: number;
   quantity: number;
   category: string;
+  barcode?: string | null;
 }
 
 export interface ProductSaleItemView {
@@ -1152,4 +1158,80 @@ export async function getProductSales(auth: AuthState, gymId: number): Promise<P
   });
   if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii sprzedaży");
   return response.json();
+}
+
+export interface ClassRatingSummary {
+  classId: number;
+  className: string;
+  instructorName: string | null;
+  avgRating: number;
+  ratingCount: number;
+}
+
+export interface ClassRatingView {
+  id: number;
+  classId: number;
+  guestId: number;
+  guestName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export async function freezePassEmployee(auth: AuthState, gymId: number, passId: number, payload: { startDate: string; endDate: string }): Promise<PassView> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/passes/${passId}/freeze`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zamrozić karnetu");
+  return response.json();
+}
+
+export async function unfreezePassEmployee(auth: AuthState, gymId: number, passId: number): Promise<PassView> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/passes/${passId}/unfreeze`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` }
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się odmrozić karnetu");
+  return response.json();
+}
+
+export async function getMyProductSalesHistory(auth: AuthState, gymId: number): Promise<ProductSaleView[]> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/sales/my-history`, {
+    headers: { Authorization: `Bearer ${auth.token}` }
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii Twojej sprzedaży");
+  return response.json();
+}
+
+export async function getProductByBarcode(auth: AuthState, gymId: number, code: string): Promise<ProductView> {
+  const response = await fetch(`${API_URL}/employee/gyms/${gymId}/products/by-barcode?code=${encodeURIComponent(code)}`, {
+    headers: { Authorization: `Bearer ${auth.token}` }
+  });
+  if (!response.ok) await parseApiError(response, "Nie znaleziono produktu");
+  return response.json();
+}
+
+export async function getClassRatingsSummary(auth: AuthState, gymId: number): Promise<ClassRatingSummary[]> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/classes/ratings-summary`, {
+    headers: { Authorization: `Bearer ${auth.token}` }
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zestawienia ocen");
+  return response.json();
+}
+
+export async function getClassRatings(auth: AuthState, gymId: number, classId: number): Promise<ClassRatingView[]> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/classes/${classId}/ratings`, {
+    headers: { Authorization: `Bearer ${auth.token}` }
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać ocen zajęć");
+  return response.json();
+}
+
+export function buildSalesReportCsvUrl(gymId: number, from?: string, to?: string): string {
+  let params = "";
+  if (from) params += `?from=${from}`;
+  if (to) params += (params ? `&to=${to}` : `?to=${to}`);
+  return `${API_URL}/owner/gyms/${gymId}/sales-report/export.csv${params}`;
 }

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import type { AuthState } from "../auth";
-import { cancelPass, renewPass, type PassView } from "../api";
+import { cancelPass, renewPass, freezePassEmployee, unfreezePassEmployee, type PassView } from "../api";
 import { FormSection } from "./FormSection";
 import { inputClassName, labelClassName, primaryButtonClassName, dangerButtonClassName } from "./formStyles";
 import { StatusChip } from "./StatusChip";
@@ -16,6 +16,10 @@ export function GuestPassActions(props: {
   const { auth, gymId, pass, onUpdated, setError, setInfo } = props;
   const [endDate, setEndDate] = useState(pass.endDate);
   const [price, setPrice] = useState(String(pass.price));
+  
+  const [isFreezing, setIsFreezing] = useState(false);
+  const [freezeStart, setFreezeStart] = useState("");
+  const [freezeEnd, setFreezeEnd] = useState("");
 
   async function onRenew(event: FormEvent) {
     event.preventDefault();
@@ -36,6 +40,30 @@ export function GuestPassActions(props: {
       onUpdated();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się anulować karnetu");
+    }
+  }
+
+  async function onFreeze(event: FormEvent) {
+    event.preventDefault();
+    if (!freezeStart || !freezeEnd) return;
+    try {
+      await freezePassEmployee(auth, gymId, pass.id, { startDate: freezeStart, endDate: freezeEnd });
+      setInfo(`Zamrożono karnet „${pass.passType}”`);
+      setIsFreezing(false);
+      onUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nie udało się zamrozić karnetu");
+    }
+  }
+
+  async function onUnfreeze() {
+    if (!confirm("Czy na pewno chcesz odmrozić ten karnet?")) return;
+    try {
+      await unfreezePassEmployee(auth, gymId, pass.id);
+      setInfo(`Odmrożono karnet „${pass.passType}”`);
+      onUpdated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nie udało się odmrozić karnetu");
     }
   }
 
@@ -77,9 +105,40 @@ export function GuestPassActions(props: {
           </button>
         </form>
       )}
-      {pass.status === "ACTIVE" && (
-        <button type="button" onClick={onCancel} className={`${dangerButtonClassName} w-full`}>
-          Anuluj karnet
+
+      {pass.status === "ACTIVE" && !isFreezing && (
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setIsFreezing(true)} className="flex-1 bg-slate-100 text-slate-700 py-2 rounded font-medium text-sm hover:bg-slate-200 transition-colors">
+            Zamroź
+          </button>
+          <button type="button" onClick={onCancel} className="flex-1 bg-red-50 text-red-600 py-2 rounded font-medium text-sm hover:bg-red-100 transition-colors">
+            Anuluj
+          </button>
+        </div>
+      )}
+
+      {pass.status === "ACTIVE" && isFreezing && (
+        <form onSubmit={onFreeze} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+          <div>
+            <label className={labelClassName}>Od</label>
+            <input type="date" value={freezeStart} onChange={(e) => setFreezeStart(e.target.value)} className={inputClassName} required />
+          </div>
+          <div>
+            <label className={labelClassName}>Do</label>
+            <input type="date" value={freezeEnd} onChange={(e) => setFreezeEnd(e.target.value)} className={inputClassName} required />
+          </div>
+          <button type="submit" className="col-span-1 bg-blue-600 text-white py-2 rounded font-medium text-sm hover:bg-blue-700 transition-colors">
+            Zatwierdź zamrożenie
+          </button>
+          <button type="button" onClick={() => setIsFreezing(false)} className="col-span-1 bg-slate-100 text-slate-700 py-2 rounded font-medium text-sm hover:bg-slate-200 transition-colors">
+            Anuluj
+          </button>
+        </form>
+      )}
+
+      {pass.status === "FROZEN" && (
+        <button type="button" onClick={onUnfreeze} className="w-full bg-blue-50 text-blue-600 py-2 rounded font-medium text-sm hover:bg-blue-100 transition-colors">
+          Odmroź karnet
         </button>
       )}
     </div>

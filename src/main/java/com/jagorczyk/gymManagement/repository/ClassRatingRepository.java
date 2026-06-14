@@ -9,4 +9,5 @@ public interface ClassRatingRepository extends JpaRepository<ClassRating, Long> 
     List<ClassRating> findByGroupClassId(Long classId);
     Optional<ClassRating> findByGroupClassIdAndGuestId(Long classId, Long guestId);
     List<ClassRating> findByGroupClassGymId(Long gymId);
+    List<ClassRating> findByGroupClassIdOrderByCreatedAtDesc(Long classId);
 }

@@ -23,6 +23,15 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
   const { auth, selectedGymId, setError } = ctx;
   const [data, setData] = useState<AnalyticsDashboardDto | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!selectedGymId) return;
@@ -37,7 +46,6 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
 
   const { metrics, revenueOverTime, checkInsOverTime, passTypePopularity } = data;
 
-  const isDark = document.documentElement.classList.contains("dark");
   const gridStroke = isDark ? "#334155" : "#e2e8f0";
   const tooltipBg = isDark ? "#0f172a" : "#ffffff";
   const tooltipColor = isDark ? "#ffffff" : "#0f172a";
@@ -71,6 +79,12 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Wejścia (dzisiaj)</h3>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{metrics.checkInsToday}</p>
         </div>
+        {(metrics as any).productRevenueThisMonth != null && (
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
+            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Przychód POS (mies.)</h3>
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{(metrics as any).productRevenueThisMonth} PLN</p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
