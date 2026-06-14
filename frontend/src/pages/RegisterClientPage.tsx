@@ -171,8 +171,4 @@ export function RegisterClientPage() {
       </div>
     </div>
   );
-}</div>
-      </div>
-    </div>
-  );
 }
