@@ -278,8 +278,10 @@ export function AppShell() {
           )}
         </header>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 max-w-7xl mx-auto w-full">
-          <Outlet />
+        <div className="flex-1 overflow-y-auto overflow-x-hidden w-full">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
