@@ -35,6 +35,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-twój_email@gmail.com}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-twój_app_password}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     ports:
       - "8080:8080"
     restart: always

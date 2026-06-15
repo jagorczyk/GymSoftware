@@ -18,6 +18,9 @@ public class StripeService {
 
     private final StripeProperties stripeProperties;
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     @PostConstruct
     public void init() {
         Stripe.apiKey = stripeProperties.getApi().getKey();
@@ -100,8 +103,8 @@ public class StripeService {
             plan.setStripePriceId(productAndPrice[1]);
         }
 
-        String successUrl = "http://localhost:5173/admin/subscription-success?gymId=" + gymId;
-        String cancelUrl = "http://localhost:5173/admin/subscription-cancel?gymId=" + gymId;
+        String successUrl = frontendUrl + "/admin/subscription-success?gymId=" + gymId;
+        String cancelUrl = frontendUrl + "/admin/subscription-cancel?gymId=" + gymId;
 
         com.stripe.net.RequestOptions.RequestOptionsBuilder optionsBuilder = com.stripe.net.RequestOptions.builder();
         com.stripe.net.RequestOptions.RequestOptionsBuilder.unsafeSetStripeVersionOverride(optionsBuilder, "2026-02-25.preview");
