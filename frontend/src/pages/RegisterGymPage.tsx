@@ -177,8 +177,8 @@ export function RegisterGymPage() {
                         </div>
                       )}
                       <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h4>
-                      <div className="text-3xl font-black text-slate-900 dark:text-white mb-4">
-                        {plan.price} <span className="text-base font-medium text-slate-500">zł / mies.</span>
+                      <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">
+                        {plan.price} zł <span className="text-base font-medium text-slate-500 dark:text-slate-400">/ mies. (~$25)</span>
                       </div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line leading-relaxed">
                         {plan.features}
