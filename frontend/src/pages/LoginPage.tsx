@@ -122,11 +122,19 @@ export function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-8 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
-              Nie masz jeszcze konta?{" "}
-              <Link to="/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-bold ml-1 transition-colors">
-                Zarejestruj się
-              </Link>
+            <div className="mt-8 space-y-3 text-center text-sm font-medium text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-6">
+              <div>
+                Jesteś nowym klientem?{" "}
+                <Link to="/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-bold ml-1 transition-colors">
+                  Załóż darmowe konto
+                </Link>
+              </div>
+              <div>
+                Jesteś właścicielem siłowni?{" "}
+                <Link to="/register-gym" className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-bold ml-1 transition-colors">
+                  Rozpocznij współpracę
+                </Link>
+              </div>
             </div>
           </div>
         </div>

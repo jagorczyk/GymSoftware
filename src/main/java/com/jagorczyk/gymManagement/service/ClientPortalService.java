@@ -383,6 +383,29 @@ public class ClientPortalService {
     }
 
     @Transactional
+    public void cancelPersonalTraining(Long userId, Long gymId, Long trainingId) {
+        Guest guest = getGuest(userId, gymId);
+        
+        PersonalTraining training = personalTrainingRepository.findById(trainingId)
+                .orElseThrow(() -> new IllegalArgumentException("Trening nie istnieje"));
+
+        if (!training.getClient().getId().equals(guest.getId())) {
+            throw new IllegalArgumentException("Nie możesz anulować treningu, który nie należy do ciebie");
+        }
+
+        if (!training.getGym().getId().equals(gymId)) {
+            throw new IllegalArgumentException("Trening nie jest powiązany z tą siłownią");
+        }
+
+        if ("CANCELLED".equals(training.getStatus())) {
+            throw new IllegalArgumentException("Trening jest już anulowany");
+        }
+
+        training.setStatus("CANCELLED");
+        personalTrainingRepository.save(training);
+    }
+
+    @Transactional
     public void bookPersonalTraining(Long userId, Long gymId, Long trainerId, BookTrainingRequest requestDto) {
         Guest guest = getGuest(userId, gymId);
 
@@ -430,6 +453,7 @@ public class ClientPortalService {
         List<PersonalTraining> existingTrainings = personalTrainingRepository.findAll().stream()
                 .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
                 .filter(t -> t.getScheduledAt().toLocalDate().equals(date))
+                .filter(t -> !"CANCELLED".equals(t.getStatus()))
                 .toList();
 
         List<AvailableSlotView> slots = new java.util.ArrayList<>();
@@ -494,6 +518,7 @@ public class ClientPortalService {
 
         List<PersonalTraining> allTrainings = personalTrainingRepository.findAll().stream()
                 .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
+                .filter(t -> !"CANCELLED".equals(t.getStatus()))
                 .toList();
 
         java.util.Map<java.time.LocalDate, List<com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ScheduleSlotView>> dayMap = new java.util.HashMap<>();

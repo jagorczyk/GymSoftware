@@ -1,4 +1,4 @@
-import { ReactElement, useMemo, useState } from "react";
+import { ReactElement, useMemo, useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
@@ -45,8 +45,20 @@ export function AppShell() {
   const { state: gymSelector } = useAppGymSelector();
   const { theme, toggleTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const displayName = brandName.trim();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const employeeNavItems = useMemo(
     () =>
@@ -77,15 +89,23 @@ export function AppShell() {
   const clientNavItems = useMemo(
     () => [
       { label: "Dashboard", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
-      { label: "Zajęcia", to: "/client/classes", icon: <CalendarDays className="w-5 h-5" /> },
-      { label: "Treningi", to: "/client/trainers", icon: <UserCircle className="w-5 h-5" /> },
+      { label: "Zajęcia i Treningi", to: "/client/activities", icon: <CalendarDays className="w-5 h-5" /> },
       { label: "Dołącz do siłowni", to: "/client/gyms/join", icon: <Store className="w-5 h-5" /> },
     ],
     []
   );
 
+  const superAdminNavItems = useMemo(
+    () => [
+      { label: "Subskrypcje SaaS", to: "/superadmin/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+    ],
+    []
+  );
+
   const navItems =
-    auth?.role === "OWNER"
+    auth?.role === "SUPER_ADMIN"
+      ? superAdminNavItems
+      : auth?.role === "OWNER"
       ? [
           { label: "Podsumowanie", to: "/owner/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
           { label: "Siłownie", to: "/owner/gyms", icon: <Store className="w-5 h-5" /> },
@@ -152,12 +172,14 @@ export function AppShell() {
         `}
       >
         <div className="h-20 flex items-center px-6 border-b border-slate-200/40 dark:border-slate-800/30 gap-4 min-w-0">
-          <div className="text-primary-500 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/30 p-2.5 rounded-2xl shrink-0 border border-primary-100 dark:border-primary-900/30 shadow-[0_0_15px_rgba(33,85,229,0.1)] glow-box-blue">
-            <Dumbbell className="w-6 h-6" />
-          </div>
+          <img 
+            src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"} 
+            alt="Gymlos" 
+            className="h-10 object-contain shrink-0"
+          />
           {displayName ? (
             <span
-              className="font-display font-black text-lg text-slate-900 dark:text-slate-100 tracking-tight truncate min-w-0 flex-1 uppercase"
+              className="font-display font-black text-sm text-slate-500 dark:text-slate-400 tracking-tight truncate min-w-0 flex-1 uppercase border-l border-slate-200 dark:border-slate-700 pl-4"
               title={displayName}
             >
               {displayName}
@@ -241,41 +263,82 @@ export function AppShell() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="lg:hidden h-16 bg-white dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/60 flex items-center px-4 justify-between sticky top-0 z-30">
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <div className="flex items-center gap-2 font-display font-extrabold text-slate-900 dark:text-slate-100 min-w-0 max-w-[60%]">
-            <Dumbbell className="w-5 h-5 text-primary-500 shrink-0" />
-            {displayName ? (
-              <span className="truncate uppercase text-sm tracking-tight" title={displayName}>
-                {displayName}
-              </span>
-            ) : null}
-          </div>
-          {gymSelector.gyms.length > 0 ? (
-            <select
-              value={gymSelector.selectedGymId === "" ? "" : String(gymSelector.selectedGymId)}
-              onChange={(e) => {
-                const id = Number(e.target.value);
-                if (!Number.isNaN(id)) gymSelector.onSelectGym(id);
-              }}
-              className="max-w-[42%] text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 dark:text-white rounded-lg px-2 py-1.5 outline-none"
-              aria-label="Wybierz siłownię"
+        <header className="h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/40 flex items-center px-4 sm:px-6 justify-between sticky top-0 z-30 transition-colors">
+          {/* Left side: Mobile menu toggle and title */}
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-colors"
             >
-              {gymSelector.gyms.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="w-10" />
-          )}
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="lg:hidden flex items-center gap-2 font-display font-extrabold text-slate-900 dark:text-slate-100 min-w-0">
+              <Dumbbell className="w-5 h-5 text-primary-500 shrink-0" />
+              {displayName ? (
+                <span className="truncate uppercase text-sm tracking-tight" title={displayName}>
+                  {displayName}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Right side: Gym selector (mobile), User Profile Bar */}
+          <div className="flex items-center gap-4 sm:gap-6 ml-auto">
+            {gymSelector.gyms.length > 0 ? (
+              <div className="lg:hidden">
+                <select
+                  value={gymSelector.selectedGymId === "" ? "" : String(gymSelector.selectedGymId)}
+                  onChange={(e) => {
+                    const id = Number(e.target.value);
+                    if (!Number.isNaN(id)) gymSelector.onSelectGym(id);
+                  }}
+                  className="max-w-[140px] text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-primary-500/20"
+                  aria-label="Wybierz siłownię"
+                >
+                  {gymSelector.gyms.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+
+            {/* User Profile Section */}
+            <div className="relative pl-4 sm:pl-6 border-l border-slate-200 dark:border-slate-800" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity group cursor-pointer outline-none"
+              >
+                <div className="flex flex-col items-end hidden sm:flex">
+                  <span className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    {auth?.email?.split('@')[0] || "Użytkownik"}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary-500 dark:text-primary-400">
+                    {auth?.role === "OWNER" ? "Właściciel" : auth?.role === "EMPLOYEE" ? "Pracownik" : "Klient"}
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20 ring-2 ring-white dark:ring-slate-900 group-hover:scale-105 transition-transform">
+                  <UserCircle className="w-6 h-6" />
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {profileMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 origin-top-right">
+                  <Link
+                    to={`/${auth?.role?.toLowerCase() || 'client'}/profile`}
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
+                    Ustawienia
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full">

@@ -34,6 +34,7 @@ import {
   OwnerTrainerCreatePage,
   OwnerTrainerEditPage,
 } from "../pages/owner/ownerRouteElements";
+import { ProfileSettingsPage } from "../pages/ProfileSettingsPage";
 
 export const ownerRouteObjects: RouteObject[] = [
   { index: true, element: <Navigate to="dashboard" replace /> },
@@ -70,4 +71,5 @@ export const ownerRouteObjects: RouteObject[] = [
   { path: "trainers", Component: OwnerTrainersListPage },
   { path: "trainers/new", Component: OwnerTrainerCreatePage },
   { path: "trainers/:trainerId", Component: OwnerTrainerEditPage },
+  { path: "profile", Component: ProfileSettingsPage },
 ];

@@ -204,4 +204,13 @@ public class ClientPortalController {
     ) {
         return clientPortalService.getFullSchedule(gymId, trainerId);
     }
+
+    @PostMapping("/gyms/{gymId}/trainings/{trainingId}/cancel")
+    public void cancelPersonalTraining(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long trainingId
+    ) {
+        clientPortalService.cancelPersonalTraining(principal.getUserId(), gymId, trainingId);
+    }
 }

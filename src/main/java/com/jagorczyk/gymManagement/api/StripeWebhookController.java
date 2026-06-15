@@ -2,9 +2,11 @@ package com.jagorczyk.gymManagement.api;
 
 import com.jagorczyk.gymManagement.config.StripeProperties;
 import com.jagorczyk.gymManagement.service.ClientPortalService;
+import com.jagorczyk.gymManagement.service.SaaSSubscriptionService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
+import com.stripe.model.Subscription;
 import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ public class StripeWebhookController {
 
     private final StripeProperties stripeProperties;
     private final ClientPortalService clientPortalService;
+    private final SaaSSubscriptionService saasSubscriptionService;
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
@@ -37,23 +40,48 @@ public class StripeWebhookController {
         if ("checkout.session.completed".equals(event.getType())) {
             Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
 
-            if (session != null && "payment".equals(session.getMode())) {
-                String userIdStr = session.getMetadata().get("userId");
-                String gymIdStr = session.getMetadata().get("gymId");
-                String passTypeIdStr = session.getMetadata().get("passTypeId");
+            if (session != null) {
+                if ("payment".equals(session.getMode())) {
+                    String userIdStr = session.getMetadata().get("userId");
+                    String gymIdStr = session.getMetadata().get("gymId");
+                    String passTypeIdStr = session.getMetadata().get("passTypeId");
 
-                if (userIdStr != null && gymIdStr != null && passTypeIdStr != null) {
-                    try {
-                        Long userId = Long.valueOf(userIdStr);
-                        Long gymId = Long.valueOf(gymIdStr);
-                        Long passTypeId = Long.valueOf(passTypeIdStr);
-                        
-                        clientPortalService.activatePassFromStripe(userId, gymId, passTypeId);
-                    } catch (Exception e) {
-                        System.err.println("Failed to activate pass: " + e.getMessage());
-                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    if (userIdStr != null && gymIdStr != null && passTypeIdStr != null) {
+                        try {
+                            Long userId = Long.valueOf(userIdStr);
+                            Long gymId = Long.valueOf(gymIdStr);
+                            Long passTypeId = Long.valueOf(passTypeIdStr);
+                            
+                            clientPortalService.activatePassFromStripe(userId, gymId, passTypeId);
+                        } catch (Exception e) {
+                            System.err.println("Failed to activate pass: " + e.getMessage());
+                            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                        }
+                    }
+                } else if ("subscription".equals(session.getMode())) {
+                    String isSaaS = session.getMetadata().get("isSaaS");
+                    if ("true".equals(isSaaS)) {
+                        String gymIdStr = session.getMetadata().get("gymId");
+                        if (gymIdStr != null) {
+                            try {
+                                Long gymId = Long.valueOf(gymIdStr);
+                                saasSubscriptionService.activateSubscription(gymId, session.getSubscription(), session.getCustomer());
+                            } catch (Exception e) {
+                                System.err.println("Failed to activate SaaS subscription: " + e.getMessage());
+                                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                            }
+                        }
                     }
                 }
+            }
+        } else if ("customer.subscription.updated".equals(event.getType()) || "customer.subscription.deleted".equals(event.getType())) {
+            Subscription subscription = (Subscription) event.getDataObjectDeserializer().getObject().orElse(null);
+            if (subscription != null) {
+                saasSubscriptionService.updateSubscriptionStatus(
+                        subscription.getId(),
+                        subscription.getStatus(),
+                        subscription.getCurrentPeriodEnd()
+                );
             }
         }
 

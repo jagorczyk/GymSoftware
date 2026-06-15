@@ -9,7 +9,7 @@ import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
 import { useToast } from "../components/Toast";
 
-export function ClientClassesPage() {
+export function ClientClassesPage({ hideHeader }: { hideHeader?: boolean }) {
   const { auth } = useAuth();
   const { state: gymSelector } = useAppGymSelector();
   const gymId = gymSelector.selectedGymId;
@@ -104,10 +104,12 @@ export function ClientClassesPage() {
         </div>
       )}
 
-      <PageHeader
-        title="Zajęcia grupowe"
-        subtitle="Sprawdź nadchodzące zajęcia i zarezerwuj miejsce dla siebie."
-      />
+      {!hideHeader && (
+        <PageHeader
+          title="Zajęcia grupowe"
+          subtitle="Sprawdź nadchodzące zajęcia i zarezerwuj miejsce dla siebie."
+        />
+      )}
 
       {classes.length === 0 ? (
         <EmptyState

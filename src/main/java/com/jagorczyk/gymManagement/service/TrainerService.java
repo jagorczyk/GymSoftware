@@ -97,6 +97,7 @@ public class TrainerService {
         return trainingRepository.findAll().stream()
                 .filter(t -> t.getTrainer().getId().equals(profile.getEmployee().getId()))
                 .filter(t -> t.getScheduledAt().isAfter(now.minusHours(1)))
+                .filter(t -> !"CANCELLED".equals(t.getStatus()))
                 .sorted((a, b) -> a.getScheduledAt().compareTo(b.getScheduledAt()))
                 .map(t -> new com.jagorczyk.gymManagement.api.dto.TrainerDtos.TrainerTrainingView(
                         t.getId(),

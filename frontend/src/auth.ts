@@ -1,4 +1,4 @@
-export type Role = "OWNER" | "EMPLOYEE" | "GUEST";
+export type Role = "SUPER_ADMIN" | "OWNER" | "EMPLOYEE" | "GUEST";
 
 export type AuthState = {
   token: string;

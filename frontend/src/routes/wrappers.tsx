@@ -134,3 +134,23 @@ export function ClientDashboardWrapper() {
   return <Outlet />;
 }
 
+export function SuperAdminDashboardWrapper() {
+  const { auth } = useAuth();
+  const location = useLocation();
+
+  if (!auth) return <Navigate to="/login" replace />;
+  if (auth.role !== "SUPER_ADMIN") {
+    return (
+      <Navigate
+        to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
+        replace
+      />
+    );
+  }
+  if (location.pathname === "/superadmin" || location.pathname === "/superadmin/") {
+    return <Navigate to="/superadmin/dashboard" replace />;
+  }
+
+  return <Outlet />;
+}
+

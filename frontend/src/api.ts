@@ -1367,3 +1367,98 @@ export async function deleteOwnerTrainer(auth: AuthState, gymId: number, trainer
   });
   if (!response.ok) await parseApiError(response, "Nie udało się usunąć trenera");
 }
+
+export type SaaSPlan = {
+  id: number;
+  name: string;
+  price: number;
+  stripeProductId: string;
+  stripePriceId: string;
+  features: string;
+  active: boolean;
+};
+
+export type GymSubscriptionDTO = {
+  id: number;
+  gymId: number;
+  gymName: string;
+  gymAddress: string;
+  ownerEmail: string;
+  ownerFirstName: string;
+  ownerLastName: string;
+  saasPlanId: number;
+  saasPlanName: string;
+  status: string;
+  stripeSubscriptionId: string;
+  currentPeriodEnd: string;
+  createdAt: string;
+};
+
+export async function getSaaSPlans(auth: AuthState): Promise<SaaSPlan[]> {
+  const response = await fetch(`${API_URL}/admin/saas/plans`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać planów SaaS");
+  return response.json();
+}
+
+export async function getSaaSSubscriptions(auth: AuthState): Promise<GymSubscriptionDTO[]> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać subskrypcji");
+  return response.json();
+}
+
+export async function cancelSaaSSubscription(auth: AuthState, subscriptionId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się anulować subskrypcji");
+}
+
+export async function updateSaaSSubscriptionStatus(auth: AuthState, subscriptionId: number, status: string): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/status`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować statusu subskrypcji");
+}
+
+export async function getTenantSaaSPlans(): Promise<SaaSPlan[]> {
+  const response = await fetch(`${API_URL}/auth/tenant/plans`);
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać planów SaaS");
+  return response.json();
+}
+
+export async function registerTenant(data: any): Promise<{ checkoutUrl: string }> {
+  const response = await fetch(`${API_URL}/auth/tenant/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) await parseApiError(response, "Rejestracja siłowni nie powiodła się");
+  return response.json();
+}
+
+export type SaaSStatsView = {
+  totalMrr: number;
+  activeGyms: number;
+  trialingGyms: number;
+  canceledGyms: number;
+  subscriptionsByPlan: Array<{ planName: string; count: number }>;
+  subscriptionsByStatus: Array<{ statusName: string; count: number }>;
+};
+
+export async function getSaaSStats(auth: AuthState): Promise<SaaSStatsView> {
+  const response = await fetch(`${API_URL}/admin/saas/stats`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk SaaS");
+  return response.json();
+}

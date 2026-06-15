@@ -3,9 +3,9 @@ import { ClientDashboard } from "../pages/ClientDashboard";
 import { ClientGymJoinPage } from "../pages/ClientGymJoinPage";
 import { ClientGymPassesPage } from "../pages/ClientGymPassesPage";
 import { ClientBuyPassPage } from "../pages/ClientBuyPassPage";
-import { ClientClassesPage } from "../pages/ClientClassesPage";
+import { ClientActivitiesPage } from "../pages/ClientActivitiesPage";
 import { ClientCheckoutSimulation } from "../pages/ClientCheckoutSimulation";
-import { ClientTrainersPage } from "../pages/ClientTrainersPage";
+import { ProfileSettingsPage } from "../pages/ProfileSettingsPage";
 
 export const clientRouteObjects: RouteObject[] = [
   { index: true, element: <Navigate to="dashboard" replace /> },
@@ -14,6 +14,6 @@ export const clientRouteObjects: RouteObject[] = [
   { path: "gyms/:gymId/passes", Component: ClientGymPassesPage },
   { path: "gyms/:gymId/buy", Component: ClientBuyPassPage },
   { path: "gyms/:gymId/checkout-simulation", Component: ClientCheckoutSimulation },
-  { path: "classes", Component: ClientClassesPage },
-  { path: "trainers", Component: ClientTrainersPage },
+  { path: "activities", Component: ClientActivitiesPage },
+  { path: "profile", Component: ProfileSettingsPage },
 ];

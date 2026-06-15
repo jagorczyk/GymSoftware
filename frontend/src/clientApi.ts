@@ -283,3 +283,11 @@ export async function getTrainerSchedule(
   if (!res.ok) throw new Error("Błąd pobierania terminarza");
   return res.json();
 }
+
+export async function cancelTraining(auth: AuthState, gymId: number, trainingId: number): Promise<void> {
+  const res = await fetch(`${API_URL}/client/gyms/${gymId}/trainings/${trainingId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!res.ok) throw new Error("Błąd anulowania treningu");
+}

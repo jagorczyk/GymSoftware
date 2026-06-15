@@ -33,7 +33,7 @@ function formatTime(timeStr: string) {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export function ClientTrainersPage() {
+export function ClientTrainersPage({ hideHeader }: { hideHeader?: boolean }) {
   const { auth } = useAuth();
   const { state: gymSelector } = useAppGymSelector();
   const gymId = gymSelector.selectedGymId;
@@ -97,10 +97,12 @@ export function ClientTrainersPage() {
   if (!selectedTrainer) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Treningi Personalne"
-          subtitle="Wybierz trenera i osiągnij swoje cele pod okiem profesjonalisty."
-        />
+        {!hideHeader && (
+          <PageHeader
+            title="Treningi Personalne"
+            subtitle="Wybierz trenera i osiągnij swoje cele pod okiem profesjonalisty."
+          />
+        )}
         {trainers.length === 0 ? (
           <EmptyState
             icon={<UserCircle className="w-12 h-12 text-slate-400" />}

@@ -5,6 +5,7 @@ import type { Role } from "../auth";
 export function LoginRoute() {
   const { auth } = useAuth();
   if (auth) {
+    if (auth.role === "SUPER_ADMIN") return <Navigate to="/superadmin/dashboard" replace />;
     return (
       <Navigate
         to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
@@ -25,6 +26,7 @@ export function RequireRole(props: { role: Role }) {
   const { auth } = useAuth();
   if (!auth) return <Navigate to="/login" replace />;
   if (auth.role !== props.role) {
+    if (auth.role === "SUPER_ADMIN") return <Navigate to="/superadmin/dashboard" replace />;
     return (
       <Navigate
         to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
@@ -38,6 +40,7 @@ export function RequireRole(props: { role: Role }) {
 export function RootRedirect() {
   const { auth } = useAuth();
   if (!auth) return <Navigate to="/login" replace />;
+  if (auth.role === "SUPER_ADMIN") return <Navigate to="/superadmin/dashboard" replace />;
   return (
     <Navigate
       to={auth.role === "OWNER" ? "/owner/dashboard" : auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"}
@@ -52,4 +55,8 @@ export function RequireOwnerRole() {
 
 export function RequireEmployeeRole() {
   return <RequireRole role="EMPLOYEE" />;
+}
+
+export function RequireSuperAdminRole() {
+  return <RequireRole role="SUPER_ADMIN" />;
 }

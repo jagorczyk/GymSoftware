@@ -9,11 +9,13 @@ import { ToastProvider } from "./components/Toast";
 import { EmployeePermissionsProvider } from "./employeePermissionsContext";
 import { SelectedGymBrandProvider } from "./selectedGymBrandContext";
 import { AppGymSelectorProvider } from "./appGymSelectorContext";
+import { WebSocketProvider } from "./WebSocketContext";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
-      <ThemeProvider>
+      <WebSocketProvider>
+        <ThemeProvider>
         <ToastProvider>
           <EmployeePermissionsProvider>
             <SelectedGymBrandProvider>
@@ -24,6 +26,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           </EmployeePermissionsProvider>
         </ToastProvider>
       </ThemeProvider>
+      </WebSocketProvider>
     </AuthProvider>
   </React.StrictMode>
 );

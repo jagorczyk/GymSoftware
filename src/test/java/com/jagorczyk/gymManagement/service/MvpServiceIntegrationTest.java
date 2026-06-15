@@ -55,9 +55,12 @@ class MvpServiceIntegrationTest {
     PasswordEncoder passwordEncoder;
 
     @Test
-    void registerGeneratesJwtToken() {
+    void registerGeneratesJwtTokenAfterVerification() {
         var response = authService.register(new RegisterRequest("owner@test.com", "secret123", Role.OWNER));
-        assertThat(response.token()).isNotBlank();
+        assertThat(response.token()).isNull();
+        User user = userRepository.findByEmail("owner@test.com").get();
+        var verifyResponse = authService.verifyEmail(new com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest("owner@test.com", user.getVerificationCode()));
+        assertThat(verifyResponse.token()).isNotBlank();
     }
 
     @Test
