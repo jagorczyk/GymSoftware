@@ -14,12 +14,16 @@ public class EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username:}")
+    private String fromAddress;
+
     public void sendVerificationEmail(String to, String code) {
         if (mailSender == null) {
             logger.info("Mocking email to: {} with code: {}", to, code);
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
         message.setTo(to);
         message.setSubject("Weryfikacja adresu e-mail");
         message.setText("Twój kod weryfikacyjny to: " + code);
@@ -36,6 +40,7 @@ public class EmailService {
             return;
         }
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromAddress);
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body);
