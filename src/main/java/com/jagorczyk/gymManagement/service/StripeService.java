@@ -85,21 +85,19 @@ public class StripeService {
 
     public String createSaaSSubscriptionCheckout(com.jagorczyk.gymManagement.domain.SaaSPlan plan, Long gymId) throws StripeException {
         if (plan.getStripePriceId() == null || plan.getStripePriceId().isEmpty()) {
-            if ("Basic subscription".equalsIgnoreCase(plan.getName()) || "Starter".equalsIgnoreCase(plan.getName()) || "Pro".equalsIgnoreCase(plan.getName()) || "Enterprise".equalsIgnoreCase(plan.getName())) {
-                String taxCode = "txcd_10103100"; // Digital product tax code
-                long amountInCents = plan.getPrice().multiply(java.math.BigDecimal.valueOf(100)).longValue();
-                String currency = "Basic subscription".equalsIgnoreCase(plan.getName()) ? "usd" : "pln";
-                
-                String[] productAndPrice = createStripeProductAndPrice(
-                    plan.getName(),
-                    plan.getFeatures() != null ? plan.getFeatures() : "A subscription to our service",
-                    taxCode,
-                    amountInCents,
-                    currency
-                );
-                plan.setStripeProductId(productAndPrice[0]);
-                plan.setStripePriceId(productAndPrice[1]);
-            }
+            String taxCode = "txcd_10103100"; // Digital product tax code
+            long amountInCents = plan.getPrice().multiply(java.math.BigDecimal.valueOf(100)).longValue();
+            String currency = "pln";
+            
+            String[] productAndPrice = createStripeProductAndPrice(
+                plan.getName(),
+                plan.getFeatures() != null ? plan.getFeatures() : "A subscription to our service",
+                taxCode,
+                amountInCents,
+                currency
+            );
+            plan.setStripeProductId(productAndPrice[0]);
+            plan.setStripePriceId(productAndPrice[1]);
         }
 
         String successUrl = "http://localhost:5173/admin/subscription-success?gymId=" + gymId;

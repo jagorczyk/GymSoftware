@@ -15,6 +15,10 @@ public class SaaSPlanService {
         return saasPlanRepository.findAll();
     }
 
+    public List<SaaSPlan> getActivePlans() {
+        return saasPlanRepository.findByIsActiveTrue();
+    }
+
     public SaaSPlan getPlanById(Long id) {
         return saasPlanRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("SaaS Plan not found"));

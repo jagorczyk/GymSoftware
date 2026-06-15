@@ -25,7 +25,7 @@ public class TenantRegistrationController {
 
     @GetMapping("/plans")
     public ResponseEntity<List<SaaSPlan>> getPlans() {
-        return ResponseEntity.ok(saasPlanService.getAllPlans());
+        return ResponseEntity.ok(saasPlanService.getActivePlans());
     }
 
     @PostMapping("/register")

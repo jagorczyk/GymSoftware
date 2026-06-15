@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SaaSPlanRepository extends JpaRepository<SaaSPlan, Long> {
+    java.util.List<SaaSPlan> findByIsActiveTrue();
 }
