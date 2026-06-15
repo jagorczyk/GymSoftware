@@ -29,7 +29,7 @@ export async function login(email: string, password: string): Promise<{ token: s
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  if (!response.ok) await parseApiError(response, "Logowanie nie powiodĹ‚o siÄ™");
+  if (!response.ok) await parseApiError(response, "Logowanie nie powiodło się");
   return response.json();
 }
 
@@ -39,7 +39,7 @@ export async function register(email: string, password: string, role: string): P
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, role }),
   });
-  if (!response.ok) await parseApiError(response, "Rejestracja nie powiodĹ‚a siÄ™");
+  if (!response.ok) await parseApiError(response, "Rejestracja nie powiodła się");
 }
 
 export async function verifyEmail(email: string, code: string): Promise<{ token: string }> {
@@ -48,7 +48,7 @@ export async function verifyEmail(email: string, code: string): Promise<{ token:
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, code }),
   });
-  if (!response.ok) await parseApiError(response, "Weryfikacja nie powiodĹ‚a siÄ™");
+  if (!response.ok) await parseApiError(response, "Weryfikacja nie powiodła się");
   return response.json();
 }
 
@@ -56,7 +56,7 @@ export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number;
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ listy siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy siłowni");
   return response.json();
 }
 
@@ -72,7 +72,7 @@ export async function createOwnerGym(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ utworzyÄ‡ siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się utworzyć siłowni");
   return response.json();
 }
 
@@ -89,7 +89,7 @@ export async function updateOwnerGym(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ danych siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować danych siłowni");
   return response.json();
 }
 
@@ -106,7 +106,7 @@ export async function createOwnerLocker(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ szafki");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać szafki");
   return response.json();
 }
 
@@ -115,14 +115,14 @@ export async function deleteOwnerGym(auth: AuthState, gymId: number): Promise<vo
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć siłowni");
 }
 
 export async function getOwnerGymDetails(auth: AuthState, gymId: number): Promise<any> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/details`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ szczegĂłĹ‚Ăłw siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać szczegółów siłowni");
   return response.json();
 }
 
@@ -139,7 +139,7 @@ export async function createOwnerEmployee(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ pracownika");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać pracownika");
   return response.json();
 }
 
@@ -157,7 +157,7 @@ export async function updateOwnerEmployee(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ danych pracownika");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować danych pracownika");
   return response.json();
 }
 
@@ -166,7 +166,7 @@ export async function deleteOwnerEmployee(auth: AuthState, gymId: number, employ
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ pracownika");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć pracownika");
 }
 
 export async function createPassType(
@@ -182,7 +182,7 @@ export async function createPassType(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ typu karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać typu karnetu");
   return response.json();
 }
 
@@ -191,7 +191,7 @@ export async function deletePassType(auth: AuthState, gymId: number, passTypeId:
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ typu karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć typu karnetu");
 }
 
 export async function sellPass(auth: AuthState, gymId: number, payload: any): Promise<any> {
@@ -203,7 +203,7 @@ export async function sellPass(auth: AuthState, gymId: number, payload: any): Pr
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ sprzedaÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się sprzedać karnetu");
   return response.json();
 }
 
@@ -213,7 +213,7 @@ export async function getEmployeeGyms(auth: AuthState): Promise<
   const response = await fetch(`${API_URL}/employee/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ przypisanych siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać przypisanych siłowni");
   return response.json();
 }
 
@@ -237,7 +237,7 @@ export async function getEmployeeLiveOverview(
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/live`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ bieĹĽÄ…cego podglÄ…du siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać bieżącego podglądu siłowni");
   return response.json();
 }
 
@@ -253,7 +253,7 @@ export async function getEmployeeGuests(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ listy klientĂłw");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy klientów");
   return response.json();
 }
 
@@ -270,7 +270,7 @@ export async function createEmployeeGuest(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zarejestrowaÄ‡ klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się zarejestrować klienta");
   return response.json();
 }
 
@@ -283,7 +283,7 @@ export async function assignLocker(auth: AuthState, gymId: number, payload: any)
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ nadaÄ‡ szafki klientowi");
+  if (!response.ok) await parseApiError(response, "Nie udało się nadać szafki klientowi");
 }
 
 export async function createEmployeeLocker(
@@ -299,7 +299,7 @@ export async function createEmployeeLocker(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ szafki");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać szafki");
   return response.json();
 }
 
@@ -310,7 +310,7 @@ export async function getEmployeePassTypes(
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/pass-types`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ oferty karnetĂłw");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać oferty karnetów");
   return response.json();
 }
 
@@ -327,7 +327,7 @@ export async function createEmployeePassType(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ typu karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać typu karnetu");
   return response.json();
 }
 
@@ -340,7 +340,7 @@ export async function deleteEmployeePassType(
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ typu karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć typu karnetu");
 }
 
 export async function leaveGym(auth: AuthState, gymId: number, guestId: number): Promise<void> {
@@ -348,7 +348,7 @@ export async function leaveGym(auth: AuthState, gymId: number, guestId: number):
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zakoĹ„czyÄ‡ wizyty klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się zakończyć wizyty klienta");
 }
 
 export async function returnLocker(auth: AuthState, gymId: number, guestId: number): Promise<void> {
@@ -356,7 +356,7 @@ export async function returnLocker(auth: AuthState, gymId: number, guestId: numb
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ odebraÄ‡ szafki");
+  if (!response.ok) await parseApiError(response, "Nie udało się odebrać szafki");
 }
 
 export type GuestView = {
@@ -400,7 +400,7 @@ export async function getEmployeeGuestDetail(
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/guests/${guestId}`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ danych klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać danych klienta");
   return response.json();
 }
 
@@ -418,7 +418,7 @@ export async function updateEmployeeGuest(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować klienta");
   return response.json();
 }
 
@@ -427,7 +427,7 @@ export async function checkInGuest(auth: AuthState, gymId: number, guestId: numb
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zarejestrowaÄ‡ wejĹ›cia");
+  if (!response.ok) await parseApiError(response, "Nie udało się zarejestrować wejścia");
 }
 
 export async function checkOutGuest(auth: AuthState, gymId: number, guestId: number): Promise<void> {
@@ -435,7 +435,7 @@ export async function checkOutGuest(auth: AuthState, gymId: number, guestId: num
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zarejestrowaÄ‡ wyjĹ›cia");
+  if (!response.ok) await parseApiError(response, "Nie udało się zarejestrować wyjścia");
 }
 
 export async function renewPass(
@@ -456,7 +456,7 @@ export async function renewPass(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ przedĹ‚uĹĽyÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się przedłużyć karnetu");
   return response.json();
 }
 
@@ -469,7 +469,7 @@ export async function cancelPass(auth: AuthState, gymId: number, passId: number)
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ anulowaÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się anulować karnetu");
   return response.json();
 }
 
@@ -481,7 +481,7 @@ export async function getOwnerGuestDetail(
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/guests/${guestId}`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ danych klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać danych klienta");
   return response.json();
 }
 
@@ -499,7 +499,7 @@ export async function updateOwnerGuest(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować klienta");
   return response.json();
 }
 
@@ -517,7 +517,7 @@ export async function updatePassType(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ typu karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować typu karnetu");
   return response.json();
 }
 
@@ -543,7 +543,7 @@ export async function getSalesReport(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ raportu sprzedaĹĽy");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać raportu sprzedaży");
   return response.json();
 }
 
@@ -568,7 +568,7 @@ export async function getAuditLogs(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ historii");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii");
   return response.json();
 }
 
@@ -594,7 +594,7 @@ export async function getNotifications(auth: AuthState, gymId: number): Promise<
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/notifications`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ powiadomieĹ„");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać powiadomień");
   return response.json();
 }
 
@@ -602,7 +602,7 @@ export async function getUnreadNotificationCount(auth: AuthState, gymId: number)
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/notifications/unread-count`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ liczby powiadomieĹ„");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać liczby powiadomień");
   const data = await response.json();
   return Number(data.count ?? 0);
 }
@@ -616,7 +616,7 @@ export async function markNotificationRead(
     `${API_URL}/owner/gyms/${gymId}/notifications/${notificationId}/read`,
     { method: "POST", headers: { Authorization: `Bearer ${auth.token}` } }
   );
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ oznaczyÄ‡ powiadomienia");
+  if (!response.ok) await parseApiError(response, "Nie udało się oznaczyć powiadomienia");
 }
 
 export async function getNotificationSettings(
@@ -626,7 +626,7 @@ export async function getNotificationSettings(
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/notification-settings`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ ustawieĹ„ powiadomieĹ„");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać ustawień powiadomień");
   return response.json();
 }
 
@@ -643,7 +643,7 @@ export async function updateNotificationSettings(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zapisaÄ‡ ustawieĹ„ powiadomieĹ„");
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać ustawień powiadomień");
   return response.json();
 }
 
@@ -685,7 +685,7 @@ export async function getCalendarEvents(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ terminarza");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać terminarza");
   return response.json();
 }
 
@@ -702,7 +702,7 @@ export async function createCalendarEvent(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ wpisu do terminarza");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać wpisu do terminarza");
   return response.json();
 }
 
@@ -720,7 +720,7 @@ export async function updateCalendarEvent(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ wpisu w terminarzu");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować wpisu w terminarzu");
   return response.json();
 }
 
@@ -729,7 +729,7 @@ export async function deleteCalendarEvent(auth: AuthState, gymId: number, eventI
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ wpisu z terminarza");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć wpisu z terminarza");
 }
 
 export type WorkScheduleEntryType =
@@ -782,7 +782,7 @@ export async function getWorkScheduleEntries(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ grafiku pracy");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać grafiku pracy");
   return response.json();
 }
 
@@ -799,7 +799,7 @@ export async function createWorkScheduleEntry(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ wpisu");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać wpisu");
   return response.json();
 }
 
@@ -807,7 +807,7 @@ export async function getTrainerProfile(auth: AuthState, gymId: number): Promise
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ profilu trenera");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać profilu trenera");
   return response.json();
 }
 
@@ -817,7 +817,7 @@ export async function updateTrainerProfile(auth: AuthState, gymId: number, paylo
     headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zapisaÄ‡ profilu trenera");
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać profilu trenera");
   return response.json();
 }
 
@@ -825,7 +825,7 @@ export async function getTrainerTrainings(auth: AuthState, gymId: number): Promi
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/trainer-profile/trainings`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ treningĂłw");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać treningów");
   return response.json();
 }
 
@@ -834,7 +834,7 @@ export async function cancelTrainerTraining(auth: AuthState, gymId: number, trai
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ odwoĹ‚aÄ‡ treningu");
+  if (!response.ok) await parseApiError(response, "Nie udało się odwołać treningu");
 }
 
 export async function updateWorkScheduleEntry(
@@ -851,7 +851,7 @@ export async function updateWorkScheduleEntry(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ wpisu w grafiku pracy");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować wpisu w grafiku pracy");
   return response.json();
 }
 
@@ -864,7 +864,7 @@ export async function deleteWorkScheduleEntry(
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ wpisu z grafiku pracy");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć wpisu z grafiku pracy");
 }
 
 export type DashboardMetrics = {
@@ -896,7 +896,7 @@ export async function getGymAnalytics(auth: AuthState, gymId: number): Promise<A
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/analytics`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ analityki");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać analityki");
   return response.json();
 }
 
@@ -909,7 +909,7 @@ export async function uploadAvatar(auth: AuthState, file: File): Promise<{ url: 
     headers: { Authorization: `Bearer ${auth.token}` },
     body: formData,
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ zdjÄ™cia");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować zdjęcia");
   return response.json();
 }
 
@@ -960,7 +960,7 @@ export async function getClasses(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zajęć");
   return response.json();
 }
 
@@ -974,7 +974,7 @@ export async function createClass(
     headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać zajęć");
   return response.json();
 }
 
@@ -989,7 +989,7 @@ export async function updateClass(
     headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować zajęć");
   return response.json();
 }
 
@@ -998,7 +998,7 @@ export async function deleteClass(auth: AuthState, gymId: number, classId: numbe
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć zajęć");
 }
 
 export async function getClassReservations(
@@ -1009,7 +1009,7 @@ export async function getClassReservations(
   const response = await fetch(`${classBasePath(auth.role, gymId)}/${classId}/reservations`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ rezerwacji");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać rezerwacji");
   return response.json();
 }
 
@@ -1025,7 +1025,7 @@ export async function updateAttendance(
     headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ obecnoĹ›ci");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować obecności");
   return response.json();
 }
 
@@ -1041,7 +1041,7 @@ export async function getClientClasses(
   const response = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zajęć");
   return response.json();
 }
 
@@ -1050,7 +1050,7 @@ export async function clientBookClass(auth: AuthState, gymId: number, classId: n
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zarezerwowaÄ‡ miejsca");
+  if (!response.ok) await parseApiError(response, "Nie udało się zarezerwować miejsca");
 }
 
 export async function clientCancelClass(auth: AuthState, gymId: number, classId: number): Promise<void> {
@@ -1058,7 +1058,7 @@ export async function clientCancelClass(auth: AuthState, gymId: number, classId:
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ anulowaÄ‡ rezerwacji");
+  if (!response.ok) await parseApiError(response, "Nie udało się anulować rezerwacji");
 }
 
 export type RankView = {
@@ -1071,7 +1071,7 @@ export async function getOwnerRanks(auth: AuthState, gymId: number): Promise<Ran
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/ranks`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ rang");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać rang");
   return response.json();
 }
 
@@ -1084,7 +1084,7 @@ export async function createOwnerRank(auth: AuthState, gymId: number, payload: {
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ utworzyÄ‡ rangi");
+  if (!response.ok) await parseApiError(response, "Nie udało się utworzyć rangi");
   return response.json();
 }
 
@@ -1097,7 +1097,7 @@ export async function updateOwnerRank(auth: AuthState, gymId: number, rankId: nu
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ rangi");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować rangi");
   return response.json();
 }
 
@@ -1106,7 +1106,7 @@ export async function deleteOwnerRank(auth: AuthState, gymId: number, rankId: nu
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ rangi");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć rangi");
 }
 
 export interface ProductView {
@@ -1140,7 +1140,7 @@ export async function getProducts(auth: AuthState, gymId: number, role: "owner" 
   const response = await fetch(`${API_URL}/${role}/gyms/${gymId}/products`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ listy produktĂłw");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy produktów");
   return response.json();
 }
 
@@ -1153,7 +1153,7 @@ export async function createProduct(auth: AuthState, gymId: number, payload: { n
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ produktu");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać produktu");
   return response.json();
 }
 
@@ -1166,7 +1166,7 @@ export async function updateProduct(auth: AuthState, gymId: number, productId: n
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ produktu");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować produktu");
   return response.json();
 }
 
@@ -1175,7 +1175,7 @@ export async function deleteProduct(auth: AuthState, gymId: number, productId: n
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ produktu");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć produktu");
 }
 
 export async function checkoutProducts(
@@ -1191,7 +1191,7 @@ export async function checkoutProducts(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "BĹ‚Ä…d podczas finalizacji sprzedaĹĽy");
+  if (!response.ok) await parseApiError(response, "Błąd podczas finalizacji sprzedaży");
   return response.json();
 }
 
@@ -1199,7 +1199,7 @@ export async function getProductSales(auth: AuthState, gymId: number): Promise<P
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/sales/products`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ historii sprzedaĹĽy");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii sprzedaży");
   return response.json();
 }
 
@@ -1227,7 +1227,7 @@ export async function freezePassEmployee(auth: AuthState, gymId: number, passId:
     headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zamroziÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się zamrozić karnetu");
   return response.json();
 }
 
@@ -1236,7 +1236,7 @@ export async function unfreezePassEmployee(auth: AuthState, gymId: number, passI
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` }
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ odmroziÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udało się odmrozić karnetu");
   return response.json();
 }
 
@@ -1244,7 +1244,7 @@ export async function getMyProductSalesHistory(auth: AuthState, gymId: number): 
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/sales/my-history`, {
     headers: { Authorization: `Bearer ${auth.token}` }
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ historii Twojej sprzedaĹĽy");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać historii Twojej sprzedaży");
   return response.json();
 }
 
@@ -1260,7 +1260,7 @@ export async function getClassRatingsSummary(auth: AuthState, gymId: number): Pr
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/classes/ratings-summary`, {
     headers: { Authorization: `Bearer ${auth.token}` }
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ zestawienia ocen");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać zestawienia ocen");
   return response.json();
 }
 
@@ -1268,7 +1268,7 @@ export async function getClassRatings(auth: AuthState, gymId: number, classId: n
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/classes/${classId}/ratings`, {
     headers: { Authorization: `Bearer ${auth.token}` }
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ ocen zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać ocen zajęć");
   return response.json();
 }
 
@@ -1293,7 +1293,7 @@ export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/crm/campaigns`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ kampanii");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać kampanii");
   return response.json();
 }
 
@@ -1303,7 +1303,7 @@ export async function createEmailCampaign(auth: AuthState, gymId: number, payloa
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ utworzyÄ‡ kampanii");
+  if (!response.ok) await parseApiError(response, "Nie udało się utworzyć kampanii");
   return response.json();
 }
 
@@ -1321,7 +1321,7 @@ export async function getOwnerTrainers(auth: AuthState, gymId: number): Promise<
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/trainers`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ trenerĂłw");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać trenerów");
   return response.json();
 }
 
@@ -1338,7 +1338,7 @@ export async function createOwnerTrainer(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ dodaÄ‡ trenera");
+  if (!response.ok) await parseApiError(response, "Nie udało się dodać trenera");
   return response.json();
 }
 
@@ -1356,7 +1356,7 @@ export async function updateOwnerTrainer(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ profilu trenera");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować profilu trenera");
   return response.json();
 }
 
@@ -1365,7 +1365,7 @@ export async function deleteOwnerTrainer(auth: AuthState, gymId: number, trainer
     method: "DELETE",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ usunÄ…Ä‡ trenera");
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć trenera");
 }
 
 export type SaaSPlan = {
@@ -1398,7 +1398,7 @@ export async function getSaaSPlans(auth: AuthState): Promise<SaaSPlan[]> {
   const response = await fetch(`${API_URL}/admin/saas/plans`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ planĂłw SaaS");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać planów SaaS");
   return response.json();
 }
 
@@ -1406,7 +1406,7 @@ export async function getSaaSSubscriptions(auth: AuthState): Promise<GymSubscrip
   const response = await fetch(`${API_URL}/admin/saas/subscriptions`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ subskrypcji");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać subskrypcji");
   return response.json();
 }
 
@@ -1415,7 +1415,7 @@ export async function cancelSaaSSubscription(auth: AuthState, subscriptionId: nu
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ anulowaÄ‡ subskrypcji");
+  if (!response.ok) await parseApiError(response, "Nie udało się anulować subskrypcji");
 }
 
 export async function updateSaaSSubscriptionStatus(auth: AuthState, subscriptionId: number, status: string): Promise<void> {
@@ -1427,12 +1427,12 @@ export async function updateSaaSSubscriptionStatus(auth: AuthState, subscription
     },
     body: JSON.stringify({ status }),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zaktualizowaÄ‡ statusu subskrypcji");
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować statusu subskrypcji");
 }
 
 export async function getTenantSaaSPlans(): Promise<SaaSPlan[]> {
   const response = await fetch(`${API_URL}/auth/tenant/plans`);
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ planĂłw SaaS");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać planów SaaS");
   return response.json();
 }
 
@@ -1442,7 +1442,7 @@ export async function registerTenant(data: any): Promise<{ checkoutUrl: string }
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!response.ok) await parseApiError(response, "Rejestracja siĹ‚owni nie powiodĹ‚a siÄ™");
+  if (!response.ok) await parseApiError(response, "Rejestracja siłowni nie powiodła się");
   return response.json();
 }
 
@@ -1459,6 +1459,6 @@ export async function getSaaSStats(auth: AuthState): Promise<SaaSStatsView> {
   const response = await fetch(`${API_URL}/admin/saas/stats`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ statystyk SaaS");
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk SaaS");
   return response.json();
 }

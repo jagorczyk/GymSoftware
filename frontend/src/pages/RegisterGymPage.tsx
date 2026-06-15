@@ -47,7 +47,6 @@ export function RegisterGymPage() {
       };
       const response = await registerTenant(payload);
       if (response.checkoutUrl) {
-        showSuccess("Przekierowywanie do płatności...");
         window.location.href = response.checkoutUrl;
       } else {
         showError("Błąd serwera: brak linku do płatności.");
