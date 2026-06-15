@@ -37,7 +37,7 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
       setNotes(data.guest.notes ?? "");
       setAvatarUrl(data.guest.avatarUrl ?? undefined);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się pobrać klienta");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ pobraÄ‡ klienta");
     } finally {
       setLoading(false);
     }
@@ -65,12 +65,12 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
       await load();
       await loadGymsAndDetails();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zapisać zmian");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ zapisaÄ‡ zmian");
     }
   }
 
   if (!selectedGymId) return <SelectGymPrompt />;
-  if (loading) return <LoadingState message="Ładowanie klienta..." />;
+  if (loading) return <LoadingState message="Ĺadowanie klienta..." />;
   if (!detail) {
     return (
       <DetailPageLayout backTo="/owner/guests" title="Klient nie znaleziony">
@@ -89,14 +89,14 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
       subtitle={guest.email || guest.phone || `ID: ${guest.id}`}
       headerExtra={
         <button type="button" onClick={() => setEditing((v) => !v)} className={primaryButtonClassName}>
-          {editing ? "Anuluj edycję" : "Edytuj dane"}
+          {editing ? "Anuluj edycjÄ™" : "Edytuj dane"}
         </button>
       }
     >
       <div className="flex flex-wrap gap-2 mb-6">
         <StatusChip status={guest.hasActivePass ? "ACTIVE" : "INACTIVE"} label={guest.hasActivePass ? "Aktywny karnet" : "Brak karnetu"} />
-        <StatusChip status={guest.isPresent ? "ACTIVE" : "INACTIVE"} label={guest.isPresent ? "Na sali" : "Poza salą"} />
-        {guest.hasLocker && <StatusChip status="OCCUPIED" label="Ma szafkę" />}
+        <StatusChip status={guest.isPresent ? "ACTIVE" : "INACTIVE"} label={guest.isPresent ? "Na sali" : "Poza salÄ…"} />
+        {guest.hasLocker && <StatusChip status="OCCUPIED" label="Ma szafkÄ™" />}
       </div>
 
       <FormSection title="Dane klienta">
@@ -108,7 +108,7 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
               className="mb-6"
             />
             <div>
-              <label className={labelClassName}>Imię</label>
+              <label className={labelClassName}>ImiÄ™</label>
               <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} required />
             </div>
             <div>
@@ -135,28 +135,28 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
           <div className="flex flex-col sm:flex-row gap-6 items-start">
             {guest.avatarUrl && (
               <div className="shrink-0 w-24 h-24 rounded-full overflow-hidden border border-slate-200">
-                <img src={guest.avatarUrl.startsWith("http") ? guest.avatarUrl : `http://localhost:8080${guest.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={guest.avatarUrl.startsWith("http") ? guest.avatarUrl : `${guest.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
               </div>
             )}
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm flex-1">
             <div>
               <dt className="text-slate-500">Email</dt>
-              <dd className="font-medium text-slate-900 mt-1">{guest.email || "—"}</dd>
+              <dd className="font-medium text-slate-900 mt-1">{guest.email || "â€”"}</dd>
             </div>
             <div>
               <dt className="text-slate-500">Telefon</dt>
-              <dd className="font-medium text-slate-900 mt-1">{guest.phone || "—"}</dd>
+              <dd className="font-medium text-slate-900 mt-1">{guest.phone || "â€”"}</dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-slate-500">Notatki</dt>
-              <dd className="font-medium text-slate-900 mt-1 whitespace-pre-wrap">{guest.notes || "—"}</dd>
+              <dd className="font-medium text-slate-900 mt-1 whitespace-pre-wrap">{guest.notes || "â€”"}</dd>
             </div>
             </dl>
           </div>
         )}
       </FormSection>
 
-      <FormSection title="Historia karnetów" description="Przedłużenie lub anulowanie karnetu.">
+      <FormSection title="Historia karnetĂłw" description="PrzedĹ‚uĹĽenie lub anulowanie karnetu.">
         <div className="space-y-3">
           {detail.passes.map((pass) => (
             <GuestPassActions
@@ -169,7 +169,7 @@ export function OwnerGuestDetail({ ctx }: { ctx: OwnerContext }) {
               setInfo={setInfo}
             />
           ))}
-          {detail.passes.length === 0 && <p className="text-sm text-slate-500">Brak karnetów dla tego klienta.</p>}
+          {detail.passes.length === 0 && <p className="text-sm text-slate-500">Brak karnetĂłw dla tego klienta.</p>}
         </div>
       </FormSection>
     </DetailPageLayout>

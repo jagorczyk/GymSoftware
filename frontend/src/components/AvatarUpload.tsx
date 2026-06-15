@@ -20,7 +20,7 @@ export function AvatarUpload({ currentUrl, onUploadSuccess, className = "" }: Av
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Plik jest za duży (max 5MB).");
+      setError("Plik jest za duĹĽy (max 5MB).");
       return;
     }
 
@@ -39,7 +39,7 @@ export function AvatarUpload({ currentUrl, onUploadSuccess, className = "" }: Av
       const { url } = await uploadAvatar(auth, file);
       onUploadSuccess(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wystąpił błąd podczas wgrywania zdjęcia.");
+      setError(err instanceof Error ? err.message : "WystÄ…piĹ‚ bĹ‚Ä…d podczas wgrywania zdjÄ™cia.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -51,7 +51,7 @@ export function AvatarUpload({ currentUrl, onUploadSuccess, className = "" }: Av
   const getFullUrl = (url: string | null | undefined) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    return `http://localhost:8080${url}`;
+    return `${url}`;
   };
 
   const displayUrl = getFullUrl(currentUrl);
@@ -72,7 +72,7 @@ export function AvatarUpload({ currentUrl, onUploadSuccess, className = "" }: Av
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
           className="absolute bottom-0 right-0 p-2 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
-          title="Zmień zdjęcie"
+          title="ZmieĹ„ zdjÄ™cie"
         >
           {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
         </button>

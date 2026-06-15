@@ -19,7 +19,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
   if (!selectedGymId) {
     return (
       <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-200">
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Wybierz siłownię z menu bocznego, aby uruchomić skaner.</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium">Wybierz siĹ‚owniÄ™ z menu bocznego, aby uruchomiÄ‡ skaner.</p>
       </div>
     );
   }
@@ -33,7 +33,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/employee/gyms/${selectedGymId}/scan-checkin`,
+        `/api/employee/gyms/${selectedGymId}/scan-checkin`,
         {
           method: "POST",
           headers: {
@@ -47,24 +47,24 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Wystąpił błąd podczas autoryzacji tokenu QR");
+        throw new Error(data.message || "WystÄ…piĹ‚ bĹ‚Ä…d podczas autoryzacji tokenu QR");
       }
 
       setResult({
         success: true,
-        message: "Zameldowano pomyślnie!",
+        message: "Zameldowano pomyĹ›lnie!",
         guestName: data.guestName,
         guestId: data.guestId,
       });
-      showSuccess(`Pomyślnie zameldowano: ${data.guestName}`);
+      showSuccess(`PomyĹ›lnie zameldowano: ${data.guestName}`);
       setTokenInput("");
       refreshOverview();
     } catch (err: any) {
       setResult({
         success: false,
-        message: err.message || "Błąd podczas walidacji tokenu QR",
+        message: err.message || "BĹ‚Ä…d podczas walidacji tokenu QR",
       });
-      showError(err.message || "Walidacja kodu QR zakończona niepowodzeniem");
+      showError(err.message || "Walidacja kodu QR zakoĹ„czona niepowodzeniem");
     } finally {
       setLoading(false);
     }
@@ -74,9 +74,9 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header Info */}
       <div>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Skaner Wejścia QR</h2>
+        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Skaner WejĹ›cia QR</h2>
         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
-          Symulator optycznego skanera kodów QR przy bramkach wejściowych do klubu.
+          Symulator optycznego skanera kodĂłw QR przy bramkach wejĹ›ciowych do klubu.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
               SKANER AKTYWNY
             </span>
             <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-              Skieruj kod QR wygenerowany na profilu klienta w stronę czytnika.
+              Skieruj kod QR wygenerowany na profilu klienta w stronÄ™ czytnika.
             </p>
           </div>
         </div>
@@ -113,7 +113,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
         {/* Right Side: Control Panel & Status */}
         <div className="space-y-6">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
-            <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">Wprowadź kod QR ręcznie</h3>
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">WprowadĹş kod QR rÄ™cznie</h3>
             
             <form onSubmit={handleScan} className="space-y-4">
               <div className="space-y-1.5">
@@ -142,7 +142,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
                   </>
                 ) : (
                   <>
-                    <span>Zatwierdź wejście</span>
+                    <span>ZatwierdĹş wejĹ›cie</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -168,12 +168,12 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
               </div>
               <div className="space-y-1">
                 <h4 className="font-extrabold text-lg leading-snug">
-                  {result.success ? "Wejście Autoryzowane" : "Odmowa Wejścia"}
+                  {result.success ? "WejĹ›cie Autoryzowane" : "Odmowa WejĹ›cia"}
                 </h4>
                 <p className="text-sm opacity-85 leading-relaxed font-medium">{result.message}</p>
                 {result.success && result.guestName && (
                   <div className="pt-3 border-t border-emerald-200/50 mt-3 space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-60">Gość</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider opacity-60">GoĹ›Ä‡</p>
                     <p className="font-bold text-slate-900 dark:text-white">{result.guestName}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">ID Klienta: {result.guestId}</p>
                   </div>
@@ -186,12 +186,12 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
 
       {/* Instructions */}
       <div className="bg-slate-100 dark:bg-slate-950/40 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/80 transition-colors duration-200">
-        <h4 className="font-bold text-slate-800 dark:text-slate-250 text-sm mb-2">Jak to przetestować?</h4>
+        <h4 className="font-bold text-slate-800 dark:text-slate-250 text-sm mb-2">Jak to przetestowaÄ‡?</h4>
         <ol className="list-decimal pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-          <li>Zaloguj się jako klient (np. klient posiadający aktywny karnet w tym klubie).</li>
-          <li>Kliknij przycisk <span className="font-bold">"Wygeneruj kod wejścia QR"</span> na pulpicie klienta.</li>
-          <li>Skopiuj zaszyfrowany token z wyświetlonego okna modalnego.</li>
-          <li>Wróć do tego panelu (skanera pracownika) i wklej token w powyższe pole, a następnie kliknij <span className="font-bold">"Zatwierdź wejście"</span>.</li>
+          <li>Zaloguj siÄ™ jako klient (np. klient posiadajÄ…cy aktywny karnet w tym klubie).</li>
+          <li>Kliknij przycisk <span className="font-bold">"Wygeneruj kod wejĹ›cia QR"</span> na pulpicie klienta.</li>
+          <li>Skopiuj zaszyfrowany token z wyĹ›wietlonego okna modalnego.</li>
+          <li>WrĂłÄ‡ do tego panelu (skanera pracownika) i wklej token w powyĹĽsze pole, a nastÄ™pnie kliknij <span className="font-bold">"ZatwierdĹş wejĹ›cie"</span>.</li>
         </ol>
       </div>
     </div>

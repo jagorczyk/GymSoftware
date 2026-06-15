@@ -73,7 +73,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       setNotes(data.guest.notes ?? "");
       setAvatarUrl(data.guest.avatarUrl ?? undefined);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się pobrać danych klienta");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ pobraÄ‡ danych klienta");
     } finally {
       setLoading(false);
     }
@@ -106,12 +106,12 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
         price: Number(form.get("price")),
       });
       setError("");
-      setMessage(`Sprzedano karnet „${passType}” klientowi ${guestName}`);
+      setMessage(`Sprzedano karnet â€ž${passType}â€ť klientowi ${guestName}`);
       await load();
       refreshOverview();
     } catch (err) {
       setMessage("");
-      setError(err instanceof Error ? err.message : "Nie udało się sprzedać karnetu");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ sprzedaÄ‡ karnetu");
     }
   }
 
@@ -124,13 +124,13 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     try {
       await assignLocker(auth, Number(selectedGymId), { lockerId, guestId: guest.id });
       setError("");
-      setMessage(`Nadano szafkę nr ${lockerNumber} klientowi ${guest.firstName} ${guest.lastName}`);
+      setMessage(`Nadano szafkÄ™ nr ${lockerNumber} klientowi ${guest.firstName} ${guest.lastName}`);
       setSelectedLockerId("");
       await load();
       refreshOverview();
     } catch (err) {
       setMessage("");
-      setError(err instanceof Error ? err.message : "Nie udało się nadać szafki klientowi");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ nadaÄ‡ szafki klientowi");
     }
   }
 
@@ -138,11 +138,11 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     if (!selectedGymId || !guest) return;
     try {
       await checkInGuest(auth, Number(selectedGymId), guest.id);
-      setMessage(`Zarejestrowano wejście: ${guest.firstName} ${guest.lastName}`);
+      setMessage(`Zarejestrowano wejĹ›cie: ${guest.firstName} ${guest.lastName}`);
       await load();
       refreshOverview();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zarejestrować wejścia");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ zarejestrowaÄ‡ wejĹ›cia");
     }
   }
 
@@ -150,11 +150,11 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     if (!selectedGymId || !guest) return;
     try {
       await checkOutGuest(auth, Number(selectedGymId), guest.id);
-      setMessage(`Zarejestrowano wyjście: ${guest.firstName} ${guest.lastName}`);
+      setMessage(`Zarejestrowano wyjĹ›cie: ${guest.firstName} ${guest.lastName}`);
       await load();
       refreshOverview();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zarejestrować wyjścia");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ zarejestrowaÄ‡ wyjĹ›cia");
     }
   }
 
@@ -166,7 +166,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       await load();
       refreshOverview();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się odebrać szafki");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ odebraÄ‡ szafki");
     }
   }
 
@@ -181,14 +181,14 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     }
     
     try {
-      if (!window.confirm(`Automatycznie przypisać pierwszą wolną szafkę? (szafka nr ${firstFree.lockerNumber})`)) return;
+      if (!window.confirm(`Automatycznie przypisaÄ‡ pierwszÄ… wolnÄ… szafkÄ™? (szafka nr ${firstFree.lockerNumber})`)) return;
       await assignLocker(auth, Number(selectedGymId), { lockerId: firstFree.id, guestId: guest.id });
       setError("");
-      setMessage(`Nadano szafkę nr ${firstFree.lockerNumber} klientowi ${guest.firstName} ${guest.lastName}`);
+      setMessage(`Nadano szafkÄ™ nr ${firstFree.lockerNumber} klientowi ${guest.firstName} ${guest.lastName}`);
       await load();
       refreshOverview();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się szybko nadać szafki");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ szybko nadaÄ‡ szafki");
     }
   }
 
@@ -196,11 +196,11 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     if (!selectedGymId || !guest) return;
     try {
       await leaveGym(auth, Number(selectedGymId), guest.id);
-      setMessage(`Zakończono wizytę klienta ${guest.firstName} ${guest.lastName}`);
+      setMessage(`ZakoĹ„czono wizytÄ™ klienta ${guest.firstName} ${guest.lastName}`);
       await load();
       refreshOverview();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zakończyć wizyty");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ zakoĹ„czyÄ‡ wizyty");
     }
   }
 
@@ -220,12 +220,12 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       setEditing(false);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Nie udało się zapisać danych");
+      setError(err instanceof Error ? err.message : "Nie udaĹ‚o siÄ™ zapisaÄ‡ danych");
     }
   }
 
   if (!selectedGymId) return <SelectGymDashboardPrompt />;
-  if (loading) return <LoadingState message="Ładowanie klienta..." />;
+  if (loading) return <LoadingState message="Ĺadowanie klienta..." />;
 
   if (!guest) {
     return (
@@ -242,18 +242,18 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       backTo="/employee/guests"
       breadcrumb="Klienci"
       title={`${guest.firstName} ${guest.lastName}`}
-      subtitle={`ID: ${guest.id} • ${guest.email || guest.phone || "Brak kontaktu"}`}
+      subtitle={`ID: ${guest.id} â€˘ ${guest.email || guest.phone || "Brak kontaktu"}`}
       headerExtra={
         <div className="flex flex-wrap gap-2">
           {!guest.isPresent ? (
             <button type="button" onClick={onCheckIn} className={primaryButtonClassName} disabled={!guest.hasActivePass}>
               <LogIn className="w-4 h-4" />
-              Wejście na salę
+              WejĹ›cie na salÄ™
             </button>
           ) : (
             <button type="button" onClick={onCheckOut} className={dangerButtonClassName}>
               <LogOut className="w-4 h-4" />
-              Wyjście
+              WyjĹ›cie
             </button>
           )}
           
@@ -282,7 +282,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
 
           {canEndVisit && (
             <button type="button" onClick={onLeaveGym} className={dangerButtonClassName}>
-              Zakończ wizytę (wyjście + szafka)
+              ZakoĹ„cz wizytÄ™ (wyjĹ›cie + szafka)
             </button>
           )}
         </div>
@@ -292,7 +292,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {guest.avatarUrl ? (
             <div className="w-16 h-16 rounded-full overflow-hidden shrink-0 border border-slate-200 dark:border-slate-850">
-              <img src={guest.avatarUrl.startsWith("http") ? guest.avatarUrl : `http://localhost:8080${guest.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={guest.avatarUrl.startsWith("http") ? guest.avatarUrl : `${guest.avatarUrl}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
           ) : (
             <div className="w-14 h-14 bg-primary-100 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
@@ -307,18 +307,18 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
                 Do: {guest.activePassEndDate}
               </span>
             )}
-            <StatusChip status={guest.isPresent ? "ACTIVE" : "INACTIVE"} label={guest.isPresent ? "Na sali" : "Poza salą"} />
+            <StatusChip status={guest.isPresent ? "ACTIVE" : "INACTIVE"} label={guest.isPresent ? "Na sali" : "Poza salÄ…"} />
             {guest.hasLocker && <StatusChip status="OCCUPIED" label="Szafka" />}
           </div>
         </div>
         {!guest.hasActivePass && (
-          <p className="text-sm text-amber-800 dark:text-amber-400 mt-3">Wejście na salę wymaga aktywnego karnetu — najpierw sprzedaj karnet.</p>
+          <p className="text-sm text-amber-800 dark:text-amber-400 mt-3">WejĹ›cie na salÄ™ wymaga aktywnego karnetu â€” najpierw sprzedaj karnet.</p>
         )}
       </div>
 
       <FormSection
         title="Dane klienta"
-        description="Telefon i notatki widoczne dla całego personelu klubu."
+        description="Telefon i notatki widoczne dla caĹ‚ego personelu klubu."
       >
         <button type="button" onClick={() => setEditing((v) => !v)} className={`${primaryButtonClassName} mb-4`}>
           <UserPen className="w-4 h-4" />
@@ -332,8 +332,8 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
               className="mb-4"
             />
             <div>
-              <label htmlFor="editFirstName" className={labelClassName}>Imię</label>
-              <input id="editFirstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} placeholder="Imię" required />
+              <label htmlFor="editFirstName" className={labelClassName}>ImiÄ™</label>
+              <input id="editFirstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClassName} placeholder="ImiÄ™" required />
             </div>
             <div>
               <label htmlFor="editLastName" className={labelClassName}>Nazwisko</label>
@@ -355,7 +355,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
           </form>
         ) : (
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            {guest.phone && <>Tel: {guest.phone} • </>}
+            {guest.phone && <>Tel: {guest.phone} â€˘ </>}
             {guest.notes || "Brak notatek"}
           </p>
         )}
@@ -373,7 +373,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
               return (
                 <li key={checkIn.id} className="py-3 flex justify-between items-center text-sm">
                   <span className="font-medium text-slate-900 dark:text-slate-100">{dateStr}</span>
-                  <span className="text-slate-500 dark:text-slate-400">{timeIn} — {timeOut}</span>
+                  <span className="text-slate-500 dark:text-slate-400">{timeIn} â€” {timeOut}</span>
                 </li>
               );
             })}
@@ -382,10 +382,10 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <FormSection title="Sprzedaż karnetu">
+        <FormSection title="SprzedaĹĽ karnetu">
           <form onSubmit={onSellPass} className="space-y-4">
             <div>
-              <label htmlFor="passTypeSelect" className={labelClassName}>Wybierz ofertę</label>
+              <label htmlFor="passTypeSelect" className={labelClassName}>Wybierz ofertÄ™</label>
               <select
                 id="passTypeSelect"
                 name="passTypeId"
@@ -410,7 +410,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
                 <option value="">-- Wybierz typ karnetu --</option>
                 {overview?.passTypes?.map((pt: any) => (
                   <option key={pt.id} value={pt.id}>
-                    {pt.name} ({pt.price} zł / {pt.durationDays} dni)
+                    {pt.name} ({pt.price} zĹ‚ / {pt.durationDays} dni)
                   </option>
                 ))}
               </select>
@@ -434,12 +434,12 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
         <FormSection title="Nadanie szafki">
           {guest.hasLocker ? (
             <p className="text-sm text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl px-4 py-3">
-              Klient ma już szafkę. Odbierz szafkę przy wyjściu.
+              Klient ma juĹĽ szafkÄ™. Odbierz szafkÄ™ przy wyjĹ›ciu.
             </p>
           ) : (
             <form onSubmit={onAssignLocker} className="space-y-4">
               <ListToolbar searchValue={lockerQuery} onSearchChange={setLockerQuery} searchPlaceholder="Szukaj szafki..." />
-              <EntityList emptyMessage="Brak wolnych szafek w tej siłowni">
+              <EntityList emptyMessage="Brak wolnych szafek w tej siĹ‚owni">
                 {filteredLockers.map((l: any) => {
                   const occupied = isLockerOccupied(l);
                   return (
@@ -457,7 +457,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
               </EntityList>
               <button type="submit" disabled={!selectedLockerId} className={`${primaryButtonClassName} w-full disabled:opacity-50`}>
                 <KeyRound className="w-4 h-4" />
-                Nadaj szafkę
+                Nadaj szafkÄ™
               </button>
             </form>
           )}
@@ -465,7 +465,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
       </div>
 
       {detail && detail.passes.length > 0 && (
-        <FormSection title="Karnety klienta" description="Przedłużenie, zamrożenie lub anulowanie." className="mt-6">
+        <FormSection title="Karnety klienta" description="PrzedĹ‚uĹĽenie, zamroĹĽenie lub anulowanie." className="mt-6">
           <div className="space-y-3 mt-4">
             {[...detail.passes].sort((a,b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((pass) => (
               <GuestPassActions

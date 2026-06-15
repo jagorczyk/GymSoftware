@@ -43,7 +43,7 @@ export function EntityListCard(props: EntityListCardProps) {
         <div className="flex items-start justify-between gap-3">
           {avatarUrl ? (
             <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-slate-100 dark:border-slate-800">
-              <img src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:8080${avatarUrl}`} alt={title} className="w-full h-full object-cover" />
+              <img src={avatarUrl.startsWith("http") ? avatarUrl : `${avatarUrl}`} alt={title} className="w-full h-full object-cover" />
             </div>
           ) : (
             <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center shrink-0 group-hover:bg-primary-50 dark:group-hover:bg-primary-950/40 group-hover:border-primary-100 dark:group-hover:border-primary-800 transition-colors">

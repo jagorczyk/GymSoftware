@@ -27,8 +27,10 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({ children 
       return;
     }
 
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const brokerURL = `${protocol}//${window.location.host}/ws-gym`;
     const stompClient = new Client({
-      brokerURL: 'ws://localhost:8080/ws-gym',
+      brokerURL: brokerURL,
       connectHeaders: {
         Authorization: `Bearer ${auth.token}`
       },

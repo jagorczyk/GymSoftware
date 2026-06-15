@@ -38,12 +38,7 @@ export function ClientBuyPassPage() {
     try {
       const response = await purchasePassOnline(auth, Number(gymId), { passTypeId });
       if (response.checkoutUrl) {
-        if (response.checkoutUrl.startsWith("http://localhost:5173")) {
-          const path = response.checkoutUrl.replace("http://localhost:5173", "");
-          navigate(path);
-        } else {
-          window.location.href = response.checkoutUrl;
-        }
+        window.location.href = response.checkoutUrl;
       } else {
         showError("Błąd serwera: brak linku do płatności.");
         setIsProcessing(null);

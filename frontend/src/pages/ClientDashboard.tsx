@@ -43,7 +43,7 @@ export function ClientDashboard() {
     
     Promise.all([
       getClientGyms(auth),
-      fetch("http://localhost:8080/api/client/dashboard/global-stats", {
+      fetch("/api/client/dashboard/global-stats", {
         headers: { Authorization: `Bearer ${auth.token}` }
       }).then(r => r.json())
     ])
@@ -51,7 +51,7 @@ export function ClientDashboard() {
       setGyms(gymData);
       if (statsData) setGlobalStats(statsData);
     })
-    .catch((err) => showError(err.message || "Błąd ładowania danych"))
+    .catch((err) => showError(err.message || "BĹ‚Ä…d Ĺ‚adowania danych"))
     .finally(() => setLoading(false));
   }, [auth, showError]);
 
@@ -65,7 +65,7 @@ export function ClientDashboard() {
       setCountdown(45);
       setCopied(false);
     } catch (err: any) {
-      showError(err.message || "Błąd podczas generowania kodu QR wejścia");
+      showError(err.message || "BĹ‚Ä…d podczas generowania kodu QR wejĹ›cia");
       setSelectedGymForQr(null);
     } finally {
       setLoadingQr(false);
@@ -127,7 +127,7 @@ export function ClientDashboard() {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <Activity className="w-8 h-8 text-indigo-500 animate-spin" />
-        <p className="text-slate-500 font-medium tracking-wide">Ładowanie Twojego profilu...</p>
+        <p className="text-slate-500 font-medium tracking-wide">Ĺadowanie Twojego profilu...</p>
       </div>
     );
   }
@@ -138,10 +138,10 @@ export function ClientDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight uppercase">
-            Cześć, Użytkowniku! 👋
+            CzeĹ›Ä‡, UĹĽytkowniku! đź‘‹
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium text-sm">
-            Oto podsumowanie Twojej aktywności i szybki dostęp do karnetów.
+            Oto podsumowanie Twojej aktywnoĹ›ci i szybki dostÄ™p do karnetĂłw.
           </p>
         </div>
         <div className="flex gap-3">
@@ -157,7 +157,7 @@ export function ClientDashboard() {
             className="flex items-center gap-2 bg-slate-900 dark:bg-primary-500 dark:text-slate-950 hover:bg-slate-850 dark:hover:bg-primary-400 text-white font-display font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md hover:shadow-primary-500/20"
           >
             <Plus className="w-4 h-4" />
-            Dołącz do klubu
+            DoĹ‚Ä…cz do klubu
           </Link>
         </div>
       </div>
@@ -171,7 +171,7 @@ export function ClientDashboard() {
               <h3 className="font-display font-extrabold text-slate-900 dark:text-white text-lg tracking-tight uppercase">
                 Szybkie Akcje
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Co chcesz teraz zrobić?</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Co chcesz teraz zrobiÄ‡?</p>
             </div>
             <div className="w-8 h-8 rounded-full bg-slate-100/60 dark:bg-slate-950/40 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
               <span className="leading-none pb-2 font-bold">...</span>
@@ -186,7 +186,7 @@ export function ClientDashboard() {
               <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100 dark:border-slate-800">
                 <Store className="w-5 h-5 text-primary-500" />
               </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">Znajdź klub</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">ZnajdĹş klub</span>
             </Link>
 
             <Link
@@ -279,15 +279,15 @@ export function ClientDashboard() {
               <h3 className="font-display font-extrabold text-slate-900 dark:text-white text-lg tracking-tight uppercase">
                 Twoje Kluby Fitness
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Miejsca, do których masz lub miałeś dostęp.</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Miejsca, do ktĂłrych masz lub miaĹ‚eĹ› dostÄ™p.</p>
             </div>
           </div>
 
           {gyms.length === 0 ? (
             <div className="bg-slate-50/50 dark:bg-slate-950/40 border border-dashed border-slate-200 dark:border-slate-800/80 rounded-2xl p-8 text-center">
               <Store className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-              <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">Nie należysz jeszcze do żadnej siłowni.</p>
-              <Link to="/client/gyms/join" className="text-primary-500 dark:text-primary-400 font-bold hover:underline text-sm">Przeglądaj kluby</Link>
+              <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">Nie naleĹĽysz jeszcze do ĹĽadnej siĹ‚owni.</p>
+              <Link to="/client/gyms/join" className="text-primary-500 dark:text-primary-400 font-bold hover:underline text-sm">PrzeglÄ…daj kluby</Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -328,7 +328,7 @@ export function ClientDashboard() {
                       className="w-full text-center bg-slate-900 dark:bg-primary-500 hover:bg-slate-800 dark:hover:bg-primary-400 text-white dark:text-slate-950 text-xs font-display font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer border border-transparent dark:border-primary-500/10"
                     >
                       <QrCode className="w-3.5 h-3.5" />
-                      Wejście QR (Karta Klubowa)
+                      WejĹ›cie QR (Karta Klubowa)
                     </button>
                   </div>
                 </div>
@@ -387,7 +387,7 @@ export function ClientDashboard() {
 
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrToken)}`}
-                    alt="QR Code wejścia"
+                    alt="QR Code wejĹ›cia"
                     className="w-[160px] h-[160px] object-contain rounded-lg bg-white shadow-lg border border-slate-200 dark:border-slate-800 p-2"
                   />
                   <div className="mt-4 w-full bg-slate-200 dark:bg-slate-850 h-1 rounded-full overflow-hidden">
@@ -397,13 +397,13 @@ export function ClientDashboard() {
                     ></div>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-display font-bold text-slate-500 mt-2">
-                    <span>Odświeżenie za: </span>
+                    <span>OdĹ›wieĹĽenie za: </span>
                     <span className="text-primary-650 dark:text-primary-400 font-black">{countdown}s</span>
                   </div>
                 </>
               ) : (
                 <div className="w-[160px] h-[160px] flex items-center justify-center text-xs text-rose-500 font-semibold">
-                  Błąd ładowania kodu.
+                  BĹ‚Ä…d Ĺ‚adowania kodu.
                 </div>
               )}
             </div>
@@ -415,14 +415,14 @@ export function ClientDashboard() {
                 className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/60 dark:hover:bg-slate-755 text-slate-700 dark:text-slate-350 font-display font-bold rounded-xl flex items-center justify-center gap-2 transition-colors text-xs disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCw className={`w-3 h-3 ${loadingQr ? "animate-spin" : ""}`} />
-                Odśwież kod teraz
+                OdĹ›wieĹĽ kod teraz
               </button>
 
               <button
                 onClick={() => setShowRawToken(!showRawToken)}
                 className="text-[10px] font-display font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:underline pt-1 cursor-pointer"
               >
-                {showRawToken ? "Ukryj klucz testowy" : "Pokaż klucz testowy (do symulacji)"}
+                {showRawToken ? "Ukryj klucz testowy" : "PokaĹĽ klucz testowy (do symulacji)"}
               </button>
             </div>
 
@@ -452,7 +452,7 @@ export function ClientDashboard() {
                   </button>
                 </div>
                 <p className="text-[8px] text-slate-400 dark:text-slate-500 leading-normal">
-                  Skopiuj klucz i wklej go do symulatora skanera QR w recepcji, aby zasymulować przejście przez bramkę.
+                  Skopiuj klucz i wklej go do symulatora skanera QR w recepcji, aby zasymulowaÄ‡ przejĹ›cie przez bramkÄ™.
                 </p>
               </div>
             )}

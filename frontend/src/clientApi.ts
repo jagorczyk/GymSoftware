@@ -1,6 +1,6 @@
 import { AuthState } from "./auth";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = "/api";
 
 async function parseApiError(response: Response, fallback: string): Promise<never> {
   if (response.status === 401) {
@@ -45,7 +45,7 @@ export async function getClientGyms(auth: AuthState): Promise<ClientGymView[]> {
   const response = await fetch(`${API_URL}/client/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ pobraĂ„â€ˇ siÄąâ€šowni");
   return response.json();
 }
 
@@ -53,7 +53,7 @@ export async function getAllGymsForClient(auth: AuthState): Promise<ClientGymVie
   const response = await fetch(`${API_URL}/client/gyms/all`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ listy siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ pobraĂ„â€ˇ listy siÄąâ€šowni");
   return response.json();
 }
 
@@ -69,7 +69,7 @@ export async function joinGym(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ doĹ‚Ä…czyÄ‡ do siĹ‚owni");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ doÄąâ€šĂ„â€¦czyĂ„â€ˇ do siÄąâ€šowni");
   return response.json();
 }
 
@@ -77,7 +77,7 @@ export async function getClientDashboard(auth: AuthState, gymId: number): Promis
   const response = await fetch(`${API_URL}/client/gyms/${gymId}/dashboard`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ panelu");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ pobraĂ„â€ˇ panelu");
   return response.json();
 }
 
@@ -88,7 +88,7 @@ export async function getClientPassTypes(
   const response = await fetch(`${API_URL}/client/gyms/${gymId}/pass-types`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ oferty");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ pobraĂ„â€ˇ oferty");
   return response.json();
 }
 
@@ -105,7 +105,7 @@ export async function purchasePassOnline(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ utworzyÄ‡ sesji pĹ‚atniczej");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ utworzyĂ„â€ˇ sesji pÄąâ€šatniczej");
   return response.json();
 }
 
@@ -123,7 +123,7 @@ export async function rateClass(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ oceniÄ‡ zajÄ™Ä‡");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ oceniĂ„â€ˇ zajĂ„â„˘Ă„â€ˇ");
 }
 
 export async function freezePass(
@@ -140,7 +140,7 @@ export async function freezePass(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ zamroziÄ‡ karnetu");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ zamroziĂ„â€ˇ karnetu");
 }
 
 export async function simulatePaymentOnline(
@@ -156,7 +156,7 @@ export async function simulatePaymentOnline(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "BĹ‚Ä…d podczas symulacji pĹ‚atnoĹ›ci");
+  if (!response.ok) await parseApiError(response, "BÄąâ€šĂ„â€¦d podczas symulacji pÄąâ€šatnoÄąâ€şci");
 }
 
 export async function downloadInvoicePdf(
@@ -167,7 +167,7 @@ export async function downloadInvoicePdf(
   const response = await fetch(`${API_URL}/client/gyms/${gymId}/passes/${passId}/invoice`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ faktury");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ pobraĂ„â€ˇ faktury");
   return response.blob();
 }
 
@@ -175,7 +175,7 @@ export async function getCheckInQrToken(auth: AuthState): Promise<{ qrToken: str
   const response = await fetch(`${API_URL}/client/checkin-qr-token`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ wygenerowaÄ‡ tokenu QR");
+  if (!response.ok) await parseApiError(response, "Nie udaÄąâ€šo siĂ„â„˘ wygenerowaĂ„â€ˇ tokenu QR");
   return response.json();
 }
 export type TrainerProfileView = {
@@ -200,10 +200,10 @@ export type PersonalTrainingView = {
 };
 
 export async function getTrainers(auth: AuthState, gymId: number): Promise<TrainerProfileView[]> {
-  const response = await fetch(`http://localhost:8080/api/client/gyms/${gymId}/trainers`, {
+  const response = await fetch(`/api/client/gyms/${gymId}/trainers`, {
     headers: { Authorization: "Bearer " + auth.token },
   });
-  if (!response.ok) await parseApiError(response, "Nie udało się pobrać trenerów");
+  if (!response.ok) await parseApiError(response, "Nie udaĹ‚o siÄ™ pobraÄ‡ trenerĂłw");
   return response.json();
 }
 
@@ -223,7 +223,7 @@ export async function bookTraining(
   });
 
   if (!res.ok) {
-    let err = "Błąd rezerwacji treningu";
+    let err = "BĹ‚Ä…d rezerwacji treningu";
     try {
       const data = await res.json();
       if (data.error) err = data.error;
@@ -249,13 +249,13 @@ export async function getAvailableSlots(
   });
 
   if (!res.ok) {
-    throw new Error("Błąd pobierania dostępnych slotów");
+    throw new Error("BĹ‚Ä…d pobierania dostÄ™pnych slotĂłw");
   }
   return res.json();
 }
 
 export async function getUpcomingTrainings(auth: AuthState): Promise<PersonalTrainingView[]> {
-  const response = await fetch(`http://localhost:8080/api/client/trainings`, {
+  const response = await fetch(`/api/client/trainings`, {
     headers: { Authorization: "Bearer " + auth.token },
   });
   if (!response.ok) return [];
@@ -280,7 +280,7 @@ export async function getTrainerSchedule(
   const res = await fetch(`${API_URL}/client/gyms/${gymId}/trainers/${trainerId}/schedule`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!res.ok) throw new Error("Błąd pobierania terminarza");
+  if (!res.ok) throw new Error("BĹ‚Ä…d pobierania terminarza");
   return res.json();
 }
 
@@ -289,5 +289,5 @@ export async function cancelTraining(auth: AuthState, gymId: number, trainingId:
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!res.ok) throw new Error("Błąd anulowania treningu");
+  if (!res.ok) throw new Error("BĹ‚Ä…d anulowania treningu");
 }
