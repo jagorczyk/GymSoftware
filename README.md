@@ -1,6 +1,6 @@
-# GymSoft - Comprehensive Fitness Club SaaS Platform
+# Gymlos - Comprehensive Fitness Club SaaS Platform
 
-GymSoft is a modern, full-stack Software-as-a-Service (SaaS) application designed for managing fitness clubs and gym chains. It provides a multi-tenant environment where gym owners can manage multiple locations, employees, and clients from a single centralized dashboard.
+Gymlos is a modern, full-stack Software-as-a-Service (SaaS) application designed for managing fitness clubs and gym chains. It provides a multi-tenant environment where gym owners can manage multiple locations, employees, and clients from a single centralized dashboard.
 
 The system is designed with a role-based architecture catering to Gym Owners, Employees (Receptionists, Personal Trainers), and Clients, offering dedicated portals and features for each user type.
 
