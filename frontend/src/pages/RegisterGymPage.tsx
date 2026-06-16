@@ -2,6 +2,7 @@ import { FormEvent, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { User, Mail, Lock, CheckCircle2, Loader2, Code2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, getOwnerGyms, getCheckoutUrl, SaaSPlan } from "../api";
+import { saveAuth } from "../auth";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../authContext";
 import { AuthLayout } from "../components/AuthLayout";
@@ -63,10 +64,10 @@ export function RegisterGymPage() {
     setSubmitting(true);
     try {
       const { token } = await verifyEmail(ownerEmail, verificationCode);
-      login(token);
+      const authState = { token, role: "OWNER" as const, email: ownerEmail };
+      saveAuth(authState);
       setStep(3);
       
-      const authState = { token, role: "OWNER" as const, email: ownerEmail };
       const gyms = await getOwnerGyms(authState);
       if (gyms && gyms.length > 0) {
         const { checkoutUrl } = await getCheckoutUrl(authState, gyms[0].id);

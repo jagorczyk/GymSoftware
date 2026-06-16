@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (io.jsonwebtoken.JwtException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
+            response.setContentType("application/json; charset=UTF-8");
             response.getWriter().write("{\"error\": \"Token wygasł lub jest nieprawidłowy\"}");
             return;
         }
