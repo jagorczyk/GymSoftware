@@ -31,8 +31,8 @@ public class TenantRegistrationController {
     @PostMapping("/register")
     public ResponseEntity<?> registerTenant(@RequestBody @Valid TenantRegistrationRequest request) {
         try {
-            String checkoutUrl = tenantRegistrationService.registerTenant(request);
-            return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
+            String result = tenantRegistrationService.registerTenant(request);
+            return ResponseEntity.ok(Map.of("status", result));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (StripeException e) {

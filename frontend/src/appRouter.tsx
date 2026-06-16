@@ -9,6 +9,7 @@ import { clientRouteObjects } from "./routes/clientRouteObjects";
 import { superAdminRouteObjects } from "./routes/superAdminRouteObjects";
 import { RegisterClientPage } from "./pages/RegisterClientPage";
 import { RegisterGymPage } from "./pages/RegisterGymPage";
+import { SubscriptionSuccessPage } from "./pages/owner/SubscriptionSuccessPage";
 
 export const appRouter = createBrowserRouter([
   {
@@ -29,6 +30,7 @@ export const appRouter = createBrowserRouter([
   {
     Component: RequireAuth,
     children: [
+      { path: "/admin/subscription-success", Component: SubscriptionSuccessPage },
       {
         Component: AppShell,
         children: [

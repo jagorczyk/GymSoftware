@@ -8,10 +8,6 @@ import lombok.Data;
 @Data
 public class TenantRegistrationRequest {
     @NotBlank
-    private String gymName;
-    @NotBlank
-    private String gymAddress;
-    @NotBlank
     private String ownerFirstName;
     @NotBlank
     private String ownerLastName;

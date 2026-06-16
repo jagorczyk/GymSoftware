@@ -114,6 +114,12 @@ public class OwnerController {
         return ownerService.createGym(currentUserService.getCurrentUser().getId(), request);
     }
 
+    @PostMapping("/gyms/{gymId}/checkout")
+    public Map<String, String> checkoutSaaS(@PathVariable Long gymId) {
+        String url = ownerService.createGymSubscriptionCheckout(currentUserService.getCurrentUser().getId(), gymId);
+        return Map.of("checkoutUrl", url);
+    }
+
     @PostMapping("/gyms/{gymId}/employees")
     public EmployeeView createEmployee(@PathVariable Long gymId, @Valid @RequestBody CreateEmployeeRequest request) {
         return ownerService.createEmployee(currentUserService.getCurrentUser().getId(), gymId, request);

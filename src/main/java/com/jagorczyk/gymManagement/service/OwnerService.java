@@ -61,6 +61,8 @@ public class OwnerService {
     private final com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository;
     private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
     private final com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository;
+    private final com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository;
+    private final StripeService stripeService;
 
     public OwnerService(
             GymRepository gymRepository,
@@ -78,7 +80,9 @@ public class OwnerService {
             com.jagorczyk.gymManagement.repository.EmployeeRankRepository rankRepository,
             com.jagorczyk.gymManagement.repository.GuestCheckInRepository guestCheckInRepository,
             com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository,
-            com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository
+            com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository,
+            com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository,
+            StripeService stripeService
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -96,6 +100,22 @@ public class OwnerService {
         this.guestCheckInRepository = guestCheckInRepository;
         this.passFreezeRepository = passFreezeRepository;
         this.personalTrainerProfileRepository = personalTrainerProfileRepository;
+        this.gymSubscriptionRepository = gymSubscriptionRepository;
+        this.stripeService = stripeService;
+    }
+
+    @Transactional
+    public String createGymSubscriptionCheckout(Long ownerId, Long gymId) {
+        Gym gym = gymRepository.findById(gymId)
+                .filter(g -> g.getOwnerUser().getId().equals(ownerId))
+                .orElseThrow(() -> new IllegalArgumentException("Gym not found or access denied"));
+        com.jagorczyk.gymManagement.domain.GymSubscription subscription = gymSubscriptionRepository.findByGymId(gymId)
+                .orElseThrow(() -> new IllegalArgumentException("No subscription found"));
+        try {
+            return stripeService.createSaaSSubscriptionCheckout(subscription.getSaasPlan(), gymId);
+        } catch (com.stripe.exception.StripeException e) {
+            throw new RuntimeException("Payment error: " + e.getMessage());
+        }
     }
 
     public List<GymSummary> ownerGyms(Long ownerUserId) {

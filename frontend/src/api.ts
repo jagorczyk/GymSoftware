@@ -89,7 +89,22 @@ export async function updateOwnerGym(
     },
     body: JSON.stringify(payload),
   });
-  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować danych siłowni");
+  if (!response.ok) await parseApiError(response, "Aktualizacja siłowni nie powiodła się");
+  return response.json();
+}
+
+export async function getCheckoutUrl(
+  auth: AuthState,
+  gymId: number
+): Promise<{ checkoutUrl: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/checkout`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) await parseApiError(response, "Pobieranie linku płatności nie powiodło się");
   return response.json();
 }
 
@@ -1436,7 +1451,7 @@ export async function getTenantSaaSPlans(): Promise<SaaSPlan[]> {
   return response.json();
 }
 
-export async function registerTenant(data: any): Promise<{ checkoutUrl: string }> {
+export async function registerTenant(data: any): Promise<any> {
   const response = await fetch(`${API_URL}/auth/tenant/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

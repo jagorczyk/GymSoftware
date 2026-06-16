@@ -28,6 +28,7 @@ public class TenantRegistrationService {
     private final GymSubscriptionRepository gymSubscriptionRepository;
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
+    private final EmailService emailService;
 
     @Transactional
     public String registerTenant(TenantRegistrationRequest request) throws StripeException {
@@ -46,13 +47,17 @@ public class TenantRegistrationService {
         owner.setEmail(request.getOwnerEmail());
         owner.setPasswordHash(passwordEncoder.encode(request.getOwnerPassword()));
         owner.setRole(Role.OWNER);
-        owner.setEmailVerified(true); // For simplicity, assume verified on SaaS onboarding or require verification
+        owner.setEmailVerified(false);
+        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+        owner.setVerificationCode(code);
         owner = userRepository.save(owner);
+
+        emailService.sendVerificationEmail(owner.getEmail(), code);
 
         // 3. Create Gym
         Gym gym = new Gym();
-        gym.setName(request.getGymName());
-        gym.setAddress(request.getGymAddress());
+        gym.setName("Twoja Siłownia (Tymczasowa)");
+        gym.setAddress("-");
         gym.setOwnerUser(owner);
         gym = gymRepository.save(gym);
 
@@ -65,9 +70,7 @@ public class TenantRegistrationService {
         subscription.setCurrentPeriodEnd(LocalDateTime.now().plusDays(14)); // 14-day trial
         gymSubscriptionRepository.save(subscription);
 
-        // 5. Create Stripe Checkout Session
-        String checkoutUrl = stripeService.createSaaSSubscriptionCheckout(plan, gym.getId());
-        saasPlanRepository.save(plan);
-        return checkoutUrl;
+        // 5. Return success
+        return "success";
     }
 }
