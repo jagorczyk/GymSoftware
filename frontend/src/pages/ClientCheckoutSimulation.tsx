@@ -102,7 +102,7 @@ export function ClientCheckoutSimulation() {
             </div>
             
             <div>
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Gym Management System</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Gymlos</p>
               <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white mt-1">{passType.name}</h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">Dostęp na {passType.durationDays} dni we wskazanym klubie fitness.</p>
             </div>

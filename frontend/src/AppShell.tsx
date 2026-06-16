@@ -60,6 +60,14 @@ export function AppShell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (displayName) {
+      document.title = displayName;
+    } else {
+      document.title = "Gymlos";
+    }
+  }, [displayName]);
+
   const employeeNavItems = useMemo(
     () =>
       [

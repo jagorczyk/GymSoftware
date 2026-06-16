@@ -29,7 +29,7 @@ export function LoginPage() {
 
   return (
     <AuthLayout
-      title="GymSoft"
+      title="Gymlos"
       subtitle="Wielooddziałowy, inteligentny ekosystem do zarzadzania siecią klubów fitness."
     >
       <h2 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
