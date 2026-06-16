@@ -92,7 +92,7 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Przychody (ostatnie 30 dni)</h3>
           <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={revenueOverTime}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} />
@@ -110,7 +110,7 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-200">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Wizyty (ostatnie 30 dni)</h3>
           <div className="h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={checkInsOverTime}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#64748b" }} tickMargin={10} />
@@ -128,7 +128,7 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
         <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-2 transition-colors duration-200">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popularność karnetów</h3>
           <div className="h-80 w-full flex justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={passTypePopularity}

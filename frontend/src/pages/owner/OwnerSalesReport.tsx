@@ -116,7 +116,7 @@ export function OwnerSalesReport({ ctx }: { ctx: OwnerContext }) {
           <FormSection title="Sprzedaż wg dnia">
             {report.days.some((d) => d.count > 0 || d.total > 0) ? (
               <div className="h-64 w-full mt-4">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <BarChart data={report.days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="date" tick={{fontSize: 12, fill: '#64748b'}} axisLine={false} tickLine={false} />
