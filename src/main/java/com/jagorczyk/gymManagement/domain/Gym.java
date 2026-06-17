@@ -26,6 +26,9 @@ public class Gym {
     private String name;
 
     private String address;
+    private String city;
+    private String postalCode;
+    private String nip;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_user_id", nullable = false)

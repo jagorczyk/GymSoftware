@@ -56,8 +56,11 @@ public class TenantRegistrationService {
 
         // 3. Create Gym
         Gym gym = new Gym();
-        gym.setName("Twoja Siłownia (Tymczasowa)");
-        gym.setAddress("-");
+        gym.setName(request.getGymName());
+        gym.setAddress(request.getGymAddress());
+        gym.setCity(request.getGymCity());
+        gym.setPostalCode(request.getGymPostalCode());
+        gym.setNip(request.getGymNip());
         gym.setOwnerUser(owner);
         gym = gymRepository.save(gym);
 

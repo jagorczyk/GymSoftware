@@ -18,4 +18,14 @@ public class TenantRegistrationRequest {
     private String ownerPassword;
     @NotNull
     private Long saasPlanId;
+    @NotBlank
+    private String gymName;
+    @NotBlank
+    private String gymCity;
+    @NotBlank
+    private String gymAddress;
+    @NotBlank
+    private String gymPostalCode;
+    @NotBlank
+    private String gymNip;
 }
