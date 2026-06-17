@@ -79,7 +79,7 @@ export async function createOwnerGym(
 export async function updateOwnerGym(
   auth: AuthState,
   gymId: number,
-  payload: { name: string; address?: string }
+  payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string }
 ): Promise<{ id: number; name: string; address: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}`, {
     method: "PUT",

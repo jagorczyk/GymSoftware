@@ -253,7 +253,10 @@ public class OwnerService {
                 .filter(g -> g.getOwnerUser().getId().equals(ownerUserId))
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono siłowni lub brak uprawnień właściciela."));
         gym.setName(request.name());
-        gym.setAddress(request.address());
+        if (request.address() != null) gym.setAddress(request.address());
+        if (request.city() != null) gym.setCity(request.city());
+        if (request.postalCode() != null) gym.setPostalCode(request.postalCode());
+        if (request.nip() != null) gym.setNip(request.nip());
         Gym saved = gymRepository.save(gym);
         auditLogService.log(saved, saved.getOwnerUser(), "GYM_UPDATED", "gymId=" + saved.getId());
         return new GymSummary(saved.getId(), saved.getName(), saved.getAddress());

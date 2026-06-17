@@ -18,7 +18,10 @@ export function SubscriptionSuccessPage() {
   const [gymId, setGymId] = useState<number | null>(gymIdParam ? parseInt(gymIdParam, 10) : null);
 
   const [gymName, setGymName] = useState("");
+  const [gymCity, setGymCity] = useState("");
+  const [gymPostalCode, setGymPostalCode] = useState("");
   const [gymAddress, setGymAddress] = useState("");
+  const [gymNip, setGymNip] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,7 +57,13 @@ export function SubscriptionSuccessPage() {
 
     setSubmitting(true);
     try {
-      await updateOwnerGym(auth, gymId, { name: gymName, address: gymAddress });
+      await updateOwnerGym(auth, gymId, { 
+        name: gymName, 
+        city: gymCity,
+        postalCode: gymPostalCode,
+        address: gymAddress,
+        nip: gymNip
+      });
       showSuccess("Siłownia skonfigurowana!");
       navigate("/owner");
     } catch (err) {
@@ -95,11 +104,34 @@ export function SubscriptionSuccessPage() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Adres i Kod Pocztowy</label>
-          <input type="text" value={gymAddress} onChange={e => setGymAddress(e.target.value)} required
-            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
-            placeholder="ul. Główna 1, 00-000 Miasto" disabled={submitting} />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Miasto</label>
+            <input type="text" value={gymCity} onChange={e => setGymCity(e.target.value)} required
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+              placeholder="Warszawa" disabled={submitting} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Kod pocztowy</label>
+            <input type="text" value={gymPostalCode} onChange={e => setGymPostalCode(e.target.value)} required
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+              placeholder="00-001" disabled={submitting} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Adres</label>
+            <input type="text" value={gymAddress} onChange={e => setGymAddress(e.target.value)} required
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+              placeholder="ul. Główna 1" disabled={submitting} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">NIP</label>
+            <input type="text" value={gymNip} onChange={e => setGymNip(e.target.value)} required
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+              placeholder="1234567890" disabled={submitting} />
+          </div>
         </div>
 
         <button

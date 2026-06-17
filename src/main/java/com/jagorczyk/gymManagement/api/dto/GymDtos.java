@@ -87,7 +87,10 @@ public final class GymDtos {
 
     public record UpdateGymRequest(
             @NotBlank String name,
-            String address
+            String address,
+            String city,
+            String postalCode,
+            String nip
     ) {}
 
     public record UpdateEmployeeRequest(
