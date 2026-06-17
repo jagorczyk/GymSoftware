@@ -141,58 +141,81 @@ public class SaaSAdminService {
 
     @Transactional
     public void deleteUserCompletely(Long userId) {
-        // Skrypt wykonujący chirurgiczne usunięcie powiązanych danych
-        String sql = """
-            DO $$ 
-            DECLARE
-                v_user_id bigint := ?;
-            BEGIN
-                IF EXISTS (SELECT 1 FROM users WHERE id = v_user_id) THEN
-                    -- 1. Zależne od pracowników
-                    DELETE FROM employee_permissions WHERE employee_id IN (SELECT id FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    DELETE FROM employee_work_schedule_entries WHERE employee_id IN (SELECT id FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    
-                    -- 2. Zależne od szafek
-                    DELETE FROM locker_assignments WHERE locker_id IN (SELECT id FROM lockers WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    
-                    -- 3. Zależne od sprzedaży
-                    DELETE FROM product_sale_items WHERE product_sale_id IN (SELECT id FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    
-                    -- 4. Zależne od zajęć i karnetów
-                    DELETE FROM class_reservations WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    DELETE FROM class_ratings WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    DELETE FROM pass_freezes WHERE pass_id IN (SELECT id FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
+        // Sprawdź czy użytkownik istnieje
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("Użytkownik o ID " + userId + " nie istnieje");
+        }
 
-                    -- 5. Encje powiązane z siłownią
-                    DELETE FROM audit_logs WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM calendar_events WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM email_campaigns WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM employee_ranks WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM guest_check_ins WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM guests WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM gym_notifications WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM gym_notification_settings WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM gym_subscriptions WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM lockers WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM pass_types WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM personal_trainer_profiles WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM personal_trainings WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM products WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
-                    DELETE FROM trainer_availabilities WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id);
+        // 1. Wyzeruj nullable FK referencje do użytkownika
+        jdbcTemplate.update("UPDATE passes SET sold_by_user_id = NULL WHERE sold_by_user_id = ?", userId);
+        jdbcTemplate.update("UPDATE guests SET user_id = NULL WHERE user_id = ?", userId);
 
-                    -- 6. Inne logi przypisane do użytkownika
-                    DELETE FROM audit_logs WHERE actor_user_id = v_user_id;
-                    
-                    -- 7. Usunięcie główne
-                    DELETE FROM gyms WHERE owner_user_id = v_user_id;
-                    DELETE FROM users WHERE id = v_user_id;
-                END IF;
-            END $$;
-        """;
-        jdbcTemplate.execute(sql.replace("?", String.valueOf(userId)));
+        // 1b. Usuń rekordy z NOT NULL FK do użytkownika (nie można ustawić NULL)
+        jdbcTemplate.update("DELETE FROM guest_check_ins WHERE checked_in_by_user_id = ?", userId);
+        jdbcTemplate.update("UPDATE guest_check_ins SET checked_out_by_user_id = NULL WHERE checked_out_by_user_id = ?", userId);
+        jdbcTemplate.update("DELETE FROM locker_assignments WHERE assigned_by_user_id = ?", userId);
+        jdbcTemplate.update("DELETE FROM product_sale_items WHERE product_sale_id IN (SELECT id FROM product_sales WHERE sold_by_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM product_sales WHERE sold_by_user_id = ?", userId);
+
+        // 2. Usuń calendar_events i employee_work_schedule_entries utworzone przez tego użytkownika
+        jdbcTemplate.update("DELETE FROM calendar_events WHERE created_by_user_id = ?", userId);
+        jdbcTemplate.update("DELETE FROM employee_work_schedule_entries WHERE created_by_user_id = ?", userId);
+
+        // 3. Usuń pracownika powiązanego bezpośrednio z tym użytkownikiem (jeśli jest EMPLOYEE)
+        jdbcTemplate.update("DELETE FROM employee_permissions WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM employee_work_schedule_entries WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ?)", userId);
+        // Wyzeruj instructor_id w group_classes przed usunięciem pracownika
+        jdbcTemplate.update("DELETE FROM class_reservations WHERE group_class_id IN (SELECT id FROM group_classes WHERE instructor_id IN (SELECT id FROM employees WHERE user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM class_ratings WHERE group_class_id IN (SELECT id FROM group_classes WHERE instructor_id IN (SELECT id FROM employees WHERE user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM group_classes WHERE instructor_id IN (SELECT id FROM employees WHERE user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM personal_trainings WHERE trainer_id IN (SELECT id FROM employees WHERE user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM personal_trainer_profiles WHERE employee_id IN (SELECT id FROM employees WHERE user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM employees WHERE user_id = ?", userId);
+
+        // 4. Dane siłowni, których ten użytkownik jest właścicielem (OWNER)
+        // 4a. Zależne od pracowników siłowni
+        jdbcTemplate.update("DELETE FROM employee_permissions WHERE employee_id IN (SELECT id FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM employee_work_schedule_entries WHERE employee_id IN (SELECT id FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+
+        // 4b. Zależne od szafek
+        jdbcTemplate.update("DELETE FROM locker_assignments WHERE locker_id IN (SELECT id FROM lockers WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+
+        // 4c. Zależne od sprzedaży
+        jdbcTemplate.update("DELETE FROM product_sale_items WHERE product_sale_id IN (SELECT id FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+
+        // 4d. Zależne od zajęć i karnetów
+        jdbcTemplate.update("DELETE FROM class_reservations WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM class_ratings WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM pass_freezes WHERE pass_id IN (SELECT id FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+
+        // 4e. Zależne od gości (guest_check_ins przed guests)
+        jdbcTemplate.update("DELETE FROM guest_check_ins WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+
+        // 4f. Encje powiązane z siłownią
+        jdbcTemplate.update("DELETE FROM audit_logs WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM calendar_events WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM email_campaigns WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM personal_trainings WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM personal_trainer_profiles WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM employee_ranks WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM guests WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM gym_notifications WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM gym_notification_settings WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM gym_subscriptions WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM lockers WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM pass_types WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM products WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM trainer_availabilities WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+
+        // 5. Audit logi przypisane do użytkownika
+        jdbcTemplate.update("DELETE FROM audit_logs WHERE actor_user_id = ?", userId);
+
+        // 6. Usunięcie siłowni i użytkownika
+        jdbcTemplate.update("DELETE FROM gyms WHERE owner_user_id = ?", userId);
+        jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
     }
 }
