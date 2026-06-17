@@ -1477,3 +1477,28 @@ export async function getSaaSStats(auth: AuthState): Promise<SaaSStatsView> {
   if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk SaaS");
   return response.json();
 }
+
+export type SaaSAdminUserDTO = {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  emailVerified: boolean;
+};
+
+export async function getSaaSUsers(auth: AuthState): Promise<SaaSAdminUserDTO[]> {
+  const response = await fetch(`${API_URL}/admin/saas/users`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy użytkowników");
+  return response.json();
+}
+
+export async function deleteSaaSUser(auth: AuthState, userId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/users/${userId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć użytkownika");
+}

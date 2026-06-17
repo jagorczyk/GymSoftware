@@ -4,6 +4,7 @@ import com.jagorczyk.gymManagement.domain.SaaSPlan;
 import com.jagorczyk.gymManagement.service.SaaSPlanService;
 import com.jagorczyk.gymManagement.service.SaaSAdminService;
 import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,6 +66,19 @@ public class SaaSAdminController {
         String statusStr = body.get("status");
         com.jagorczyk.gymManagement.domain.SubscriptionStatus status = com.jagorczyk.gymManagement.domain.SubscriptionStatus.valueOf(statusStr);
         saasAdminService.updateSubscriptionStatus(id, status);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<SaaSAdminUserDTO>> getAllUsers() {
+        return ResponseEntity.ok(saasAdminService.getAllUsers());
+    }
+
+    @DeleteMapping("/users/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        saasAdminService.deleteUserCompletely(id);
         return ResponseEntity.ok().build();
     }
 }

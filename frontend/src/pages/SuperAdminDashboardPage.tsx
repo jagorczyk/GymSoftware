@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../authContext";
-import { getSaaSSubscriptions, cancelSaaSSubscription, updateSaaSSubscriptionStatus, getSaaSStats, GymSubscriptionDTO, SaaSStatsView } from "../api";
+import { getSaaSSubscriptions, cancelSaaSSubscription, updateSaaSSubscriptionStatus, getSaaSStats, getSaaSUsers, deleteSaaSUser, GymSubscriptionDTO, SaaSStatsView, SaaSAdminUserDTO } from "../api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LoadingState } from "../components/LoadingState";
 import { ErrorState } from "../components/ErrorState";
@@ -9,6 +9,7 @@ export function SuperAdminDashboardPage() {
   const { auth } = useAuth();
   const [subscriptions, setSubscriptions] = useState<GymSubscriptionDTO[]>([]);
   const [stats, setStats] = useState<SaaSStatsView | null>(null);
+  const [users, setUsers] = useState<SaaSAdminUserDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,12 +17,14 @@ export function SuperAdminDashboardPage() {
     if (!auth) return;
     try {
       setLoading(true);
-      const [subsData, statsData] = await Promise.all([
+      const [subsData, statsData, usersData] = await Promise.all([
         getSaaSSubscriptions(auth),
-        getSaaSStats(auth)
+        getSaaSStats(auth),
+        getSaaSUsers(auth)
       ]);
       setSubscriptions(subsData);
       setStats(statsData);
+      setUsers(usersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Błąd podczas pobierania danych.");
     } finally {
@@ -53,6 +56,17 @@ export function SuperAdminDashboardPage() {
       await loadData();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Błąd podczas zmiany statusu.");
+    }
+  };
+
+  const handleDeleteUser = async (userId: number, userEmail: string) => {
+    if (!auth) return;
+    if (!confirm(`UWAGA! Czy na pewno chcesz całkowicie usunąć konto ${userEmail} oraz wszystkie powiązane z nim dane (siłownię, pracowników, subskrypcje)? Operacja jest nieodwracalna!`)) return;
+    try {
+      await deleteSaaSUser(auth, userId);
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Błąd podczas usuwania użytkownika.");
     }
   };
 
@@ -214,6 +228,72 @@ export function SuperAdminDashboardPage() {
                           </button>
                         )}
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Użytkownicy - Tabela */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mt-8">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Zarządzanie Użytkownikami ({users.length})</h2>
+          <button onClick={loadData} className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors">
+            Odśwież
+          </button>
+        </div>
+        
+        {users.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            Brak użytkowników w systemie.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <th className="p-4">ID</th>
+                  <th className="p-4">Dane personalne</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Rola</th>
+                  <th className="p-4">Status Email</th>
+                  <th className="p-4 text-right">Akcje</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td className="p-4 text-sm text-gray-900 dark:text-gray-100 font-medium">#{user.id}</td>
+                    <td className="p-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.firstName} {user.lastName}
+                      </div>
+                    </td>
+                    <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                      {user.email}
+                    </td>
+                    <td className="p-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.emailVerified ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                      }`}>
+                        {user.emailVerified ? "Zweryfikowany" : "Oczekujący"}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleDeleteUser(user.id, user.email)}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                      >
+                        Usuń całkowicie
+                      </button>
                     </td>
                   </tr>
                 ))}
