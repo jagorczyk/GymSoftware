@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Dumbbell } from "lucide-react";
+import { GymLosLogo } from "./GymLosLogo";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         <div className="z-10 text-center max-w-md mx-auto">
           <div className="mx-auto w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center backdrop-blur-md mb-8 border border-white/10 shadow-2xl relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent rounded-[2rem]"></div>
-            <Dumbbell className="w-12 h-12 text-white" />
+            <GymLosLogo className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{title}</h1>
           <p className="text-slate-400 text-lg md:text-xl font-medium">

@@ -1,5 +1,6 @@
 import { ReactElement, useMemo, useState, useRef, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { GymLosLogo } from "./components/GymLosLogo";
 import {
   Menu,
   X,
@@ -180,11 +181,7 @@ export function AppShell() {
         `}
       >
         <div className="h-20 flex items-center px-6 border-b border-slate-200/40 dark:border-slate-800/30 gap-4 min-w-0">
-          <img 
-            src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"} 
-            alt="Gymlos" 
-            className="h-10 object-contain shrink-0"
-          />
+          <GymLosLogo className="h-10 w-auto text-primary-500 shrink-0" />
           {displayName ? (
             <span
               className="font-display font-black text-sm text-slate-500 dark:text-slate-400 tracking-tight truncate min-w-0 flex-1 uppercase border-l border-slate-200 dark:border-slate-700 pl-4"
