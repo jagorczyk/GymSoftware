@@ -159,8 +159,8 @@ public class SaaSAdminService {
                     DELETE FROM product_sale_items WHERE product_sale_id IN (SELECT id FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
                     
                     -- 4. Zależne od zajęć i karnetów
-                    DELETE FROM class_reservations WHERE class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
-                    DELETE FROM class_ratings WHERE class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
+                    DELETE FROM class_reservations WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
+                    DELETE FROM class_ratings WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
                     DELETE FROM pass_freezes WHERE pass_id IN (SELECT id FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = v_user_id));
 
                     -- 5. Encje powiązane z siłownią
