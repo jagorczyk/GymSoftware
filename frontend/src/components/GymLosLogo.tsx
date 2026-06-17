@@ -1,30 +1,22 @@
 import React from "react";
 
 export function GymLosLogo({ className = "w-16 h-16 text-primary-500" }: { className?: string }) {
+  // Use a relative/absolute path for public assets. We use Tailwind's dark: mode to switch.
+  // The 'className' is passed from parent components to control sizing.
   return (
-    <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <g fill="currentColor">
-        <rect x="15" y="25" width="15" height="50" rx="4" />
-        <rect x="5" y="35" width="10" height="30" rx="3" />
-        
-        <rect x="30" y="45" width="40" height="10" rx="2" />
-        
-        <rect x="70" y="25" width="15" height="50" rx="4" />
-        <rect x="85" y="35" width="10" height="30" rx="3" />
-      </g>
-      
-      <text 
-        x="50" 
-        y="105" 
-        textAnchor="middle" 
-        fontSize="24" 
-        fontWeight="800" 
-        fontFamily="sans-serif" 
-        fill="currentColor"
-        letterSpacing="1"
-      >
-        GymLos
-      </text>
-    </svg>
+    <div className={`relative flex items-center justify-center overflow-hidden ${className}`}>
+      {/* Jasne logo dla jasnego motywu (widoczne tylko w light mode) */}
+      <img 
+        src="/logo-light.png" 
+        alt="GymLos" 
+        className="w-full h-full object-contain block dark:hidden drop-shadow-sm rounded-lg" 
+      />
+      {/* Ciemne logo dla ciemnego motywu (widoczne tylko w dark mode) */}
+      <img 
+        src="/logo-dark.png" 
+        alt="GymLos" 
+        className="w-full h-full object-contain hidden dark:block drop-shadow-md rounded-lg" 
+      />
+    </div>
   );
 }
