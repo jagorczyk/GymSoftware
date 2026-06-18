@@ -261,7 +261,7 @@ export async function getEmployeeGuests(
   gymId: number,
   query?: string
 ): Promise<Array<{ id: number; firstName: string; lastName: string; email: string }>> {
-  const url = new URL(`${API_URL}/employee/gyms/${gymId}/guests`);
+  const url = new URL(`${API_URL}/employee/gyms/${gymId}/guests`, window.location.origin);
   if (query && query.trim().length > 0) {
     url.searchParams.set("q", query.trim());
   }
@@ -552,7 +552,7 @@ export async function getSalesReport(
   from?: string,
   to?: string
 ): Promise<SalesReport> {
-  const url = new URL(`${API_URL}/owner/gyms/${gymId}/sales-report`);
+  const url = new URL(`${API_URL}/owner/gyms/${gymId}/sales-report`, window.location.origin);
   if (from) url.searchParams.set("from", from);
   if (to) url.searchParams.set("to", to);
   const response = await fetch(url.toString(), {
@@ -575,7 +575,7 @@ export async function getAuditLogs(
   gymId: number,
   params?: { from?: string; to?: string; action?: string; actorEmail?: string }
 ): Promise<AuditLog[]> {
-  const url = new URL(`${API_URL}/owner/gyms/${gymId}/audit-logs`);
+  const url = new URL(`${API_URL}/owner/gyms/${gymId}/audit-logs`, window.location.origin);
   if (params?.from) url.searchParams.set("from", params.from);
   if (params?.to) url.searchParams.set("to", params.to);
   if (params?.action) url.searchParams.set("action", params.action);
@@ -694,7 +694,7 @@ export async function getCalendarEvents(
   from: string,
   to: string
 ): Promise<CalendarEvent[]> {
-  const url = new URL(calendarBasePath(auth.role, gymId));
+  const url = new URL(calendarBasePath(auth.role, gymId), window.location.origin);
   url.searchParams.set("from", from);
   url.searchParams.set("to", to);
   const response = await fetch(url.toString(), {
@@ -790,7 +790,7 @@ export async function getWorkScheduleEntries(
   to: string,
   employeeId?: number
 ): Promise<WorkScheduleEntry[]> {
-  const url = new URL(workScheduleBasePath(auth.role, gymId));
+  const url = new URL(workScheduleBasePath(auth.role, gymId), window.location.origin);
   url.searchParams.set("from", from);
   url.searchParams.set("to", to);
   if (employeeId != null) url.searchParams.set("employeeId", String(employeeId));
@@ -969,7 +969,7 @@ export async function getClasses(
   from: string,
   to: string
 ): Promise<GroupClassView[]> {
-  const url = new URL(classBasePath(auth.role, gymId));
+  const url = new URL(classBasePath(auth.role, gymId), window.location.origin);
   url.searchParams.set("from", formatIsoStringForApi(from));
   url.searchParams.set("to", formatIsoStringForApi(to));
   const response = await fetch(url.toString(), {
@@ -1050,7 +1050,7 @@ export async function getClientClasses(
   from: string,
   to: string
 ): Promise<GroupClassView[]> {
-  const url = new URL(`${API_URL}/client/gyms/${gymId}/classes`);
+  const url = new URL(`${API_URL}/client/gyms/${gymId}/classes`, window.location.origin);
   url.searchParams.set("from", formatIsoStringForApi(from));
   url.searchParams.set("to", formatIsoStringForApi(to));
   const response = await fetch(url.toString(), {
