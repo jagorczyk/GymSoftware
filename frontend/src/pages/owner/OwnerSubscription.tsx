@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../authContext';
 import { getOwnerGymSubscription, createOwnerCustomerPortalSession, GymSubscriptionView } from '../../api';
-import { useGymSelector } from '../../appGymSelectorContext';
+import { useAppGymSelector } from '../../appGymSelectorContext';
 import { Crown, CheckCircle2, AlertCircle, Clock, ExternalLink } from 'lucide-react';
 
 export function OwnerSubscription() {
   const { auth } = useAuth();
-  const { selectedGymId } = useGymSelector();
+  const { state: gymSelector } = useAppGymSelector();
+  const selectedGymId = gymSelector.selectedGymId;
   const [subscription, setSubscription] = useState<GymSubscriptionView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
