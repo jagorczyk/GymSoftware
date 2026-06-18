@@ -46,12 +46,30 @@ public class CrmService {
         campaign.setSubject(request.subject());
         campaign.setBody(request.body());
         campaign.setTargetSegment(request.targetSegment());
+
+        if (request.scheduledAt() != null && request.scheduledAt().isAfter(LocalDateTime.now())) {
+            campaign.setStatus("SCHEDULED");
+            campaign.setScheduledAt(request.scheduledAt());
+            EmailCampaign saved = emailCampaignRepository.save(campaign);
+            return mapToView(saved);
+        }
+
         campaign.setStatus("SENDING");
         EmailCampaign saved = emailCampaignRepository.save(campaign);
 
+        sendCampaignToTargets(saved);
+
+        saved.setStatus("SENT");
+        saved.setSentAt(LocalDateTime.now());
+        emailCampaignRepository.save(saved);
+
+        return mapToView(saved);
+    }
+
+    private void sendCampaignToTargets(EmailCampaign campaign) {
         List<Guest> targets;
-        if ("ACTIVE_PASSES".equalsIgnoreCase(request.targetSegment())) {
-            targets = gymPassRepository.findByGymIdAndStatus(gymId, PassStatus.ACTIVE)
+        if ("ACTIVE_PASSES".equalsIgnoreCase(campaign.getTargetSegment())) {
+            targets = gymPassRepository.findByGymIdAndStatus(campaign.getGymId(), PassStatus.ACTIVE)
                     .stream()
                     .map(GymPass::getGuest)
                     .filter(g -> g.getEmail() != null && !g.getEmail().isBlank())
@@ -59,14 +77,14 @@ public class CrmService {
                     .toList();
         } else {
             // ALL_GUESTS
-            targets = guestRepository.findByGymId(gymId)
+            targets = guestRepository.findByGymId(campaign.getGymId())
                     .stream()
                     .filter(g -> g.getEmail() != null && !g.getEmail().isBlank())
                     .toList();
         }
 
         for (Guest guest : targets) {
-            String personalizedBody = request.body();
+            String personalizedBody = campaign.getBody();
             if (personalizedBody != null) {
                 personalizedBody = personalizedBody
                         .replace("{{imie}}", guest.getFirstName() != null ? guest.getFirstName() : "")
@@ -74,14 +92,23 @@ public class CrmService {
                         .replace("{{email}}", guest.getEmail() != null ? guest.getEmail() : "")
                         .replace("{{telefon}}", guest.getPhone() != null ? guest.getPhone() : "");
             }
-            emailService.sendCampaignEmail(guest.getEmail(), request.subject(), personalizedBody);
+            emailService.sendCampaignEmail(guest.getEmail(), campaign.getSubject(), personalizedBody);
         }
+    }
 
-        saved.setStatus("SENT");
-        saved.setSentAt(LocalDateTime.now());
-        emailCampaignRepository.save(saved);
-
-        return mapToView(saved);
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 * * * * *")
+    public void processScheduledCampaigns() {
+        List<EmailCampaign> scheduledCampaigns = emailCampaignRepository.findByStatusAndScheduledAtLessThanEqual("SCHEDULED", LocalDateTime.now());
+        for (EmailCampaign campaign : scheduledCampaigns) {
+            campaign.setStatus("SENDING");
+            emailCampaignRepository.save(campaign);
+            
+            sendCampaignToTargets(campaign);
+            
+            campaign.setStatus("SENT");
+            campaign.setSentAt(LocalDateTime.now());
+            emailCampaignRepository.save(campaign);
+        }
     }
 
     private EmailCampaignView mapToView(EmailCampaign campaign) {
@@ -92,7 +119,8 @@ public class CrmService {
                 campaign.getTargetSegment(),
                 campaign.getStatus(),
                 campaign.getCreatedAt(),
-                campaign.getSentAt()
+                campaign.getSentAt(),
+                campaign.getScheduledAt()
         );
     }
 }

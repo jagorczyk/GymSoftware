@@ -1302,6 +1302,7 @@ export interface EmailCampaignView {
   status: string;
   createdAt: string;
   sentAt: string | null;
+  scheduledAt?: string;
 }
 
 export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise<EmailCampaignView[]> {
@@ -1312,7 +1313,7 @@ export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise
   return response.json();
 }
 
-export async function createEmailCampaign(auth: AuthState, gymId: number, payload: { subject: string; body: string; targetSegment: string }): Promise<EmailCampaignView> {
+export async function createEmailCampaign(auth: AuthState, gymId: number, payload: { subject: string; body: string; targetSegment: string; scheduledAt?: string }): Promise<EmailCampaignView> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/crm/campaigns`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },

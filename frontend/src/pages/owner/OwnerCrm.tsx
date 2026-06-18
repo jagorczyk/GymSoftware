@@ -17,6 +17,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [segment, setSegment] = useState("ALL_GUESTS");
+  const [scheduledAt, setScheduledAt] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -44,12 +45,14 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
         subject,
         body,
         targetSegment: segment,
+        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
       });
       setCampaigns([newCamp, ...campaigns]);
       showSuccess("Kampania została zaplanowana/wysłana!");
       setIsModalOpen(false);
       setSubject("");
       setBody("");
+      setScheduledAt("");
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd wysyłania kampanii");
     } finally {
@@ -149,6 +152,10 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                       {camp.status === "SENT" ? (
                         <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-bold">
                           <CheckCircle2 className="w-3 h-3" /> Wysłano
+                        </span>
+                      ) : camp.status === "SCHEDULED" ? (
+                        <span className="bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-bold">
+                          <CalendarClock className="w-3 h-3" /> ZAPLANOWANO ({camp.scheduledAt ? new Date(camp.scheduledAt).toLocaleString() : ''})
                         </span>
                       ) : (
                         <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full font-bold">
@@ -260,6 +267,17 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Data i godzina wysyłki (opcjonalnie)</label>
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none font-medium text-slate-900 dark:text-white"
+                  disabled={sending}
+                />
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">

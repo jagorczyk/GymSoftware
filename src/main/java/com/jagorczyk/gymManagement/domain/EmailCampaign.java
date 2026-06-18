@@ -39,4 +39,7 @@ public class EmailCampaign {
 
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
+
+    @Column(name = "scheduled_at")
+    private LocalDateTime scheduledAt;
 }

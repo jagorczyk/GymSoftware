@@ -352,7 +352,8 @@ public final class GymDtos {
     public record CreateEmailCampaignRequest(
             @NotBlank String subject,
             @NotBlank String body,
-            @NotBlank String targetSegment
+            @NotBlank String targetSegment,
+            LocalDateTime scheduledAt
     ) {}
 
     public record EmailCampaignView(
@@ -362,7 +363,8 @@ public final class GymDtos {
             String targetSegment,
             String status,
             LocalDateTime createdAt,
-            LocalDateTime sentAt
+            LocalDateTime sentAt,
+            LocalDateTime scheduledAt
     ) {}
 
     public record TrainerProfileView(
