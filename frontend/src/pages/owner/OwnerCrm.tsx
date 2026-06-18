@@ -94,6 +94,35 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
         </button>
       </div>
 
+      <div className="bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/30 rounded-3xl p-6 flex flex-col sm:flex-row gap-4 items-start">
+        <div className="bg-primary-100 dark:bg-primary-800/30 p-3 rounded-2xl text-primary-600 dark:text-primary-400 shrink-0">
+          <Info className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-900 dark:text-white text-lg">Personalizacja wiadomości</h3>
+          <p className="text-slate-600 dark:text-slate-400 mt-1 mb-3">
+            Tworząc nową kampanię, możesz użyć specjalnych zmiennych (placeholderów) oraz prostego formatowania, aby uatrakcyjnić treść maila:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+              <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{imie}}"}</code> - Imię klienta
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+              <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{nazwisko}}"}</code> - Nazwisko klienta
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+              <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{email}}"}</code> - Adres e-mail
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+              <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{telefon}}"}</code> - Numer telefonu
+            </span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+              <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"**tekst**"}</code> - Pogrubiony tekst
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Historia kampanii</h2>
