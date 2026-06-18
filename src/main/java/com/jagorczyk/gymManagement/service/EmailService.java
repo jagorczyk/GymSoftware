@@ -36,8 +36,8 @@ public class EmailService {
             String htmlBody = buildHtmlTemplate("Weryfikacja konta", 
                 "<h2>Witaj!</h2>" +
                 "<p>Twój kod weryfikacyjny to:</p>" +
-                "<div style=\"background: #f3f4f6; padding: 20px; font-size: 28px; font-weight: bold; letter-spacing: 8px; text-align: center; border-radius: 8px; margin: 30px 0; color: #1f2937;\">" + code + "</div>" +
-                "<p>Wpisz ten kod w aplikacji, aby aktywować swoje konto.</p>"
+                "<div style=\"background: #eff6ff; border: 1px dashed #bfdbfe; padding: 20px; font-size: 32px; font-weight: 800; letter-spacing: 12px; text-align: center; border-radius: 8px; margin: 30px 0; color: #2155e5;\">" + code + "</div>" +
+                "<p>Wpisz ten kod w aplikacji, aby potwierdzić swój adres e-mail i w pełni aktywować swoje konto.</p>"
             );
             
             helper.setText(htmlBody, true);
@@ -77,23 +77,23 @@ public class EmailService {
                "<head>" +
                "<meta charset=\"UTF-8\">" +
                "<style>" +
-               "  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background-color: #f9fafb; margin: 0; padding: 0; color: #374151; }" +
+               "  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #334155; }" +
                "  .wrapper { padding: 40px 20px; }" +
-               "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }" +
-               "  .header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 40px 30px; text-align: center; }" +
-               "  .header img { max-height: 50px; max-width: 100%; display: block; margin: 0 auto; }" +
-               "  .header .subtitle { color: #9ca3af; font-size: 14px; margin-top: 10px; }" +
-               "  .content { padding: 40px 40px; line-height: 1.6; font-size: 16px; }" +
-               "  .footer { background-color: #f3f4f6; padding: 25px 40px; text-align: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; }" +
-               "  .footer-logo { font-weight: bold; color: #374151; margin-bottom: 5px; }" +
+               "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); border: 1px solid #f1f5f9; }" +
+               "  .header { background: #ffffff; padding: 30px 20px 20px 20px; text-align: center; border-bottom: 1px solid #f1f5f9; }" +
+               "  .header img { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 8px; }" +
+               "  .content { padding: 40px; line-height: 1.7; font-size: 16px; color: #475569; }" +
+               "  .content h2 { color: #1e293b; font-size: 24px; margin-top: 0; margin-bottom: 20px; font-weight: 700; }" +
+               "  .content p { margin-bottom: 20px; }" +
+               "  .footer { background-color: #f8fafc; padding: 30px 40px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #f1f5f9; }" +
+               "  .footer-logo { font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }" +
                "</style>" +
                "</head>" +
                "<body>" +
                "  <div class=\"wrapper\">" +
                "    <div class=\"container\">" +
                "      <div class=\"header\">" +
-               "        <img src=\"" + frontendUrl + "/logo-light.png\" alt=\"GYMLOS\" />" +
-               "        <div class=\"subtitle\">Twoje centrum treningowe</div>" +
+               "        <img src=\"" + frontendUrl + "/email-banner.png\" alt=\"Gymlos\" width=\"500\" />" +
                "      </div>" +
                "      <div class=\"content\">" +
                contentHtml +
