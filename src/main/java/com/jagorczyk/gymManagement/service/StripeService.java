@@ -156,4 +156,14 @@ public class StripeService {
         com.stripe.model.Subscription subscription = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
         subscription.cancel();
     }
+
+    public String createCustomerPortalSession(String customerId, Long gymId) throws StripeException {
+        String returnUrl = frontendUrl + "/admin/subscription?gymId=" + gymId;
+        com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams.builder()
+                .setCustomer(customerId)
+                .setReturnUrl(returnUrl)
+                .build();
+        com.stripe.model.billingportal.Session session = com.stripe.model.billingportal.Session.create(params);
+        return session.getUrl();
+    }
 }

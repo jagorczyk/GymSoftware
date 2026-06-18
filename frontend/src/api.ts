@@ -52,6 +52,34 @@ export async function verifyEmail(email: string, code: string): Promise<{ token:
   return response.json();
 }
 
+export interface GymSubscriptionView {
+  id: number;
+  saasPlanId: number;
+  saasPlanName: string;
+  status: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+}
+
+export async function getOwnerGymSubscription(auth: AuthState, gymId: number): Promise<GymSubscriptionView | null> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/subscription`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać subskrypcji");
+  const text = await response.text();
+  if (!text) return null;
+  return JSON.parse(text);
+}
+
+export async function createOwnerCustomerPortalSession(auth: AuthState, gymId: number): Promise<{ portalUrl: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/subscription/portal`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się otworzyć portalu klienta");
+  return response.json();
+}
+
 export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string }>> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },

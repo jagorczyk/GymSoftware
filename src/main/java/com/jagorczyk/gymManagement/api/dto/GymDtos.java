@@ -389,4 +389,13 @@ public final class GymDtos {
             String specialization,
             @NotNull @DecimalMin("0.00") BigDecimal hourlyRate
     ) {}
+
+    public record GymSubscriptionView(
+            Long id,
+            Long planId,
+            String planName,
+            String status,
+            LocalDateTime currentPeriodStart,
+            LocalDateTime currentPeriodEnd
+    ) {}
 }

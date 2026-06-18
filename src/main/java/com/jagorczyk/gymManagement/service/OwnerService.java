@@ -118,6 +118,36 @@ public class OwnerService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.GymSubscriptionView getGymSubscription(Long ownerUserId, Long gymId) {
+        requireOwnerGym(ownerUserId, gymId);
+        return gymSubscriptionRepository.findByGymId(gymId)
+                .map(sub -> new com.jagorczyk.gymManagement.api.dto.GymDtos.GymSubscriptionView(
+                        sub.getId(),
+                        sub.getSaasPlan().getId(),
+                        sub.getSaasPlan().getName(),
+                        sub.getStatus().name(),
+                        sub.getCurrentPeriodStart(),
+                        sub.getCurrentPeriodEnd()
+                ))
+                .orElse(null);
+    }
+
+    @Transactional
+    public String createCustomerPortalSession(Long ownerUserId, Long gymId) {
+        requireOwnerGym(ownerUserId, gymId);
+        com.jagorczyk.gymManagement.domain.GymSubscription sub = gymSubscriptionRepository.findByGymId(gymId)
+                .orElseThrow(() -> new IllegalArgumentException("No subscription found"));
+        if (sub.getStripeCustomerId() == null || sub.getStripeCustomerId().isEmpty()) {
+            throw new IllegalArgumentException("No Stripe Customer ID found for this subscription. Please purchase a plan first.");
+        }
+        try {
+            return stripeService.createCustomerPortalSession(sub.getStripeCustomerId(), gymId);
+        } catch (com.stripe.exception.StripeException e) {
+            throw new RuntimeException("Error creating portal session: " + e.getMessage());
+        }
+    }
+
     public List<GymSummary> ownerGyms(Long ownerUserId) {
         return gymRepository.findByOwnerUserId(ownerUserId).stream()
                 .map(g -> new GymSummary(g.getId(), g.getName(), g.getAddress()))

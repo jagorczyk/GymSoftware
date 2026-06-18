@@ -120,6 +120,17 @@ public class OwnerController {
         return Map.of("checkoutUrl", url);
     }
 
+    @GetMapping("/gyms/{gymId}/subscription")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.GymSubscriptionView getSubscription(@PathVariable Long gymId) {
+        return ownerService.getGymSubscription(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/subscription/portal")
+    public Map<String, String> customerPortalSession(@PathVariable Long gymId) {
+        String url = ownerService.createCustomerPortalSession(currentUserService.getCurrentUser().getId(), gymId);
+        return Map.of("portalUrl", url);
+    }
+
     @PostMapping("/gyms/{gymId}/employees")
     public EmployeeView createEmployee(@PathVariable Long gymId, @Valid @RequestBody CreateEmployeeRequest request) {
         return ownerService.createEmployee(currentUserService.getCurrentUser().getId(), gymId, request);

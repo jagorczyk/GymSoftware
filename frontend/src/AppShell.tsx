@@ -340,6 +340,15 @@ export function AppShell() {
                   >
                     Ustawienia
                   </Link>
+                  {auth?.role === 'OWNER' && (
+                    <Link
+                      to="/owner/subscription"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    >
+                      Subskrypcja
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

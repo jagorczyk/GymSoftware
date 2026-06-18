@@ -33,6 +33,7 @@ import {
   OwnerTrainersListPage,
   OwnerTrainerCreatePage,
   OwnerTrainerEditPage,
+  OwnerSubscriptionPage,
 } from "../pages/owner/ownerRouteElements";
 import { ProfileSettingsPage } from "../pages/ProfileSettingsPage";
 
@@ -71,5 +72,6 @@ export const ownerRouteObjects: RouteObject[] = [
   { path: "trainers", Component: OwnerTrainersListPage },
   { path: "trainers/new", Component: OwnerTrainerCreatePage },
   { path: "trainers/:trainerId", Component: OwnerTrainerEditPage },
+  { path: "subscription", Component: OwnerSubscriptionPage },
   { path: "profile", Component: ProfileSettingsPage },
 ];

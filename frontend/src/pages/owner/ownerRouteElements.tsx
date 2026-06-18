@@ -27,6 +27,8 @@ import { OwnerClassRatings } from "./OwnerClassRatings";
 import { OwnerCrm } from "./OwnerCrm";
 import { OwnerTrainersList } from "./OwnerTrainersList";
 import { OwnerTrainerForm } from "./OwnerTrainerForm";
+import { OwnerSubscription } from "./OwnerSubscription";
+
 export function OwnerStatsPage() {
   return <OwnerStats ctx={useOwnerDashboardContext()} />;
 }
@@ -126,4 +128,8 @@ export function OwnerTrainerCreatePage() {
 }
 export function OwnerTrainerEditPage() {
   return <OwnerTrainerForm ctx={useOwnerDashboardContext()} />;
+}
+
+export function OwnerSubscriptionPage() {
+  return <OwnerSubscription />;
 }
