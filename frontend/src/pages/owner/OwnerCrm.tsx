@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { OwnerContext } from "./types";
 import { createEmailCampaign, EmailCampaignView, getEmailCampaigns } from "../../api";
-import { Megaphone, Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2 } from "lucide-react";
+import { Megaphone, Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2, Info } from "lucide-react";
 import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
 
@@ -208,6 +208,26 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                   placeholder="Napisz coś interesującego..."
                   disabled={sending}
                 />
+                <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-900/10 rounded-xl border border-primary-100 dark:border-primary-900/30">
+                  <div className="flex items-center gap-2 text-primary-700 dark:text-primary-400 mb-2 font-semibold text-sm">
+                    <Info className="w-4 h-4" />
+                    Dostępne zmienne (placeholdery):
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                      <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{imie}}"}</code> - Imię klienta
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                      <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{nazwisko}}"}</code> - Nazwisko klienta
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                      <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{email}}"}</code> - Adres e-mail
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                      <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{telefon}}"}</code> - Numer telefonu
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">

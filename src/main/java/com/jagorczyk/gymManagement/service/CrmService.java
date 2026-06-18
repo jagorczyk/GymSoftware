@@ -66,7 +66,15 @@ public class CrmService {
         }
 
         for (Guest guest : targets) {
-            emailService.sendCampaignEmail(guest.getEmail(), request.subject(), request.body());
+            String personalizedBody = request.body();
+            if (personalizedBody != null) {
+                personalizedBody = personalizedBody
+                        .replace("{{imie}}", guest.getFirstName() != null ? guest.getFirstName() : "")
+                        .replace("{{nazwisko}}", guest.getLastName() != null ? guest.getLastName() : "")
+                        .replace("{{email}}", guest.getEmail() != null ? guest.getEmail() : "")
+                        .replace("{{telefon}}", guest.getPhone() != null ? guest.getPhone() : "");
+            }
+            emailService.sendCampaignEmail(guest.getEmail(), request.subject(), personalizedBody);
         }
 
         saved.setStatus("SENT");
