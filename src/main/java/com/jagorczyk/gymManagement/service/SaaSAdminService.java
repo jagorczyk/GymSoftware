@@ -209,7 +209,6 @@ public class SaaSAdminService {
         jdbcTemplate.update("DELETE FROM pass_types WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM product_sales WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM products WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
-        jdbcTemplate.update("DELETE FROM trainer_availabilities WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
 
         // 5. Audit logi przypisane do użytkownika
         jdbcTemplate.update("DELETE FROM audit_logs WHERE actor_user_id = ?", userId);
