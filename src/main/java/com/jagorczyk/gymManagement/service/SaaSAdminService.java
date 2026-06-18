@@ -200,10 +200,10 @@ public class SaaSAdminService {
         jdbcTemplate.update("DELETE FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM employees WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM employee_ranks WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
-        jdbcTemplate.update("DELETE FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
-        jdbcTemplate.update("DELETE FROM guests WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM gym_notifications WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM gym_notification_settings WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
+        jdbcTemplate.update("DELETE FROM guests WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM gym_subscriptions WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM lockers WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
         jdbcTemplate.update("DELETE FROM pass_types WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
