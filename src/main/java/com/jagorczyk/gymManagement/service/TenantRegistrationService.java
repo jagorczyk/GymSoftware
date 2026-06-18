@@ -64,13 +64,13 @@ public class TenantRegistrationService {
         gym.setOwnerUser(owner);
         gym = gymRepository.save(gym);
 
-        // 4. Create GymSubscription (Trial/Pending Status)
+        // 4. Create GymSubscription (Unpaid Status)
         GymSubscription subscription = new GymSubscription();
         subscription.setGym(gym);
         subscription.setSaasPlan(plan);
-        subscription.setStatus(SubscriptionStatus.TRIAL);
-        subscription.setCurrentPeriodStart(LocalDateTime.now());
-        subscription.setCurrentPeriodEnd(LocalDateTime.now().plusDays(14)); // 14-day trial
+        subscription.setStatus(SubscriptionStatus.UNPAID);
+        subscription.setCurrentPeriodStart(null);
+        subscription.setCurrentPeriodEnd(null);
         gymSubscriptionRepository.save(subscription);
 
         // 5. Return success

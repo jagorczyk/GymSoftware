@@ -35,7 +35,7 @@ export function OwnerSubscription() {
     if (!auth || !selectedGymId || !subscription) return;
     setPortalLoading(true);
     try {
-      if (subscription.status === 'TRIAL') {
+      if (subscription.status === 'TRIAL' || subscription.status === 'UNPAID') {
         const res = await createOwnerSaaSCheckoutSession(auth, selectedGymId);
         window.location.href = res.checkoutUrl;
       } else {
@@ -84,7 +84,8 @@ export function OwnerSubscription() {
     switch (status) {
       case 'ACTIVE': return 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20';
       case 'TRIAL': return 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20';
-      case 'PAST_DUE': return 'text-red-600 bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20';
+      case 'PAST_DUE':
+      case 'UNPAID': return 'text-red-600 bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20';
       default: return 'text-slate-600 bg-slate-50 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/20';
     }
   };
@@ -93,7 +94,8 @@ export function OwnerSubscription() {
     switch (status) {
       case 'ACTIVE': return <CheckCircle2 className="w-5 h-5 text-emerald-600" />;
       case 'TRIAL': return <Clock className="w-5 h-5 text-amber-600" />;
-      case 'PAST_DUE': return <AlertCircle className="w-5 h-5 text-red-600" />;
+      case 'PAST_DUE':
+      case 'UNPAID': return <AlertCircle className="w-5 h-5 text-red-600" />;
       default: return null;
     }
   };
@@ -126,7 +128,7 @@ export function OwnerSubscription() {
                   <span className="text-indigo-200">Status</span>
                   <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(subscription.status)}`}>
                     {getStatusIcon(subscription.status)}
-                    {subscription.status === 'TRIAL' ? 'Okres Próbny' : subscription.status === 'ACTIVE' ? 'Aktywna' : subscription.status}
+                    {subscription.status === 'TRIAL' ? 'Okres Próbny' : subscription.status === 'ACTIVE' ? 'Aktywna' : subscription.status === 'UNPAID' ? 'Brak płatności' : subscription.status}
                   </div>
                 </div>
                 <div className="flex items-center justify-between pb-2">
@@ -155,7 +157,7 @@ export function OwnerSubscription() {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-900"></div>
                 ) : (
                   <>
-                    {subscription.status === 'TRIAL' ? 'Kup subskrypcję' : 'Zarządzaj subskrypcją'}
+                    {(subscription.status === 'TRIAL' || subscription.status === 'UNPAID') ? 'Kup subskrypcję' : 'Zarządzaj subskrypcją'}
                     <span className="opacity-50 text-xs ml-1">(Stripe)</span>
                   </>
                 )}
