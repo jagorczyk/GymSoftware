@@ -24,6 +24,16 @@ public class SaaSSubscriptionService {
         subscription.setStripeSubscriptionId(subscriptionId);
         subscription.setStripeCustomerId(customerId);
         subscription.setStatus(SubscriptionStatus.ACTIVE);
+        
+        try {
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(subscriptionId);
+            if (stripeSub.getCurrentPeriodEnd() != null) {
+                subscription.setCurrentPeriodEnd(LocalDateTime.ofInstant(Instant.ofEpochSecond(stripeSub.getCurrentPeriodEnd()), ZoneId.systemDefault()));
+            }
+        } catch (Exception e) {
+            System.err.println("Could not retrieve subscription details from Stripe to sync period end: " + e.getMessage());
+        }
+        
         gymSubscriptionRepository.save(subscription);
     }
 
