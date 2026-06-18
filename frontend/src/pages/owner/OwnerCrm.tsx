@@ -211,7 +211,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                 <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-900/10 rounded-xl border border-primary-100 dark:border-primary-900/30">
                   <div className="flex items-center gap-2 text-primary-700 dark:text-primary-400 mb-2 font-semibold text-sm">
                     <Info className="w-4 h-4" />
-                    Dostępne zmienne (placeholdery):
+                    Formatowanie i zmienne (placeholdery):
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
@@ -225,6 +225,9 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                     </span>
                     <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
                       <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"{{telefon}}"}</code> - Numer telefonu
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                      <code className="text-primary-600 dark:text-primary-400 font-bold mr-1.5">{"**tekst**"}</code> - Pogrubiony tekst
                     </span>
                   </div>
                 </div>

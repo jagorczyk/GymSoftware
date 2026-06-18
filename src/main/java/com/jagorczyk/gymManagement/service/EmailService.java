@@ -59,8 +59,9 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(subject);
             
-            // Zachowujemy formatowanie tekstu w HTML (zamiana enterów na nowe linie)
+            // Zachowujemy formatowanie tekstu w HTML (zamiana enterów na nowe linie i pogrubienia)
             String formattedBody = body.replace("\n", "<br>");
+            formattedBody = formattedBody.replaceAll("\\*\\*(.*?)\\*\\*", "<strong>$1</strong>");
             
             String htmlBody = buildHtmlTemplate(subject, "<p>" + formattedBody + "</p>");
             
