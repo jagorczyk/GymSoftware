@@ -38,7 +38,12 @@ public class StripeWebhookController {
         }
 
         if ("checkout.session.completed".equals(event.getType())) {
-            Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
+            Session session = null;
+            try {
+                session = (Session) event.getDataObjectDeserializer().deserializeUnsafe();
+            } catch (Exception e) {
+                System.err.println("Failed to deserialize session: " + e.getMessage());
+            }
 
             if (session != null) {
                 if ("payment".equals(session.getMode())) {
@@ -75,7 +80,12 @@ public class StripeWebhookController {
                 }
             }
         } else if ("customer.subscription.updated".equals(event.getType()) || "customer.subscription.deleted".equals(event.getType())) {
-            Subscription subscription = (Subscription) event.getDataObjectDeserializer().getObject().orElse(null);
+            Subscription subscription = null;
+            try {
+                subscription = (Subscription) event.getDataObjectDeserializer().deserializeUnsafe();
+            } catch (Exception e) {
+                System.err.println("Failed to deserialize subscription: " + e.getMessage());
+            }
             if (subscription != null) {
                 saasSubscriptionService.updateSubscriptionStatus(
                         subscription.getId(),
