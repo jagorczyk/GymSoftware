@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../authContext';
-import { getOwnerGymSubscription, createOwnerCustomerPortalSession, GymSubscriptionView } from '../../api';
-import { useAppGymSelector } from '../../appGymSelectorContext';
-import { Crown, CheckCircle2, AlertCircle, Clock, ExternalLink } from 'lucide-react';
+import { getOwnerGymSubscription, createOwnerCustomerPortalSession, createOwnerSaaSCheckoutSession, GymSubscriptionView } from '../../api';
 
 export function OwnerSubscription() {
   const { auth } = useAuth();
@@ -32,11 +30,16 @@ export function OwnerSubscription() {
   }, [auth, selectedGymId]);
 
   const handleManageSubscription = async () => {
-    if (!auth || !selectedGymId) return;
+    if (!auth || !selectedGymId || !subscription) return;
     setPortalLoading(true);
     try {
-      const res = await createOwnerCustomerPortalSession(auth, selectedGymId);
-      window.location.href = res.portalUrl;
+      if (subscription.status === 'TRIAL') {
+        const res = await createOwnerSaaSCheckoutSession(auth, selectedGymId);
+        window.location.href = res.checkoutUrl;
+      } else {
+        const res = await createOwnerCustomerPortalSession(auth, selectedGymId);
+        window.location.href = res.portalUrl;
+      }
     } catch (err: any) {
       alert(err.message);
       setPortalLoading(false);
@@ -150,7 +153,7 @@ export function OwnerSubscription() {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-900"></div>
                 ) : (
                   <>
-                    Zarządzaj subskrypcją
+                    {subscription.status === 'TRIAL' ? 'Kup subskrypcję' : 'Zarządzaj subskrypcją'}
                     <span className="opacity-50 text-xs ml-1">(Stripe)</span>
                   </>
                 )}

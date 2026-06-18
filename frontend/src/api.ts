@@ -76,7 +76,16 @@ export async function createOwnerCustomerPortalSession(auth: AuthState, gymId: n
     method: "POST",
     headers: { Authorization: `Bearer ${auth.token}` },
   });
-  if (!response.ok) await parseApiError(response, "Nie udało się otworzyć portalu klienta");
+  if (!response.ok) await parseApiError(response, "Nie udało się otworzyć portalu zarządzania");
+  return response.json();
+}
+
+export async function createOwnerSaaSCheckoutSession(auth: AuthState, gymId: number): Promise<{ checkoutUrl: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/checkout`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć płatności");
   return response.json();
 }
 
