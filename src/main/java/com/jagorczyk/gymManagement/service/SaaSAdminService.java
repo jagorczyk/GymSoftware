@@ -186,7 +186,7 @@ public class SaaSAdminService {
         // 4d. Zależne od zajęć i karnetów
         jdbcTemplate.update("DELETE FROM class_reservations WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
         jdbcTemplate.update("DELETE FROM class_ratings WHERE group_class_id IN (SELECT id FROM group_classes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
-        jdbcTemplate.update("DELETE FROM pass_freezes WHERE pass_id IN (SELECT id FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
+        jdbcTemplate.update("DELETE FROM pass_freezes WHERE gym_pass_id IN (SELECT id FROM passes WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?))", userId);
 
         // 4e. Zależne od gości (guest_check_ins przed guests)
         jdbcTemplate.update("DELETE FROM guest_check_ins WHERE gym_id IN (SELECT id FROM gyms WHERE owner_user_id = ?)", userId);
