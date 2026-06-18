@@ -18,6 +18,9 @@ public class EmailService {
     @org.springframework.beans.factory.annotation.Value("${spring.mail.username:}")
     private String fromAddress;
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     public void sendVerificationEmail(String to, String code) {
         if (mailSender == null) {
             logger.info("Mocking email to: {} with code: {}", to, code);
@@ -78,7 +81,7 @@ public class EmailService {
                "  .wrapper { padding: 40px 20px; }" +
                "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }" +
                "  .header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 40px 30px; text-align: center; }" +
-               "  .header h1 { color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }" +
+               "  .header img { max-height: 50px; max-width: 100%; display: block; margin: 0 auto; }" +
                "  .header .subtitle { color: #9ca3af; font-size: 14px; margin-top: 10px; }" +
                "  .content { padding: 40px 40px; line-height: 1.6; font-size: 16px; }" +
                "  .footer { background-color: #f3f4f6; padding: 25px 40px; text-align: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; }" +
@@ -89,7 +92,7 @@ public class EmailService {
                "  <div class=\"wrapper\">" +
                "    <div class=\"container\">" +
                "      <div class=\"header\">" +
-               "        <h1>GYMLOS</h1>" +
+               "        <img src=\"" + frontendUrl + "/logo-light.png\" alt=\"GYMLOS\" />" +
                "        <div class=\"subtitle\">Twoje centrum treningowe</div>" +
                "      </div>" +
                "      <div class=\"content\">" +
