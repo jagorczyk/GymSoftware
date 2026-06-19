@@ -79,7 +79,7 @@ public class StripeWebhookController {
                     }
                 }
             }
-        } else if ("customer.subscription.updated".equals(event.getType()) || "customer.subscription.deleted".equals(event.getType())) {
+        } else if ("customer.subscription.created".equals(event.getType()) || "customer.subscription.updated".equals(event.getType()) || "customer.subscription.deleted".equals(event.getType())) {
             Subscription subscription = null;
             try {
                 subscription = (Subscription) event.getDataObjectDeserializer().deserializeUnsafe();
@@ -87,11 +87,7 @@ public class StripeWebhookController {
                 System.err.println("Failed to deserialize subscription: " + e.getMessage());
             }
             if (subscription != null) {
-                saasSubscriptionService.updateSubscriptionStatus(
-                        subscription.getId(),
-                        subscription.getStatus(),
-                        subscription.getCurrentPeriodEnd()
-                );
+                saasSubscriptionService.handleSubscriptionWebhook(subscription);
             }
         }
 

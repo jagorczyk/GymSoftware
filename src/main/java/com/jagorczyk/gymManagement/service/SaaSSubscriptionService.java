@@ -38,10 +38,25 @@ public class SaaSSubscriptionService {
     }
 
     @Transactional
-    public void updateSubscriptionStatus(String subscriptionId, String statusStr, Long currentPeriodEndTimestamp) {
-        gymSubscriptionRepository.findByStripeSubscriptionId(subscriptionId).ifPresent(sub -> {
-            switch (statusStr) {
+    public void handleSubscriptionWebhook(com.stripe.model.Subscription subscription) {
+        GymSubscription sub = gymSubscriptionRepository.findByStripeSubscriptionId(subscription.getId())
+                .orElseGet(() -> gymSubscriptionRepository.findByStripeCustomerId(subscription.getCustomer()).orElse(null));
+
+        if (sub != null) {
+            // Jeśli webhook dotyczy nowej subskrypcji na tym samym koncie klienta
+            if (sub.getStripeSubscriptionId() != null && !sub.getStripeSubscriptionId().equals(subscription.getId())) {
+                // Akceptujemy nową subskrypcję tylko jeśli jest aktywna/trialowa
+                if ("active".equals(subscription.getStatus()) || "trialing".equals(subscription.getStatus())) {
+                    sub.setStripeSubscriptionId(subscription.getId());
+                } else {
+                    // Jeśli webhook dotyczy innej, anulowanej subskrypcji, a my już śledzimy inną (np. aktywną) - ignorujemy
+                    return;
+                }
+            }
+
+            switch (subscription.getStatus()) {
                 case "active":
+                case "trialing":
                     sub.setStatus(SubscriptionStatus.ACTIVE);
                     break;
                 case "past_due":
@@ -52,10 +67,12 @@ public class SaaSSubscriptionService {
                     sub.setStatus(SubscriptionStatus.CANCELED);
                     break;
             }
-            if (currentPeriodEndTimestamp != null) {
-                sub.setCurrentPeriodEnd(LocalDateTime.ofInstant(Instant.ofEpochSecond(currentPeriodEndTimestamp), ZoneId.systemDefault()));
+
+            if (subscription.getCurrentPeriodEnd() != null) {
+                sub.setCurrentPeriodEnd(LocalDateTime.ofInstant(Instant.ofEpochSecond(subscription.getCurrentPeriodEnd()), ZoneId.systemDefault()));
             }
+
             gymSubscriptionRepository.save(sub);
-        });
+        }
     }
 }

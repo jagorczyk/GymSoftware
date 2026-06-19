@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface GymSubscriptionRepository extends JpaRepository<GymSubscription, Long> {
     Optional<GymSubscription> findByGymId(Long gymId);
     Optional<GymSubscription> findByStripeSubscriptionId(String stripeSubscriptionId);
+    Optional<GymSubscription> findByStripeCustomerId(String stripeCustomerId);
 }
