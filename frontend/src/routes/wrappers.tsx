@@ -107,7 +107,7 @@ export function ClientDashboardWrapper() {
 
   useEffect(() => {
     setSelectorState({
-      gyms: gyms.map((g) => ({ id: g.id, name: g.name, address: g.address })),
+      gyms: gyms.map((g) => ({ id: g.id, name: g.name, address: g.address, themeColor: g.themeColor })),
       selectedGymId,
       onSelectGym: onGymChange,
     });

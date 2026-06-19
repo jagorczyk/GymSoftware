@@ -23,7 +23,7 @@ export function EmployeeDashboard(props: { auth: AuthState; children: ReactNode 
   const { setSelectorState } = useAppGymSelector();
   const [loadingGyms, setLoadingGyms] = useState(true);
   const [gyms, setGyms] = useState<
-    Array<{ employeeId: number; gymId: number; gymName: string; gymAddress: string; permissions: string[] }>
+    Array<{ employeeId: number; gymId: number; gymName: string; gymAddress: string; permissions: string[]; themeColor?: string }>
   >([]);
   const [selectedGymId, setSelectedGymId] = useState<number | "">("");
   const [overview, setOverview] = useState<any>(null);
@@ -94,7 +94,7 @@ export function EmployeeDashboard(props: { auth: AuthState; children: ReactNode 
 
   useEffect(() => {
     setSelectorState({
-      gyms: gyms.map((g) => ({ id: g.gymId, name: g.gymName, address: g.gymAddress })),
+      gyms: gyms.map((g) => ({ id: g.gymId, name: g.gymName, address: g.gymAddress, themeColor: g.themeColor })),
       selectedGymId,
       onSelectGym: onGymChange,
     });

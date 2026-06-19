@@ -26,6 +26,7 @@ export type ClientGymView = {
   id: number;
   name: string;
   address: string;
+  themeColor?: string;
 };
 
 export type ClientPassView = {
