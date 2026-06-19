@@ -1,14 +1,23 @@
 import React from "react";
 
-export function GymLosLogo({ className = "w-16 h-16" }: { className?: string }) {
-  // Usuwamy text-primary-500 z domyślnej klasy, ponieważ teraz to są obrazki, nie SVG z currentColor
+export function GymLosLogo({ className = "" }: { className?: string }) {
   const defaultClass = className.includes("w-") ? className : `w-16 h-16 ${className}`;
+  const colorClass = className.includes("text-") ? "bg-current" : "bg-primary-500 dark:bg-white";
 
   return (
-    <img 
-      src="/logo-icon-alpha.png" 
-      alt="Gymlos Icon" 
-      className={`${defaultClass} object-contain drop-shadow-md`} 
+    <div 
+      className={`${defaultClass} ${colorClass} inline-block transition-colors duration-300`}
+      style={{
+        maskImage: `url(/logo-icon-alpha.png)`,
+        WebkitMaskImage: `url(/logo-icon-alpha.png)`,
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+      }}
+      title="Gymlos"
     />
   );
 }
