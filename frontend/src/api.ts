@@ -7,6 +7,9 @@ async function parseApiError(response: Response, fallback: string): Promise<neve
   if (response.status === 401) {
     window.dispatchEvent(new Event("jwt_expired"));
   }
+  if (response.status === 402) {
+    window.dispatchEvent(new Event("subscription_required"));
+  }
   let message = fallback;
   try {
     const body = await response.json();
