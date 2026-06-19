@@ -92,7 +92,7 @@ export async function createOwnerSaaSCheckoutSession(auth: AuthState, gymId: num
   return response.json();
 }
 
-export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string }>> {
+export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; themeColor?: string }>> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
@@ -102,8 +102,8 @@ export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number;
 
 export async function createOwnerGym(
   auth: AuthState,
-  payload: { name: string; address?: string }
-): Promise<{ id: number; name: string; address: string }> {
+  payload: { name: string; address?: string; themeColor?: string }
+): Promise<{ id: number; name: string; address: string; themeColor?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     method: "POST",
     headers: {
@@ -119,8 +119,8 @@ export async function createOwnerGym(
 export async function updateOwnerGym(
   auth: AuthState,
   gymId: number,
-  payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string }
-): Promise<{ id: number; name: string; address: string }> {
+  payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }
+): Promise<{ id: number; name: string; address: string; themeColor?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}`, {
     method: "PUT",
     headers: {
@@ -130,6 +130,23 @@ export async function updateOwnerGym(
     body: JSON.stringify(payload),
   });
   if (!response.ok) await parseApiError(response, "Aktualizacja siłowni nie powiodła się");
+  return response.json();
+}
+
+export async function updateOwnerGymTheme(
+  auth: AuthState,
+  gymId: number,
+  payload: { themeColor: string }
+): Promise<{ id: number; name: string; address: string; themeColor?: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/theme`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Aktualizacja motywu nie powiodła się");
   return response.json();
 }
 

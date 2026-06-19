@@ -23,6 +23,7 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateCalendarEventRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateEmployeeRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateGuestRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateGymRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateGymThemeRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateNotificationSettingsRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdatePassTypeRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.RankView;
@@ -144,6 +145,11 @@ public class OwnerController {
     @PutMapping("/gyms/{gymId}")
     public GymSummary updateGym(@PathVariable Long gymId, @Valid @RequestBody UpdateGymRequest request) {
         return ownerService.updateGym(currentUserService.getCurrentUser().getId(), gymId, request);
+    }
+
+    @PutMapping("/gyms/{gymId}/theme")
+    public GymSummary updateGymTheme(@PathVariable Long gymId, @Valid @RequestBody UpdateGymThemeRequest request) {
+        return ownerService.updateGymTheme(currentUserService.getCurrentUser().getId(), gymId, request.themeColor());
     }
 
     @DeleteMapping("/gyms/{gymId}")

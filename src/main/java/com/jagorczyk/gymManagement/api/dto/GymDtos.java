@@ -19,7 +19,7 @@ public final class GymDtos {
     private GymDtos() {
     }
 
-    public record GymSummary(Long id, String name, String address) {}
+    public record GymSummary(Long id, String name, String address, String themeColor) {}
     public record GuestView(
             Long id,
             String firstName,
@@ -72,7 +72,8 @@ public final class GymDtos {
 
     public record CreateGymRequest(
             @NotBlank String name,
-            String address
+            String address,
+            String themeColor
     ) {}
 
     public record CreateEmployeeRequest(
@@ -90,7 +91,8 @@ public final class GymDtos {
             String address,
             String city,
             String postalCode,
-            String nip
+            String nip,
+            String themeColor
     ) {}
 
     public record UpdateEmployeeRequest(
@@ -108,6 +110,7 @@ public final class GymDtos {
             Long gymId,
             String gymName,
             String gymAddress,
+            String themeColor,
             List<String> permissions
     ) {}
 
@@ -212,6 +215,10 @@ public final class GymDtos {
 
     public record CreateLockerRequest(
             @NotBlank String lockerNumber
+    ) {}
+
+    public record UpdateGymThemeRequest(
+            @NotBlank String themeColor
     ) {}
 
     public record CalendarEventView(

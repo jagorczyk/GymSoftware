@@ -235,6 +235,7 @@ public class EmployeeService {
                         e.getGym().getId(),
                         e.getGym().getName(),
                         e.getGym().getAddress(),
+                        e.getGym().getThemeColor(),
                         employeePermissionService.effectivePermissions(e).stream().map(Enum::name).sorted().toList()
                 ))
                 .toList();

@@ -38,6 +38,8 @@ import { useSelectedGymBrand } from "./selectedGymBrandContext";
 import { useAppGymSelector } from "./appGymSelectorContext";
 import { useTheme } from "./ThemeContext";
 import { SubscriptionExpiredView } from "./components/SubscriptionExpiredView";
+import { PRESET_THEMES, generateThemeVars } from "./utils/colorUtils";
+import { updateOwnerGymTheme } from "./api";
 
 export function AppShell() {
   const { auth, logout } = useAuth();
@@ -52,6 +54,31 @@ export function AppShell() {
   const location = useLocation();
   const displayName = brandName.trim();
   const [subscriptionExpired, setSubscriptionExpired] = useState(false);
+
+  const currentGym = gymSelector.gyms.find((g) => g.id === gymSelector.selectedGymId);
+  const themeColor = currentGym?.themeColor || "#2155e5";
+  const [localThemeColor, setLocalThemeColor] = useState(themeColor);
+
+  useEffect(() => {
+    setLocalThemeColor(currentGym?.themeColor || "#2155e5");
+  }, [currentGym?.themeColor]);
+
+  useEffect(() => {
+    const vars = generateThemeVars(localThemeColor);
+    Object.entries(vars).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+  }, [localThemeColor]);
+
+  const handleThemeSave = async (color: string) => {
+    if (!currentGym || auth?.role !== 'OWNER') return;
+    try {
+      await updateOwnerGymTheme(auth, currentGym.id, { themeColor: color });
+      gymSelector.loadGyms();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -364,6 +391,46 @@ export function AppShell() {
                     >
                       Subskrypcja
                     </Link>
+                  )}
+                  {auth?.role === 'OWNER' && currentGym && (
+                    <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Kolor siłowni</p>
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {PRESET_THEMES.map((pt) => (
+                          <button
+                            key={pt.hex}
+                            type="button"
+                            className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                            style={{ 
+                              backgroundColor: pt.hex,
+                              borderColor: localThemeColor === pt.hex ? '#ffffff' : 'transparent',
+                              boxShadow: localThemeColor === pt.hex ? `0 0 0 2px ${pt.hex}` : 'none'
+                            }}
+                            onClick={() => {
+                              setLocalThemeColor(pt.hex);
+                              handleThemeSave(pt.hex);
+                            }}
+                            title={pt.label}
+                          />
+                        ))}
+                        <div 
+                          className="relative w-6 h-6 rounded-full overflow-hidden border-2 border-transparent hover:scale-110 transition-transform flex-shrink-0 cursor-pointer" 
+                          style={{
+                            background: 'conic-gradient(red, yellow, green, cyan, blue, magenta, red)',
+                            boxShadow: !PRESET_THEMES.find(p => p.hex === localThemeColor) ? `0 0 0 2px ${localThemeColor}` : 'none'
+                          }}
+                          title="Wybierz własny kolor"
+                        >
+                          <input
+                            type="color"
+                            className="absolute inset-[-10px] w-12 h-12 opacity-0 cursor-pointer"
+                            value={localThemeColor}
+                            onChange={(e) => setLocalThemeColor(e.target.value)}
+                            onBlur={(e) => handleThemeSave(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}

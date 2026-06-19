@@ -150,7 +150,7 @@ public class OwnerService {
 
     public List<GymSummary> ownerGyms(Long ownerUserId) {
         return gymRepository.findByOwnerUserId(ownerUserId).stream()
-                .map(g -> new GymSummary(g.getId(), g.getName(), g.getAddress()))
+                .map(g -> new GymSummary(g.getId(), g.getName(), g.getAddress(), g.getThemeColor()))
                 .toList();
     }
 
@@ -197,7 +197,7 @@ public class OwnerService {
         List<PassTypeView> passTypes = passTypeRepository.findByGymId(gymId).stream()
                 .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
                 .toList();
-        return new OwnerGymDetails(new GymSummary(gym.getId(), gym.getName(), gym.getAddress()), guests, employees, passes, lockers, logs, passTypes);
+        return new OwnerGymDetails(new GymSummary(gym.getId(), gym.getName(), gym.getAddress(), gym.getThemeColor()), guests, employees, passes, lockers, logs, passTypes);
     }
 
     @Transactional
@@ -207,10 +207,11 @@ public class OwnerService {
         Gym gym = new Gym();
         gym.setName(request.name());
         gym.setAddress(request.address());
+        if (request.themeColor() != null) gym.setThemeColor(request.themeColor());
         gym.setOwnerUser(owner);
         Gym saved = gymRepository.save(gym);
         auditLogService.log(saved, owner, "GYM_CREATED", "gymId=" + saved.getId());
-        return new GymSummary(saved.getId(), saved.getName(), saved.getAddress());
+        return new GymSummary(saved.getId(), saved.getName(), saved.getAddress(), saved.getThemeColor());
     }
 
     @Transactional
@@ -287,9 +288,21 @@ public class OwnerService {
         if (request.city() != null) gym.setCity(request.city());
         if (request.postalCode() != null) gym.setPostalCode(request.postalCode());
         if (request.nip() != null) gym.setNip(request.nip());
+        if (request.themeColor() != null) gym.setThemeColor(request.themeColor());
         Gym saved = gymRepository.save(gym);
         auditLogService.log(saved, saved.getOwnerUser(), "GYM_UPDATED", "gymId=" + saved.getId());
-        return new GymSummary(saved.getId(), saved.getName(), saved.getAddress());
+        return new GymSummary(saved.getId(), saved.getName(), saved.getAddress(), saved.getThemeColor());
+    }
+
+    @Transactional
+    public GymSummary updateGymTheme(Long ownerUserId, Long gymId, String themeColor) {
+        Gym gym = gymRepository.findById(gymId)
+                .filter(g -> g.getOwnerUser().getId().equals(ownerUserId))
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono siłowni lub brak uprawnień właściciela."));
+        gym.setThemeColor(themeColor);
+        Gym saved = gymRepository.save(gym);
+        auditLogService.log(saved, saved.getOwnerUser(), "GYM_THEME_UPDATED", "gymId=" + saved.getId() + ",theme=" + themeColor);
+        return new GymSummary(saved.getId(), saved.getName(), saved.getAddress(), saved.getThemeColor());
     }
 
     @Transactional

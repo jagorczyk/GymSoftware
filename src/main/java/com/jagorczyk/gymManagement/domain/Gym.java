@@ -29,6 +29,9 @@ public class Gym {
     private String city;
     private String postalCode;
     private String nip;
+    
+    @Column(name = "theme_color", length = 50)
+    private String themeColor = "#2155e5";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_user_id", nullable = false)
