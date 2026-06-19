@@ -1,0 +1,1 @@
+ALTER TABLE gyms ADD COLUMN theme_color VARCHAR(50) DEFAULT '#2155e5';
