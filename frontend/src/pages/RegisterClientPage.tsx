@@ -5,6 +5,7 @@ import { register, verifyEmail } from "../api";
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
+import { VerifyEmailForm } from "../components/VerifyEmailForm";
 
 export function RegisterClientPage() {
   const { login: saveLogin } = useAuth();
@@ -31,9 +32,7 @@ export function RegisterClientPage() {
     }
   }
 
-  async function handleVerify(event: FormEvent) {
-    event.preventDefault();
-    setLoading(true);
+  async function handleVerify(code: string) {
     try {
       const result = await verifyEmail(email, code);
       saveLogin(result.token);
@@ -41,8 +40,7 @@ export function RegisterClientPage() {
       navigate("/client/dashboard", { replace: true });
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd weryfikacji. Sprawdź kod.");
-    } finally {
-      setLoading(false);
+      throw err; // Re-throw to let the form know it failed
     }
   }
 
@@ -112,42 +110,11 @@ export function RegisterClientPage() {
           </div>
         </>
       ) : (
-        <>
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-primary-50 dark:bg-primary-950/30 text-primary-500 rounded-full flex items-center justify-center">
-              <ShieldCheck className="w-10 h-10" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight text-center">Weryfikacja Email</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium text-center">
-            Wysłaliśmy 6-cyfrowy kod na adres: <span className="text-slate-900 dark:text-white font-bold">{email}</span>. Wprowadź go poniżej.
-          </p>
-
-          <form onSubmit={handleVerify} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide text-center">Kod weryfikacyjny</label>
-              <input
-                type="text"
-                name="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className="w-full px-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-black text-center tracking-[0.5em] text-2xl text-slate-900 dark:text-white"
-                placeholder="123456"
-                maxLength={6}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || code.length !== 6}
-              className="w-full mt-6 bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl hover:shadow-primary-500/30 focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center disabled:opacity-50"
-            >
-              {loading ? "Weryfikowanie..." : "Potwierdź i wejdź"}
-            </button>
-          </form>
-        </>
+        <VerifyEmailForm
+          email={email}
+          onVerify={handleVerify}
+          submitText="Potwierdź i wejdź"
+        />
       )}
     </AuthLayout>
   );

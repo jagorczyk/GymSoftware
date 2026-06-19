@@ -6,6 +6,7 @@ import { saveAuth } from "../auth";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../authContext";
 import { AuthLayout } from "../components/AuthLayout";
+import { VerifyEmailForm } from "../components/VerifyEmailForm";
 
 export function RegisterGymPage() {
   const { showError, showSuccess } = useToast();
@@ -64,11 +65,9 @@ export function RegisterGymPage() {
     }
   }
 
-  async function handleVerify(event: FormEvent) {
-    event.preventDefault();
-    setSubmitting(true);
+  async function handleVerify(code: string) {
     try {
-      const { token } = await verifyEmail(ownerEmail, verificationCode);
+      const { token } = await verifyEmail(ownerEmail, code);
       const authState = { token, role: "OWNER" as const, email: ownerEmail };
       saveAuth(authState);
       setStep(3);
@@ -82,7 +81,7 @@ export function RegisterGymPage() {
       }
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błędny kod weryfikacyjny");
-      setSubmitting(false);
+      throw err;
     }
   }
 
@@ -190,32 +189,11 @@ export function RegisterGymPage() {
       )}
 
       {step === 2 && (
-        <form onSubmit={handleVerify} className="space-y-6">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Weryfikacja Email</h2>
-            <p className="text-slate-500 dark:text-slate-400">Wysłaliśmy kod weryfikacyjny na adres {ownerEmail}.</p>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Kod Weryfikacyjny</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Code2 className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-              </div>
-              <input type="text" value={verificationCode} onChange={e => setVerificationCode(e.target.value)} required
-                className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all text-center tracking-widest font-mono text-xl"
-                placeholder="123456" disabled={submitting} maxLength={6} />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting || verificationCode.length !== 6}
-            className="w-full mt-6 bg-slate-900 dark:bg-slate-800 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center gap-2 disabled:opacity-50"
-          >
-            {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Weryfikacja...</> : "Potwierdź i przejdź do płatności"}
-          </button>
-        </form>
+        <VerifyEmailForm
+          email={ownerEmail}
+          onVerify={handleVerify}
+          submitText="Potwierdź i przejdź do płatności"
+        />
       )}
 
       {step === 3 && (
