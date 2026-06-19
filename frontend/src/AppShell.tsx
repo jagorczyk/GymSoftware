@@ -37,6 +37,7 @@ import { canAccessEmployeeRoute, hasEmployeePermission } from "./permissions";
 import { useSelectedGymBrand } from "./selectedGymBrandContext";
 import { useAppGymSelector } from "./appGymSelectorContext";
 import { useTheme } from "./ThemeContext";
+import { SubscriptionExpiredView } from "./components/SubscriptionExpiredView";
 
 export function AppShell() {
   const { auth, logout } = useAuth();
@@ -50,6 +51,7 @@ export function AppShell() {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const displayName = brandName.trim();
+  const [subscriptionExpired, setSubscriptionExpired] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -60,6 +62,20 @@ export function AppShell() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    function handleSubscriptionError() {
+      setSubscriptionExpired(true);
+    }
+    window.addEventListener("subscription_required", handleSubscriptionError);
+    return () => window.removeEventListener("subscription_required", handleSubscriptionError);
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname === "/owner/subscription" || location.pathname === "/superadmin/dashboard") {
+      setSubscriptionExpired(false);
+    }
+  }, [location.pathname, gymSelector.selectedGymId]);
 
   useEffect(() => {
     if (displayName) {
@@ -357,7 +373,17 @@ export function AppShell() {
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full">
           <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-            <Outlet />
+            {subscriptionExpired && location.pathname !== "/owner/subscription" ? (
+              <SubscriptionExpiredView 
+                role={auth?.role} 
+                onNavigateToSubscription={() => {
+                  setSubscriptionExpired(false);
+                  navigate("/owner/subscription");
+                }} 
+              />
+            ) : (
+              <Outlet />
+            )}
           </div>
         </div>
       </main>
