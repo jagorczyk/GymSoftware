@@ -392,10 +392,10 @@ public final class GymDtos {
 
     public record GymSubscriptionView(
             Long id,
-            Long planId,
-            String planName,
+            Long saasPlanId,
+            String saasPlanName,
             String status,
-            LocalDateTime currentPeriodStart,
-            LocalDateTime currentPeriodEnd
+            String currentPeriodStart,
+            String currentPeriodEnd
     ) {}
 }
