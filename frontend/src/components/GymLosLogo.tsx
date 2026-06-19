@@ -1,7 +1,12 @@
 import React from "react";
 
 export function GymLosLogo({ className = "" }: { className?: string }) {
-  const defaultClass = className.includes("w-") ? className : `w-16 h-16 ${className}`;
+  // Dla div z mask-image musimy wymusić aspect-ratio, inaczej 'w-auto' spowoduje szerokość 0.
+  let defaultClass = className.includes("w-") ? className : `w-16 h-16 ${className}`;
+  if (defaultClass.includes("w-auto")) {
+    defaultClass = defaultClass.replace("w-auto", "aspect-square");
+  }
+  
   const colorClass = className.includes("text-") ? "bg-current" : "bg-primary-500 dark:bg-white";
 
   return (
