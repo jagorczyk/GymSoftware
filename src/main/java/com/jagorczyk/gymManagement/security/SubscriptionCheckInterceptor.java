@@ -8,9 +8,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.HandlerMapping;
-
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class SubscriptionCheckInterceptor implements HandlerInterceptor {
@@ -23,6 +22,10 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            return true;
+        }
+
         String uri = request.getRequestURI();
 
         // Zawsze przepuszczamy endpointy potrzebne do opłacenia i odzyskania subskrypcji oraz podstawowe detale do renderu UI
@@ -30,13 +33,12 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Sprawdzamy czy żądanie dotyczy konkretnej siłowni (zawiera gymId jako zmienną ścieżki)
-        @SuppressWarnings("unchecked")
-        Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        // Pobieranie gymId bezpośrednio z URI za pomocą wyrażenia regularnego
+        Matcher matcher = Pattern.compile("^/api/(?:owner|client|employee)/gyms/(\\d+)").matcher(uri);
         
-        if (pathVariables != null && pathVariables.containsKey("gymId")) {
+        if (matcher.find()) {
             try {
-                Long gymId = Long.valueOf(pathVariables.get("gymId"));
+                Long gymId = Long.valueOf(matcher.group(1));
                 GymSubscription sub = gymSubscriptionRepository.findByGymId(gymId).orElse(null);
 
                 if (sub != null && (sub.getStatus() == SubscriptionStatus.CANCELED ||
@@ -49,7 +51,7 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
                     return false;
                 }
             } catch (NumberFormatException e) {
-                // Ignore parsing errors, it just means gymId was not a valid number
+                // Ignore parsing errors
             }
         }
 
