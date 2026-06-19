@@ -46,7 +46,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const { permissions: employeePermissions } = useEmployeePermissions();
   const { brandName, setBrandName } = useSelectedGymBrand();
-  const { state: gymSelector } = useAppGymSelector();
+  const { state: gymSelector, setSelectorState } = useAppGymSelector();
   const { theme, toggleTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -74,7 +74,9 @@ export function AppShell() {
     if (!currentGym || auth?.role !== 'OWNER') return;
     try {
       await updateOwnerGymTheme(auth, currentGym.id, { themeColor: color });
-      gymSelector.loadGyms();
+      setSelectorState({
+        gyms: gymSelector.gyms.map(g => g.id === currentGym.id ? { ...g, themeColor: color } : g)
+      });
     } catch (err) {
       console.error(err);
     }
