@@ -28,14 +28,10 @@ public class SubdomainService {
             base = "gym";
         }
 
-        String subdomain = base;
-        int counter = 2;
-
-        while (gymRepository.existsBySubdomain(subdomain)) {
-            subdomain = base + counter;
-            counter++;
+        if (gymRepository.existsBySubdomain(base)) {
+            throw new IllegalArgumentException("Subdomena " + base + " jest już zajęta. Wybierz inną nazwę siłowni.");
         }
 
-        return subdomain;
+        return base;
     }
 }

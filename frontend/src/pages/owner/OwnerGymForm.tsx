@@ -18,7 +18,10 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
   const navigate = useNavigate();
   const gym = mode === "edit" ? gyms.find((g) => g.id === Number(gymId)) : null;
 
-  const [name, setName] = useState(gym?.name ?? "");
+  const isNameFixed = mode === "edit" || gyms.length > 0;
+  const fixedName = gym?.name ?? (gyms.length > 0 ? gyms[0].name : "");
+
+  const [name, setName] = useState(isNameFixed ? fixedName : "");
   const [address, setAddress] = useState(gym?.address ?? "");
   const [city, setCity] = useState(gym?.city ?? "");
   const [postalCode, setPostalCode] = useState(gym?.postalCode ?? "");
@@ -81,7 +84,8 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
         <form onSubmit={onSubmit} className="space-y-4 max-w-lg">
           <div>
             <label className={labelClassName}>Nazwa siłowni</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClassName} required />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClassName} required disabled={isNameFixed} />
+            {isNameFixed && <p className="text-xs text-slate-500 mt-1">Nazwa siłowni jest wspólna dla całej Twojej sieci i nie można jej zmienić.</p>}
           </div>
           <div>
             <label className={labelClassName}>Miasto</label>

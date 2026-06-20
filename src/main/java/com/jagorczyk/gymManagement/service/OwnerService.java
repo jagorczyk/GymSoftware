@@ -63,6 +63,7 @@ public class OwnerService {
     private final com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository;
     private final com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository;
     private final StripeService stripeService;
+    private final SubdomainService subdomainService;
 
     public OwnerService(
             GymRepository gymRepository,
@@ -82,7 +83,8 @@ public class OwnerService {
             com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository,
             com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository,
             com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository,
-            StripeService stripeService
+            StripeService stripeService,
+            SubdomainService subdomainService
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -102,6 +104,7 @@ public class OwnerService {
         this.personalTrainerProfileRepository = personalTrainerProfileRepository;
         this.gymSubscriptionRepository = gymSubscriptionRepository;
         this.stripeService = stripeService;
+        this.subdomainService = subdomainService;
     }
 
     @Transactional
@@ -214,8 +217,11 @@ public class OwnerService {
         java.util.List<Gym> existingGyms = gymRepository.findByOwnerUserId(ownerUserId);
         if (!existingGyms.isEmpty()) {
             Gym firstGym = existingGyms.get(0);
+            gym.setName(firstGym.getName()); // wymuszamy stałą nazwę
             gym.setSubdomain(firstGym.getSubdomain());
             gym.setThemeColor(firstGym.getThemeColor());
+        } else {
+            gym.setSubdomain(subdomainService.generateUniqueSubdomain(request.name()));
         }
 
         if (request.themeColor() != null) gym.setThemeColor(request.themeColor());
@@ -294,7 +300,7 @@ public class OwnerService {
         Gym gym = gymRepository.findById(gymId)
                 .filter(g -> g.getOwnerUser().getId().equals(ownerUserId))
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono siłowni lub brak uprawnień właściciela."));
-        gym.setName(request.name());
+        // gym.setName(request.name()); // Nazwa siłowni jest niezmienna
         if (request.address() != null) gym.setAddress(request.address());
         if (request.city() != null) gym.setCity(request.city());
         if (request.postalCode() != null) gym.setPostalCode(request.postalCode());
