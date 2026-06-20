@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { Dumbbell, Mail, Lock, UserPlus, ShieldCheck } from "lucide-react";
 import { register, verifyEmail } from "../api";
 import { useAuth } from "../authContext";
@@ -13,7 +13,12 @@ export function RegisterClientPage() {
   const { login: saveLogin } = useAuth();
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
-  const { tenant } = useTenant();
+  const { subdomain, tenant } = useTenant();
+  
+  // Client registration is only allowed on a gym's subdomain
+  if (!subdomain) {
+    return <Navigate to="/" replace />;
+  }
   
   const [step, setStep] = useState<"register" | "verify">("register");
   const [email, setEmail] = useState("");
