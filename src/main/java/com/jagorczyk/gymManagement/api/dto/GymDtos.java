@@ -19,7 +19,7 @@ public final class GymDtos {
     private GymDtos() {
     }
 
-    public record GymSummary(Long id, String name, String address, String themeColor) {}
+    public record GymSummary(Long id, String name, String address, String themeColor, String subdomain) {}
     public record GuestView(
             Long id,
             String firstName,

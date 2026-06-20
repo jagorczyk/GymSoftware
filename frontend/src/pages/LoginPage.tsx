@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Dumbbell, Mail, Lock } from "lucide-react";
-import { login } from "../api";
+import { login, getOwnerGyms } from "../api";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
 import { useToast } from "../components/Toast";
@@ -20,6 +20,21 @@ export function LoginPage() {
     try {
       const result = await login(email, password);
       const next = saveLogin(result.token);
+      
+      if (!subdomain && next.role === "OWNER") {
+        try {
+          const gyms = await getOwnerGyms(next);
+          if (gyms.length > 0 && gyms[0].subdomain) {
+            const proto = window.location.protocol;
+            const host = window.location.host; // e.g. "gymlos.pl"
+            window.location.href = `${proto}//${gyms[0].subdomain}.${host}/owner/dashboard`;
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to fetch owner gyms for redirect", e);
+        }
+      }
+
       const dest = next.role === "OWNER" ? "/owner/dashboard" : next.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard";
       navigate(dest, {
         replace: true,
