@@ -1,5 +1,6 @@
 import { FormEvent, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useTenant } from "../tenantContext";
 import { User, Mail, Lock, CheckCircle2, Loader2, Code2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, getOwnerGyms, getCheckoutUrl, SaaSPlan } from "../api";
 import { saveAuth } from "../auth";
@@ -11,6 +12,11 @@ import { VerifyEmailForm } from "../components/VerifyEmailForm";
 export function RegisterGymPage() {
   const { showError, showSuccess } = useToast();
   const { login } = useAuth();
+  const { subdomain } = useTenant();
+  
+  if (subdomain) {
+    return <Navigate to="/login" replace />;
+  }
   
   const [step, setStep] = useState<1 | 2 | 3>(1);
 

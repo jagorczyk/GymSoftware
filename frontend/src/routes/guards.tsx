@@ -47,9 +47,9 @@ export function RootRedirect() {
 
   if (loading) return <div>Loading...</div>;
 
-  // If there's a subdomain, render Tenant Landing Page if not logged in
+  // If there's a subdomain, go to login form if not logged in
   if (subdomain && !auth) {
-    return <TenantLandingPage />;
+    return <Navigate to="/login" replace />;
   }
 
   // If NO subdomain and NOT logged in, show SaaS landing page

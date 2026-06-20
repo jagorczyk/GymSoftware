@@ -3,11 +3,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { Dumbbell, Mail, Lock } from "lucide-react";
 import { login } from "../api";
 import { useAuth } from "../authContext";
+import { useTenant } from "../tenantContext";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
 
 export function LoginPage() {
   const { login: saveLogin } = useAuth();
+  const { subdomain } = useTenant();
   const navigate = useNavigate();
   const { showError } = useToast();
   const [email, setEmail] = useState("");
@@ -93,12 +95,14 @@ export function LoginPage() {
             Załóż darmowe konto
           </Link>
         </div>
-        <div>
-          Jesteś właścicielem siłowni?{" "}
-          <Link to="/register-gym" className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-bold ml-1 transition-colors">
-            Rozpocznij współpracę
-          </Link>
-        </div>
+        {!subdomain && (
+          <div>
+            Jesteś właścicielem siłowni?{" "}
+            <Link to="/register-gym" className="text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-bold ml-1 transition-colors">
+              Rozpocznij współpracę
+            </Link>
+          </div>
+        )}
       </div>
     </AuthLayout>
   );
