@@ -20,6 +20,9 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
 
   const [name, setName] = useState(gym?.name ?? "");
   const [address, setAddress] = useState(gym?.address ?? "");
+  const [city, setCity] = useState(gym?.city ?? "");
+  const [postalCode, setPostalCode] = useState(gym?.postalCode ?? "");
+  const [nip, setNip] = useState(gym?.nip ?? "");
 
   if (mode === "edit" && gymId && !gym) {
     return (
@@ -34,10 +37,10 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
     setError(null);
     try {
       if (mode === "create") {
-        await createOwnerGym(auth, { name, address });
+        await createOwnerGym(auth, { name, address, city, postalCode, nip });
         setInfo(`Utworzono siłownię „${name}”`);
       } else if (gym) {
-        await updateOwnerGym(auth, gym.id, { name, address });
+        await updateOwnerGym(auth, gym.id, { name, address, city, postalCode, nip });
         setInfo(`Zapisano zmiany siłowni „${name}”`);
       }
       await loadGymsAndDetails();
@@ -81,8 +84,20 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClassName} required />
           </div>
           <div>
+            <label className={labelClassName}>Miasto</label>
+            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className={inputClassName} required />
+          </div>
+          <div>
+            <label className={labelClassName}>Kod pocztowy (00-000)</label>
+            <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} pattern="^\d{2}-\d{3}$" className={inputClassName} required />
+          </div>
+          <div>
             <label className={labelClassName}>Adres</label>
-            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClassName} />
+            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClassName} required />
+          </div>
+          <div>
+            <label className={labelClassName}>NIP (10 cyfr)</label>
+            <input type="text" value={nip} onChange={(e) => setNip(e.target.value)} pattern="^\d{10}$" className={inputClassName} required />
           </div>
           <button type="submit" className={primaryButtonClassName}>
             {mode === "create" ? "Utwórz siłownię" : "Zapisz zmiany"}

@@ -19,7 +19,7 @@ public final class GymDtos {
     private GymDtos() {
     }
 
-    public record GymSummary(Long id, String name, String address, String themeColor, String subdomain) {}
+    public record GymSummary(Long id, String name, String address, String city, String postalCode, String nip, String themeColor, String subdomain) {}
     public record GuestView(
             Long id,
             String firstName,
@@ -73,6 +73,9 @@ public final class GymDtos {
     public record CreateGymRequest(
             @NotBlank String name,
             String address,
+            String city,
+            @jakarta.validation.constraints.Pattern(regexp = "^\\d{2}-\\d{3}$", message = "Nieprawidłowy kod pocztowy") String postalCode,
+            @jakarta.validation.constraints.Pattern(regexp = "^\\d{10}$", message = "NIP musi składać się z 10 cyfr") String nip,
             String themeColor
     ) {}
 
@@ -90,8 +93,8 @@ public final class GymDtos {
             @NotBlank String name,
             String address,
             String city,
-            String postalCode,
-            String nip,
+            @jakarta.validation.constraints.Pattern(regexp = "^\\d{2}-\\d{3}$", message = "Nieprawidłowy kod pocztowy") String postalCode,
+            @jakarta.validation.constraints.Pattern(regexp = "^\\d{10}$", message = "NIP musi składać się z 10 cyfr") String nip,
             String themeColor
     ) {}
 

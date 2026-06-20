@@ -17,15 +17,22 @@ public class PublicGymController {
 
     @GetMapping("/subdomain/{subdomain}")
     public ResponseEntity<?> getGymBySubdomain(@PathVariable String subdomain) {
-        return gymRepository.findBySubdomain(subdomain)
-                .map(gym -> {
-                    java.util.Map<String, Object> response = new java.util.HashMap<>();
-                    response.put("id", gym.getId());
-                    response.put("name", gym.getName());
-                    response.put("themeColor", gym.getThemeColor() != null ? gym.getThemeColor() : "#2155e5");
-                    response.put("subdomain", gym.getSubdomain());
-                    return ResponseEntity.ok(response);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        java.util.List<Gym> gyms = gymRepository.findBySubdomain(subdomain);
+        if (gyms.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        java.util.List<java.util.Map<String, Object>> responseList = gyms.stream().map(gym -> {
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", gym.getId());
+            response.put("name", gym.getName());
+            response.put("address", gym.getAddress());
+            response.put("city", gym.getCity());
+            response.put("themeColor", gym.getThemeColor() != null ? gym.getThemeColor() : "#2155e5");
+            response.put("subdomain", gym.getSubdomain());
+            return response;
+        }).toList();
+
+        return ResponseEntity.ok(responseList);
     }
 }

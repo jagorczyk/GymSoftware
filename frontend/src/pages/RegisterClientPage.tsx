@@ -1,6 +1,6 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import { Dumbbell, Mail, Lock, UserPlus, ShieldCheck } from "lucide-react";
+import { Dumbbell, Mail, Lock, UserPlus, ShieldCheck, MapPin } from "lucide-react";
 import { register, verifyEmail } from "../api";
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
@@ -13,7 +13,7 @@ export function RegisterClientPage() {
   const { login: saveLogin } = useAuth();
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
-  const { subdomain, tenant } = useTenant();
+  const { subdomain, tenant, locations } = useTenant();
   
   // Client registration is only allowed on a gym's subdomain
   if (!subdomain) {
@@ -26,10 +26,23 @@ export function RegisterClientPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedLocationId, setSelectedLocationId] = useState<string>(
+    locations && locations.length > 0 ? String(locations[0].id) : ""
+  );
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (locations && locations.length > 0 && !selectedLocationId) {
+      setSelectedLocationId(String(locations[0].id));
+    }
+  }, [locations, selectedLocationId]);
 
   async function handleRegister(event: FormEvent) {
     event.preventDefault();
+    if (!selectedLocationId) {
+      showError("Wybierz lokalizację przed rejestracją.");
+      return;
+    }
     setLoading(true);
     try {
       await register(email, password, "GUEST");
@@ -48,10 +61,11 @@ export function RegisterClientPage() {
       saveLogin(result.token);
       
       // Auto-join if on tenant subdomain
-      if (tenant) {
+      if (selectedLocationId) {
         try {
-          await joinGym({ token: result.token } as any, { gymId: tenant.id, firstName, lastName, phone: phoneNumber });
-          showSuccess(`E-mail zweryfikowany! Zostałeś dodany do ${tenant.name}.`);
+          const joinedGym = locations.find(l => String(l.id) === selectedLocationId);
+          await joinGym({ token: result.token } as any, { gymId: Number(selectedLocationId), firstName, lastName, phone: phoneNumber });
+          showSuccess(`E-mail zweryfikowany! Zostałeś dodany do ${joinedGym?.name || "siłowni"}.`);
         } catch (joinErr) {
           console.error("Auto-join failed", joinErr);
           showSuccess("E-mail zweryfikowany! Witamy w systemie.");
@@ -78,6 +92,29 @@ export function RegisterClientPage() {
           <p className="text-slate-500 dark:text-slate-400 mb-10 font-medium">Wypełnij poniższe dane, aby rozpocząć</p>
 
           <form onSubmit={handleRegister} className="space-y-5">
+            {locations && locations.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Wybierz lokalizację</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <MapPin className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                  </div>
+                  <select
+                    value={selectedLocationId}
+                    onChange={(e) => setSelectedLocationId(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white appearance-none"
+                    disabled={loading || locations.length === 1}
+                  >
+                    {locations.map(loc => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.address ? `${loc.address}${loc.city ? `, ${loc.city}` : ""}` : loc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Email</label>
               <div className="relative group">

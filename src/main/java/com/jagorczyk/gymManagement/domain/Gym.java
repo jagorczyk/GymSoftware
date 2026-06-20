@@ -33,7 +33,7 @@ public class Gym {
     @Column(name = "theme_color", length = 50)
     private String themeColor = "#2155e5";
 
-    @Column(unique = true)
+    @Column
     private String subdomain;
 
     @ManyToOne(fetch = FetchType.LAZY)

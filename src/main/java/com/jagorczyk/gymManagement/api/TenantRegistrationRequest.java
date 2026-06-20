@@ -25,7 +25,9 @@ public class TenantRegistrationRequest {
     @NotBlank
     private String gymAddress;
     @NotBlank
+    @jakarta.validation.constraints.Pattern(regexp = "^\\d{2}-\\d{3}$", message = "Nieprawidłowy kod pocztowy (wymagany format: 00-000)")
     private String gymPostalCode;
     @NotBlank
+    @jakarta.validation.constraints.Pattern(regexp = "^\\d{10}$", message = "NIP musi składać się z 10 cyfr")
     private String gymNip;
 }

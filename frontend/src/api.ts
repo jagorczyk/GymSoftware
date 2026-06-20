@@ -101,7 +101,7 @@ export async function createOwnerSaaSCheckoutSession(auth: AuthState, gymId: num
   return response.json();
 }
 
-export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; themeColor?: string; subdomain: string }>> {
+export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string; subdomain: string }>> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
@@ -111,8 +111,8 @@ export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number;
 
 export async function createOwnerGym(
   auth: AuthState,
-  payload: { name: string; address?: string; themeColor?: string }
-): Promise<{ id: number; name: string; address: string; themeColor?: string }> {
+  payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }
+): Promise<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     method: "POST",
     headers: {
@@ -129,7 +129,7 @@ export async function updateOwnerGym(
   auth: AuthState,
   gymId: number,
   payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }
-): Promise<{ id: number; name: string; address: string; themeColor?: string }> {
+): Promise<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}`, {
     method: "PUT",
     headers: {
