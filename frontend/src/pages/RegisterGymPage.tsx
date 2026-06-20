@@ -21,6 +21,7 @@ export function RegisterGymPage() {
   const [ownerLastName, setOwnerLastName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [ownerPassword, setOwnerPassword] = useState("");
+  const [gymName, setGymName] = useState("");
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   
   const [verificationCode, setVerificationCode] = useState("");
@@ -49,7 +50,7 @@ export function RegisterGymPage() {
         ownerEmail,
         ownerPassword,
         saasPlanId: selectedPlanId,
-        gymName: "Twoja Siłownia (Tymczasowa)",
+        gymName: gymName || "Twoja Siłownia",
         gymCity: "-",
         gymAddress: "-",
         gymPostalCode: "-",
@@ -135,6 +136,15 @@ export function RegisterGymPage() {
               <input type="password" value={ownerPassword} onChange={e => setOwnerPassword(e.target.value)} required
                 className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
                 placeholder="••••••••" disabled={submitting} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Nazwa Twojej Siłowni</label>
+            <div className="relative group">
+              <input type="text" value={gymName} onChange={e => setGymName(e.target.value)} required
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+                placeholder="np. Wellfitnes" disabled={submitting} />
             </div>
           </div>
 
