@@ -29,6 +29,7 @@ public class TenantRegistrationService {
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
     private final EmailService emailService;
+    private final SubdomainService subdomainService;
 
     @Transactional
     public String registerTenant(TenantRegistrationRequest request) throws StripeException {
@@ -57,6 +58,7 @@ public class TenantRegistrationService {
         // 3. Create Gym
         Gym gym = new Gym();
         gym.setName(request.getGymName());
+        gym.setSubdomain(subdomainService.generateUniqueSubdomain(request.getGymName()));
         gym.setAddress(request.getGymAddress());
         gym.setCity(request.getGymCity());
         gym.setPostalCode(request.getGymPostalCode());

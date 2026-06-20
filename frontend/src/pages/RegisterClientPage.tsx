@@ -6,16 +6,21 @@ import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
 import { VerifyEmailForm } from "../components/VerifyEmailForm";
+import { useTenant } from "../tenantContext";
+import { joinGym } from "../clientApi";
 
 export function RegisterClientPage() {
   const { login: saveLogin } = useAuth();
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
+  const { tenant } = useTenant();
   
   const [step, setStep] = useState<"register" | "verify">("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleRegister(event: FormEvent) {
@@ -36,7 +41,20 @@ export function RegisterClientPage() {
     try {
       const result = await verifyEmail(email, code);
       saveLogin(result.token);
-      showSuccess("E-mail zweryfikowany! Witamy w systemie.");
+      
+      // Auto-join if on tenant subdomain
+      if (tenant) {
+        try {
+          await joinGym({ token: result.token } as any, { gymId: tenant.id, firstName, lastName, phone: phoneNumber });
+          showSuccess(`E-mail zweryfikowany! Zostałeś dodany do ${tenant.name}.`);
+        } catch (joinErr) {
+          console.error("Auto-join failed", joinErr);
+          showSuccess("E-mail zweryfikowany! Witamy w systemie.");
+        }
+      } else {
+        showSuccess("E-mail zweryfikowany! Witamy w systemie.");
+      }
+      
       navigate("/client/dashboard", { replace: true });
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd weryfikacji. Sprawdź kod.");

@@ -11,22 +11,26 @@ import { SelectedGymBrandProvider } from "./selectedGymBrandContext";
 import { AppGymSelectorProvider } from "./appGymSelectorContext";
 import { WebSocketProvider } from "./WebSocketContext";
 
+import { TenantProvider } from "./tenantContext";
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
-      <WebSocketProvider>
-        <ThemeProvider>
-        <ToastProvider>
-          <EmployeePermissionsProvider>
-            <SelectedGymBrandProvider>
-              <AppGymSelectorProvider>
-                <RouterProvider router={appRouter} />
-              </AppGymSelectorProvider>
-            </SelectedGymBrandProvider>
-          </EmployeePermissionsProvider>
-        </ToastProvider>
-      </ThemeProvider>
-      </WebSocketProvider>
+      <TenantProvider>
+        <WebSocketProvider>
+          <ThemeProvider>
+          <ToastProvider>
+            <EmployeePermissionsProvider>
+              <SelectedGymBrandProvider>
+                <AppGymSelectorProvider>
+                  <RouterProvider router={appRouter} />
+                </AppGymSelectorProvider>
+              </SelectedGymBrandProvider>
+            </EmployeePermissionsProvider>
+          </ToastProvider>
+        </ThemeProvider>
+        </WebSocketProvider>
+      </TenantProvider>
     </AuthProvider>
   </React.StrictMode>
 );

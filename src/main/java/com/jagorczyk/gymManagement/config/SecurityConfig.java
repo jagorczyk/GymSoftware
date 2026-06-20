@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.FORWARD, jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/stripe/webhook").permitAll()
                         .requestMatchers("/ws-gym", "/ws-gym/**").permitAll()
                         .requestMatchers("/error").permitAll()
@@ -71,7 +72,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://gymlos.pl", "http://gymlos.pl", "https://www.gymlos.pl", "http://www.gymlos.pl"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://*.localhost:5173", "https://gymlos.pl", "http://gymlos.pl", "https://*.gymlos.pl", "http://*.gymlos.pl"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
