@@ -4,6 +4,7 @@ import com.jagorczyk.gymManagement.api.dto.AuthDtos.AuthResponse;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.LoginRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.RegisterRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest;
+import com.jagorczyk.gymManagement.api.dto.AuthDtos.ResendVerificationRequest;
 import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.UserRepository;
 import com.jagorczyk.gymManagement.security.CustomUserPrincipal;
@@ -72,6 +73,21 @@ public class AuthService {
         user.setVerificationCode(null);
         userRepository.save(user);
         return new AuthResponse(jwtService.generateToken(new CustomUserPrincipal(user)));
+    }
+
+    @Transactional
+    public void resendVerification(ResendVerificationRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika"));
+        if (user.isEmailVerified()) {
+            throw new IllegalArgumentException("Email jest już zweryfikowany");
+        }
+        
+        String newCode = String.format("%06d", new java.util.Random().nextInt(999999));
+        user.setVerificationCode(newCode);
+        userRepository.save(user);
+        
+        emailService.sendVerificationEmail(user.getEmail(), newCode);
     }
 
     public AuthResponse login(LoginRequest request) {

@@ -55,6 +55,15 @@ export async function verifyEmail(email: string, code: string): Promise<{ token:
   return response.json();
 }
 
+export async function resendVerification(email: string): Promise<void> {
+  const response = await fetch(`${API_URL}/auth/resend-verification`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wysłać kodu ponownie");
+}
+
 export interface GymSubscriptionView {
   id: number;
   saasPlanId: number;

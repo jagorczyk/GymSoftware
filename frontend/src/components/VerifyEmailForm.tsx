@@ -1,5 +1,7 @@
 import { FormEvent, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Send } from "lucide-react";
+import { useToast } from "./Toast";
+import { resendVerification } from "../api";
 
 interface VerifyEmailFormProps {
   email: string;
@@ -24,6 +26,21 @@ export function VerifyEmailForm({
       await onVerify(code);
     } finally {
       setLoading(false);
+    }
+  }
+
+  const { showSuccess, showError } = useToast();
+  const [resending, setResending] = useState(false);
+
+  async function handleResend() {
+    setResending(true);
+    try {
+      await resendVerification(email);
+      showSuccess("Nowy kod został wysłany na Twój adres e-mail.");
+    } catch (err: any) {
+      showError(err.message || "Nie udało się wysłać kodu ponownie.");
+    } finally {
+      setResending(false);
     }
   }
 
@@ -75,6 +92,23 @@ export function VerifyEmailForm({
             submitText
           )}
         </button>
+
+        <div className="text-center mt-6">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Nie otrzymałeś kodu?</p>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending || loading}
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-bold transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+          >
+            {resending ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+            Wyślij ponownie
+          </button>
+        </div>
       </form>
     </>
   );

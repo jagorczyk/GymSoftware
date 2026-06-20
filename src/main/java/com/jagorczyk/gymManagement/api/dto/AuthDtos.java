@@ -28,6 +28,11 @@ public final class AuthDtos {
     ) {
     }
 
+    public record ResendVerificationRequest(
+            @Email @NotBlank String email
+    ) {
+    }
+
     public record AuthResponse(
             String token
     ) {
