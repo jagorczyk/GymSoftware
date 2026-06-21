@@ -1,5 +1,6 @@
 package com.jagorczyk.gymManagement.api;
 
+import com.jagorczyk.gymManagement.api.CreateSaaSPlanRequest;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
 import com.jagorczyk.gymManagement.service.SaaSPlanService;
 import com.jagorczyk.gymManagement.service.SaaSAdminService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/saas")
@@ -42,13 +44,20 @@ public class SaaSAdminController {
 
     @PostMapping("/plans")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<SaaSPlan> createPlan(@RequestBody SaaSPlan plan) {
-        return ResponseEntity.ok(saasPlanService.createPlan(plan));
+    public ResponseEntity<SaaSPlan> createPlan(@Valid @RequestBody CreateSaaSPlanRequest request) {
+        return ResponseEntity.ok(saasPlanService.createPlan(request));
     }
 
     @GetMapping("/plans/{id}")
     public ResponseEntity<SaaSPlan> getPlan(@PathVariable Long id) {
         return ResponseEntity.ok(saasPlanService.getPlanById(id));
+    }
+
+    @DeleteMapping("/plans/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> deletePlan(@PathVariable Long id) {
+        saasPlanService.deletePlan(id);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/subscriptions/{id}/cancel")

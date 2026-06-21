@@ -10,4 +10,5 @@ public interface GymSubscriptionRepository extends JpaRepository<GymSubscription
     Optional<GymSubscription> findByGymId(Long gymId);
     Optional<GymSubscription> findByStripeSubscriptionId(String stripeSubscriptionId);
     Optional<GymSubscription> findByStripeCustomerId(String stripeCustomerId);
+    long countBySaasPlan_Id(Long saasPlanId);
 }

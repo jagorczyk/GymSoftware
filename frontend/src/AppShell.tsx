@@ -31,6 +31,7 @@ import {
   Megaphone,
   UserCircle,
   CreditCard,
+  Layers,
   Settings,
 } from "lucide-react";
 import { useAuth } from "./authContext";
@@ -154,6 +155,7 @@ export function AppShell() {
   const superAdminNavItems = useMemo(
     () => [
       { label: "Subskrypcje", to: "/superadmin/subscriptions", icon: <CreditCard className="w-5 h-5" /> },
+      { label: "Plany", to: "/superadmin/plans", icon: <Layers className="w-5 h-5" /> },
       { label: "Użytkownicy", to: "/superadmin/users", icon: <Users className="w-5 h-5" /> },
       { label: "Zarządzanie", to: "/superadmin/management", icon: <Settings className="w-5 h-5" /> },
     ],

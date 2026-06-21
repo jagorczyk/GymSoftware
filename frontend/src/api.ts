@@ -1507,6 +1507,34 @@ export async function getSaaSPlans(auth: AuthState): Promise<SaaSPlan[]> {
   return response.json();
 }
 
+export type CreateSaaSPlanPayload = {
+  name: string;
+  price: number;
+  features?: string;
+  active?: boolean;
+};
+
+export async function createSaaSPlan(auth: AuthState, payload: CreateSaaSPlanPayload): Promise<SaaSPlan> {
+  const response = await fetch(`${API_URL}/admin/saas/plans`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się utworzyć planu");
+  return response.json();
+}
+
+export async function deleteSaaSPlan(auth: AuthState, planId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/plans/${planId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się usunąć planu");
+}
+
 export async function getSaaSSubscriptions(auth: AuthState): Promise<GymSubscriptionDTO[]> {
   const response = await fetch(`${API_URL}/admin/saas/subscriptions`, {
     headers: { Authorization: `Bearer ${auth.token}` },

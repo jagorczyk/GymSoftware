@@ -1,15 +1,19 @@
 package com.jagorczyk.gymManagement.service;
 
+import com.jagorczyk.gymManagement.api.CreateSaaSPlanRequest;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
+import com.jagorczyk.gymManagement.repository.GymSubscriptionRepository;
 import com.jagorczyk.gymManagement.repository.SaaSPlanRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class SaaSPlanService {
     private final SaaSPlanRepository saasPlanRepository;
+    private final GymSubscriptionRepository gymSubscriptionRepository;
 
     public List<SaaSPlan> getAllPlans() {
         return saasPlanRepository.findAll();
@@ -21,10 +25,34 @@ public class SaaSPlanService {
 
     public SaaSPlan getPlanById(Long id) {
         return saasPlanRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("SaaS Plan not found"));
+            .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono planu SaaS"));
     }
 
-    public SaaSPlan createPlan(SaaSPlan plan) {
+    @Transactional
+    public SaaSPlan createPlan(CreateSaaSPlanRequest request) {
+        String name = request.name().trim();
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Nazwa planu jest wymagana");
+        }
+
+        SaaSPlan plan = new SaaSPlan();
+        plan.setName(name);
+        plan.setPrice(request.price());
+        plan.setFeatures(request.features() != null ? request.features().trim() : null);
+        plan.setActive(request.active() == null || request.active());
         return saasPlanRepository.save(plan);
+    }
+
+    @Transactional
+    public void deletePlan(Long id) {
+        SaaSPlan plan = getPlanById(id);
+        long subscriptionCount = gymSubscriptionRepository.countBySaasPlan_Id(id);
+        if (subscriptionCount > 0) {
+            throw new IllegalArgumentException(
+                "Nie można usunąć planu \"" + plan.getName() + "\" — jest przypisany do "
+                    + subscriptionCount + " subskrypcji. Dezaktywuj plan zamiast usuwać."
+            );
+        }
+        saasPlanRepository.delete(plan);
     }
 }
