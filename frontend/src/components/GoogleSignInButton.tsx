@@ -9,9 +9,10 @@ type GoogleSignInButtonProps = {
   onSuccess: (idToken: string) => void | Promise<void>;
   onError?: (message: string) => void;
   text?: "signin_with" | "signup_with" | "continue_with";
+  disabled?: boolean;
 };
 
-export function GoogleSignInButton({ onSuccess, onError, text = "signin_with" }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ onSuccess, onError, text = "signin_with", disabled = false }: GoogleSignInButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [buttonWidth, setButtonWidth] = useState(320);
   const [consentGranted, setConsentGranted] = useState(hasConsent);
@@ -78,7 +79,7 @@ export function GoogleSignInButton({ onSuccess, onError, text = "signin_with" }:
   }
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${disabled ? "pointer-events-none opacity-50" : ""}`}>
       <CookieConsentPrompt />
       {consentGranted && (
         <div ref={containerRef} className="flex justify-center w-full">

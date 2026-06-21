@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { login, loginWithGoogle } from "../api";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
@@ -15,23 +15,30 @@ export function LoginPage() {
   const { redirectAfterAuth } = usePostAuthRedirect();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (loading) return;
+    setLoading(true);
     try {
       const result = await login(email, password);
       await redirectAfterAuth(result.token);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd logowania");
+      setLoading(false);
     }
   }
 
   async function handleGoogleLogin(idToken: string) {
+    if (loading) return;
+    setLoading(true);
     try {
       const result = await loginWithGoogle(idToken);
       await redirectAfterAuth(result.token);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd logowania Google");
+      setLoading(false);
     }
   }
 
@@ -47,7 +54,7 @@ export function LoginPage() {
         Zaloguj się na swoje konto, aby kontynuować
       </p>
 
-      <GoogleSignInButton onSuccess={handleGoogleLogin} onError={showError} />
+      <GoogleSignInButton disabled={loading} onSuccess={handleGoogleLogin} onError={showError} />
       <AuthDivider />
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -63,6 +70,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
               className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
               placeholder="twoj@email.com"
               required
@@ -82,6 +90,7 @@ export function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-slate-900 dark:text-white"
               placeholder="••••••••"
               required
@@ -91,9 +100,17 @@ export function LoginPage() {
 
         <button
           type="submit"
-          className={`w-full mt-6 ${primaryButtonClassName}`}
+          disabled={loading}
+          className={`w-full mt-6 ${primaryButtonClassName} disabled:cursor-not-allowed`}
         >
-          <span>Zaloguj się</span>
+          {loading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Logowanie...
+            </>
+          ) : (
+            <span>Zaloguj się</span>
+          )}
         </button>
       </form>
 
