@@ -278,24 +278,16 @@ export function AppShell() {
                 to={item.to}
                 onClick={() => setDrawerOpen(false)}
                 className={`
-                  group flex items-center gap-3 px-3 py-2.5 rounded-2xl font-display font-bold transition-all
+                  flex items-center gap-3.5 px-4 py-3 rounded-xl font-display font-bold transition-all
                   ${
                     isActive
-                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md shadow-slate-900/10 dark:shadow-black/20"
-                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-100"
+                      ? "bg-primary-500/10 dark:bg-primary-950/25 text-primary-700 dark:text-primary-400 ring-1 ring-primary-500/20 dark:ring-primary-500/30 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/40 dark:hover:bg-slate-900/30 hover:text-slate-950 dark:hover:text-slate-100"
                   }
                 `}
               >
-                <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 transition-colors ${
-                    isActive
-                      ? "bg-white/15 dark:bg-slate-900/10"
-                      : "bg-slate-100/80 dark:bg-slate-800/60 group-hover:bg-slate-200/80 dark:group-hover:bg-slate-700/60"
-                  }`}
-                >
-                  <div className={isActive ? "text-white dark:text-slate-900" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"}>
-                    {item.icon}
-                  </div>
+                <div className={isActive ? "text-primary-500 dark:text-primary-400" : "text-slate-400 dark:text-slate-500"}>
+                  {item.icon}
                 </div>
                 <span className="text-sm font-semibold tracking-wide">{item.label}</span>
               </Link>
