@@ -9,7 +9,6 @@ import lombok.Data;
 public class TenantRegistrationRequest {
     @NotBlank
     private String ownerFirstName;
-    @NotBlank
     private String ownerLastName;
     @Email
     @NotBlank

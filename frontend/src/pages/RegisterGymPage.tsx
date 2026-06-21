@@ -60,7 +60,7 @@ export function RegisterGymPage() {
       const email = profile.email || ownerEmail;
       const payload = {
         ownerFirstName: profile.given_name || ownerFirstName || "Właściciel",
-        ownerLastName: profile.family_name || ownerLastName || "",
+        ownerLastName: (profile.family_name || ownerLastName || "-").trim() || "-",
         ownerEmail: email,
         googleIdToken: idToken,
         saasPlanId: selectedPlanId,

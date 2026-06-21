@@ -36,6 +36,7 @@ public class TenantRegistrationService {
     @Transactional
     public String registerTenant(TenantRegistrationRequest request) throws StripeException {
         validateAuthCredentials(request);
+        normalizeOwnerNames(request);
 
         SaaSPlan plan = saasPlanRepository.findById(request.getSaasPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("SaaS Plan not found"));
@@ -118,5 +119,16 @@ public class TenantRegistrationService {
 
     private boolean hasGoogleToken(TenantRegistrationRequest request) {
         return request.getGoogleIdToken() != null && !request.getGoogleIdToken().isBlank();
+    }
+
+    private void normalizeOwnerNames(TenantRegistrationRequest request) {
+        if (request.getOwnerFirstName() != null) {
+            request.setOwnerFirstName(request.getOwnerFirstName().trim());
+        }
+        if (request.getOwnerLastName() == null || request.getOwnerLastName().isBlank()) {
+            request.setOwnerLastName("-");
+        } else {
+            request.setOwnerLastName(request.getOwnerLastName().trim());
+        }
     }
 }
