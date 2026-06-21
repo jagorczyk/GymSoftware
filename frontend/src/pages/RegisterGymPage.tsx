@@ -1,6 +1,6 @@
 import { FormEvent, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { User, Mail, Lock, CheckCircle2, Loader2 } from "lucide-react";
+import { User, Mail, Lock, Loader2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, loginWithGoogle, SaaSPlan } from "../api";
 import { setOwnerStripeCheckoutPending } from "../auth";
 import { useToast } from "../components/Toast";
@@ -12,7 +12,7 @@ import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButto
 import { primaryButtonClassName } from "../components/formStyles";
 import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
-import { formatSaasPlanFeatureLabels } from "../saasPlanFeatures";
+import { RegisterPlanPicker, pickDefaultPlanId } from "../components/RegisterPlanPicker";
 
 const PLACEHOLDER_GYM_NAME = "Twoja Siłownia (Tymczasowa)";
 
@@ -39,7 +39,10 @@ export function RegisterGymPage() {
 
   useEffect(() => {
     getTenantSaaSPlans()
-      .then(setPlans)
+      .then((data) => {
+        setPlans(data);
+        setSelectedPlanId((current) => current ?? pickDefaultPlanId(data));
+      })
       .catch((err) => showError(err.message))
       .finally(() => setLoadingPlans(false));
   }, [showError]);
@@ -141,53 +144,23 @@ export function RegisterGymPage() {
 
   function renderPlanPicker() {
     return (
-      <div className="space-y-4">
-        <h3 className="text-xl font-bold text-slate-800 dark:text-white">Wybierz plan</h3>
-        {loadingPlans ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                onClick={() => !submitting && setSelectedPlanId(plan.id)}
-                className={`relative cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-                  selectedPlanId === plan.id
-                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/20 shadow-md shadow-primary-500/10"
-                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
-                }`}
-              >
-                {selectedPlanId === plan.id && (
-                  <div className="absolute top-4 right-4 text-primary-500">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                )}
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h4>
-                <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">
-                  {plan.price} zł <span className="text-sm font-medium text-slate-500 dark:text-slate-400">/ mies.</span>
-                </div>
-                {plan.features ? (
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{plan.features}</p>
-                ) : null}
-                <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
-                  {formatSaasPlanFeatureLabels(plan.featureFlags).map((label) => (
-                    <li key={label}>• {label}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <RegisterPlanPicker
+        plans={plans}
+        loading={loadingPlans}
+        selectedPlanId={selectedPlanId}
+        onSelect={setSelectedPlanId}
+        disabled={submitting}
+      />
     );
   }
+
+  const showPlanStep = step === 1 && (googleIdToken !== null || showEmailForm);
 
   return (
     <AuthLayout
       title="Rozpocznij biznes"
       subtitle="Zarejestruj się, wybierz plan i zacznij zarządzać swoim biznesem w chmurze."
+      wide={showPlanStep}
     >
       {step === 1 && googleIdToken && !showEmailForm && (
         <div className="space-y-6">
@@ -219,7 +192,7 @@ export function RegisterGymPage() {
               type="button"
               onClick={() => {
                 setGoogleIdToken(null);
-                setSelectedPlanId(null);
+                setSelectedPlanId(pickDefaultPlanId(plans));
               }}
               className="text-primary-600 hover:text-primary-500 font-semibold"
             >
