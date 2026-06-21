@@ -44,13 +44,13 @@ public class MfaService {
     }
 
     public AuthResponse resolveAuthResponse(User user) {
-        if (!isMfaMandatory(user)) {
-            return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
+        if (user.isMfaEnabled() && user.getMfaSecret() != null && !user.getMfaSecret().isBlank()) {
+            return AuthResponse.mfaChallenge(jwtService.generateMfaToken(user.getId(), "challenge"));
         }
-        if (!user.isMfaEnabled() || user.getMfaSecret() == null || user.getMfaSecret().isBlank()) {
+        if (isMfaMandatory(user)) {
             return AuthResponse.mfaSetup(jwtService.generateMfaToken(user.getId(), "setup"));
         }
-        return AuthResponse.mfaChallenge(jwtService.generateMfaToken(user.getId(), "challenge"));
+        return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
     }
 
     @Transactional
@@ -81,7 +81,7 @@ public class MfaService {
         return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse verifyLogin(String mfaToken, String code) {
         User user = loadUserForMfa(mfaToken, "challenge");
         if (!user.isMfaEnabled() || user.getMfaSecret() == null || user.getMfaSecret().isBlank()) {
@@ -91,6 +91,34 @@ public class MfaService {
             throw new IllegalArgumentException("Nieprawidłowy kod MFA");
         }
         return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
+    }
+
+    @Transactional
+    public MfaSetupResponse beginProfileSetup(User user) {
+        if (user.isMfaEnabled()) {
+            throw new IllegalArgumentException("MFA jest już włączone na tym koncie");
+        }
+
+        String secret = secretGenerator.generate();
+        user.setMfaSecret(secret);
+        user.setMfaEnabled(false);
+        userRepository.save(user);
+        return buildSetupResponse(user.getEmail(), secret);
+    }
+
+    @Transactional
+    public void confirmProfileSetup(User user, String code) {
+        if (user.isMfaEnabled()) {
+            throw new IllegalArgumentException("MFA jest już włączone na tym koncie");
+        }
+        if (user.getMfaSecret() == null || user.getMfaSecret().isBlank()) {
+            throw new IllegalArgumentException("Rozpocznij konfigurację MFA przed potwierdzeniem");
+        }
+        if (!verifyCode(user.getMfaSecret(), code)) {
+            throw new IllegalArgumentException("Nieprawidłowy kod MFA");
+        }
+        user.setMfaEnabled(true);
+        userRepository.save(user);
     }
 
     private User loadUserForMfa(String mfaToken, String purpose) {

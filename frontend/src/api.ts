@@ -109,6 +109,80 @@ export async function resendVerification(email: string): Promise<void> {
   if (!response.ok) await parseApiError(response, "Nie udało się wysłać kodu ponownie");
 }
 
+export type ProfileView = {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: string;
+  googleLinked: boolean;
+  passwordChangeAllowed: boolean;
+  mfaEnabled: boolean;
+  mfaMandatory: boolean;
+};
+
+export async function getProfile(auth: AuthState): Promise<ProfileView> {
+  const response = await fetch(`${API_URL}/profile`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać profilu");
+  return response.json();
+}
+
+export async function updateProfile(
+  auth: AuthState,
+  payload: { firstName?: string; lastName?: string }
+): Promise<ProfileView> {
+  const response = await fetch(`${API_URL}/profile`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować profilu");
+  return response.json();
+}
+
+export async function changeProfilePassword(
+  auth: AuthState,
+  payload: { currentPassword: string; newPassword: string }
+): Promise<void> {
+  const response = await fetch(`${API_URL}/profile/change-password`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zmienić hasła");
+}
+
+export async function beginProfileMfaSetup(
+  auth: AuthState
+): Promise<{ secret: string; qrCodeDataUrl: string; otpauthUrl: string }> {
+  const response = await fetch(`${API_URL}/profile/mfa/setup`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć konfiguracji MFA");
+  return response.json();
+}
+
+export async function confirmProfileMfaSetup(auth: AuthState, code: string): Promise<ProfileView> {
+  const response = await fetch(`${API_URL}/profile/mfa/confirm`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się aktywować MFA");
+  return response.json();
+}
+
 export interface GymSubscriptionView {
   id: number;
   saasPlanId: number;
