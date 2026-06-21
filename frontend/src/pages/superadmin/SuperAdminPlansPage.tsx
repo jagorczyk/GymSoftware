@@ -324,23 +324,25 @@ export function SuperAdminPlansPage() {
                         </span>
                       </td>
                       <td className="p-4 text-sm text-gray-600 dark:text-gray-400">{count}</td>
-                      <td className="p-4 text-right space-x-2">
-                        <button
-                          onClick={() => startEdit(plan)}
-                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                          Edytuj
-                        </button>
-                        <button
-                          onClick={() => void handleDelete(plan)}
-                          disabled={count > 0}
-                          title={count > 0 ? "Nie można usunąć planu z przypisanymi subskrypcjami" : "Usuń plan"}
-                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30 dark:hover:bg-red-900/50"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Usuń
-                        </button>
+                      <td className="p-4">
+                        <div className="flex items-center justify-end gap-2 flex-nowrap">
+                          <button
+                            onClick={() => startEdit(plan)}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30 whitespace-nowrap"
+                          >
+                            <Pencil className="w-3.5 h-3.5 shrink-0" />
+                            Edytuj
+                          </button>
+                          <button
+                            onClick={() => void handleDelete(plan)}
+                            disabled={count > 0}
+                            title={count > 0 ? "Nie można usunąć planu z przypisanymi subskrypcjami" : "Usuń plan"}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30 dark:hover:bg-red-900/50 whitespace-nowrap"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                            Usuń
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
