@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link } from "react-router-dom";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { login, loginWithGoogle } from "../api";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
@@ -20,7 +21,7 @@ export function LoginPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (loading) return;
-    setLoading(true);
+    flushSync(() => setLoading(true));
     try {
       const result = await login(email, password);
       await redirectAfterAuth(result.token);
@@ -32,7 +33,7 @@ export function LoginPage() {
 
   async function handleGoogleLogin(idToken: string) {
     if (loading) return;
-    setLoading(true);
+    flushSync(() => setLoading(true));
     try {
       const result = await loginWithGoogle(idToken);
       await redirectAfterAuth(result.token);
@@ -54,10 +55,26 @@ export function LoginPage() {
         Zaloguj się na swoje konto, aby kontynuować
       </p>
 
-      <GoogleSignInButton disabled={loading} onSuccess={handleGoogleLogin} onError={showError} />
-      <AuthDivider />
+      <div className="relative">
+        {loading && (
+          <div
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <div
+              className="h-12 w-12 rounded-full border-4 border-primary-200 border-t-primary-600 animate-spin"
+              role="status"
+              aria-label="Logowanie"
+            />
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Logowanie...</p>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+        <GoogleSignInButton disabled={loading} onSuccess={handleGoogleLogin} onError={showError} />
+        <AuthDivider />
+
+        <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label className="text-xs font-display font-extrabold text-slate-800 dark:text-slate-300 block uppercase tracking-widest">
             Email
@@ -101,18 +118,13 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full mt-6 ${primaryButtonClassName} disabled:cursor-not-allowed`}
+          aria-busy={loading}
+          className={`w-full mt-6 ${primaryButtonClassName} disabled:cursor-not-allowed ${loading ? "opacity-100" : ""}`}
         >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Logowanie...
-            </>
-          ) : (
-            <span>Zaloguj się</span>
-          )}
+          Zaloguj się
         </button>
-      </form>
+        </form>
+      </div>
 
       <div className="mt-8 space-y-3 text-center text-sm font-medium text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-6">
         {subdomain && (
