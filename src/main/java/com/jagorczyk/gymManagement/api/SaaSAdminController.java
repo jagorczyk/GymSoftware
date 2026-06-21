@@ -69,6 +69,27 @@ public class SaaSAdminController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/subscriptions/{id}/plan")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> changeSubscriptionPlan(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Long> body) {
+        Long saasPlanId = body.get("saasPlanId");
+        if (saasPlanId == null) {
+            throw new IllegalArgumentException("saasPlanId is required");
+        }
+        saasAdminService.changeSubscriptionPlan(id, saasPlanId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/system/reset")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> resetAllData(@RequestBody java.util.Map<String, String> body) {
+        String confirmation = body.get("confirmation");
+        saasAdminService.resetAllDataExceptSuperAdmin(confirmation);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/users")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<SaaSAdminUserDTO>> getAllUsers() {

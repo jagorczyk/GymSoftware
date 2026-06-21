@@ -148,7 +148,7 @@ export function SuperAdminDashboardWrapper() {
     );
   }
   if (location.pathname === "/superadmin" || location.pathname === "/superadmin/") {
-    return <Navigate to="/superadmin/dashboard" replace />;
+    return <Navigate to="/superadmin/subscriptions" replace />;
   }
 
   return <Outlet />;

@@ -2,7 +2,11 @@ package com.jagorczyk.gymManagement.service;
 
 import com.jagorczyk.gymManagement.api.GymSubscriptionDTO;
 import com.jagorczyk.gymManagement.domain.GymSubscription;
+import com.jagorczyk.gymManagement.domain.Role;
+import com.jagorczyk.gymManagement.domain.SaaSPlan;
+import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.GymSubscriptionRepository;
+import com.jagorczyk.gymManagement.repository.SaaSPlanRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
@@ -21,6 +25,7 @@ public class SaaSAdminService {
     private final GymSubscriptionRepository gymSubscriptionRepository;
     private final StripeService stripeService;
     private final UserRepository userRepository;
+    private final SaaSPlanRepository saasPlanRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Transactional(readOnly = true)
@@ -118,6 +123,16 @@ public class SaaSAdminService {
     }
 
     @Transactional
+    public void changeSubscriptionPlan(Long subscriptionId, Long saasPlanId) {
+        GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+        SaaSPlan plan = saasPlanRepository.findById(saasPlanId)
+                .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
+        sub.setSaasPlan(plan);
+        gymSubscriptionRepository.save(sub);
+    }
+
+    @Transactional
     public void updateSubscriptionStatus(Long subscriptionId, com.jagorczyk.gymManagement.domain.SubscriptionStatus newStatus) {
         GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
@@ -141,9 +156,10 @@ public class SaaSAdminService {
 
     @Transactional
     public void deleteUserCompletely(Long userId) {
-        // Sprawdź czy użytkownik istnieje
-        if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("Użytkownik o ID " + userId + " nie istnieje");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Użytkownik o ID " + userId + " nie istnieje"));
+        if (user.getRole() == Role.SUPER_ADMIN) {
+            throw new IllegalArgumentException("Nie można usunąć konta super admina");
         }
 
         // 1. Wyzeruj nullable FK referencje do użytkownika
@@ -216,5 +232,47 @@ public class SaaSAdminService {
         // 6. Usunięcie siłowni i użytkownika
         jdbcTemplate.update("DELETE FROM gyms WHERE owner_user_id = ?", userId);
         jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
+    }
+
+    @Transactional
+    public void resetAllDataExceptSuperAdmin(String confirmation) {
+        if (!"WYCZYSC".equals(confirmation)) {
+            throw new IllegalArgumentException("Nieprawidłowe potwierdzenie operacji");
+        }
+
+        jdbcTemplate.execute("""
+            TRUNCATE TABLE
+              product_sale_items,
+              product_sales,
+              products,
+              class_reservations,
+              class_ratings,
+              pass_freezes,
+              guest_check_ins,
+              locker_assignments,
+              employee_permissions,
+              employee_rank_permissions,
+              employee_work_schedule_entries,
+              personal_trainings,
+              personal_trainer_profiles,
+              trainer_availabilities,
+              group_classes,
+              calendar_events,
+              email_campaigns,
+              gym_notifications,
+              gym_notification_settings,
+              audit_logs,
+              passes,
+              pass_types,
+              guests,
+              lockers,
+              employees,
+              employee_ranks,
+              gym_subscriptions,
+              gyms
+            RESTART IDENTITY CASCADE
+            """);
+
+        jdbcTemplate.update("DELETE FROM users WHERE role != ?", Role.SUPER_ADMIN.name());
     }
 }

@@ -30,6 +30,8 @@ import {
   Star,
   Megaphone,
   UserCircle,
+  CreditCard,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "./authContext";
 import { useEmployeePermissions } from "./employeePermissionsContext";
@@ -101,7 +103,7 @@ export function AppShell() {
   }, []);
 
   useEffect(() => {
-    if (location.pathname === "/owner/subscription" || location.pathname === "/superadmin/dashboard") {
+    if (location.pathname.startsWith("/superadmin")) {
       setSubscriptionExpired(false);
     }
   }, [location.pathname, gymSelector.selectedGymId]);
@@ -151,7 +153,9 @@ export function AppShell() {
 
   const superAdminNavItems = useMemo(
     () => [
-      { label: "Subskrypcje SaaS", to: "/superadmin/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+      { label: "Subskrypcje", to: "/superadmin/subscriptions", icon: <CreditCard className="w-5 h-5" /> },
+      { label: "Użytkownicy", to: "/superadmin/users", icon: <Users className="w-5 h-5" /> },
+      { label: "Zarządzanie", to: "/superadmin/management", icon: <Settings className="w-5 h-5" /> },
     ],
     []
   );

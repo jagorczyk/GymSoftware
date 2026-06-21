@@ -1524,6 +1524,30 @@ export async function updateSaaSSubscriptionStatus(auth: AuthState, subscription
   if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować statusu subskrypcji");
 }
 
+export async function changeSaaSSubscriptionPlan(auth: AuthState, subscriptionId: number, saasPlanId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/plan`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ saasPlanId }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zmienić pakietu subskrypcji");
+}
+
+export async function resetSaaSPlatformData(auth: AuthState, confirmation: string): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/system/reset`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ confirmation }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wyczyścić platformy");
+}
+
 export async function getTenantSaaSPlans(): Promise<SaaSPlan[]> {
   const response = await fetch(`${API_URL}/auth/tenant/plans`);
   if (!response.ok) await parseApiError(response, "Nie udało się pobrać planów SaaS");

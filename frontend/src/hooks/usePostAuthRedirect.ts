@@ -47,7 +47,7 @@ export function usePostAuthRedirect() {
           : next.role === "EMPLOYEE"
             ? "/employee/dashboard"
             : next.role === "SUPER_ADMIN"
-              ? "/superadmin/dashboard"
+              ? "/superadmin/subscriptions"
               : "/client/dashboard";
       navigate(dest, { replace: true });
       return next;
