@@ -9,6 +9,7 @@ import { useTenant } from "../tenantContext";
 import { AuthLayout } from "../components/AuthLayout";
 import { VerifyEmailForm } from "../components/VerifyEmailForm";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
+import { primaryButtonClassName } from "../components/formStyles";
 import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
 
@@ -190,7 +191,7 @@ export function RegisterGymPage() {
             type="button"
             disabled={submitting || !selectedPlanId}
             onClick={() => void completeGoogleRegistration(googleIdToken)}
-            className="w-full mt-6 bg-slate-900 dark:bg-slate-800 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center gap-2 disabled:opacity-50"
+            className={`w-full mt-6 ${primaryButtonClassName} disabled:opacity-50`}
           >
             {submitting ? (
               <>
@@ -343,7 +344,7 @@ export function RegisterGymPage() {
           <button
             type="submit"
             disabled={submitting || !selectedPlanId}
-            className="w-full mt-6 bg-slate-900 dark:bg-slate-800 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center gap-2 disabled:opacity-50"
+            className={`w-full mt-6 ${primaryButtonClassName} disabled:opacity-50`}
           >
             {submitting ? (
               <>

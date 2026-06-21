@@ -7,6 +7,7 @@ import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
 import { VerifyEmailForm } from "../components/VerifyEmailForm";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
+import { primaryButtonClassName } from "../components/formStyles";
 import { useTenant } from "../tenantContext";
 import { joinGym } from "../clientApi";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
@@ -195,7 +196,7 @@ export function RegisterClientPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-slate-900 dark:bg-slate-800 dark:hover:bg-primary-600 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl hover:shadow-primary-500/30 focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center disabled:opacity-50"
+              className={`w-full mt-6 ${primaryButtonClassName} disabled:opacity-50`}
             >
               {loading ? "Rejestracja..." : "Zarejestruj się"}
             </button>

@@ -5,6 +5,7 @@ import { login, loginWithGoogle } from "../api";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
+import { primaryButtonClassName } from "../components/formStyles";
 import { usePostAuthRedirect } from "../hooks/usePostAuthRedirect";
 import { useTenant } from "../tenantContext";
 
@@ -90,7 +91,7 @@ export function LoginPage() {
 
         <button
           type="submit"
-          className="w-full mt-6 bg-slate-900 dark:bg-slate-800 dark:hover:bg-primary-600 hover:bg-primary-500 text-white font-display font-bold py-4 px-4 rounded-xl transition-all shadow-md focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center gap-2 group cursor-pointer"
+          className={`w-full mt-6 ${primaryButtonClassName}`}
         >
           <span>Zaloguj się</span>
         </button>
