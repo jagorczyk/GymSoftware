@@ -154,6 +154,17 @@ export async function updateOwnerGym(
   return response.json();
 }
 
+export async function checkGymSubdomainAvailability(
+  gymName: string,
+  excludeGymId?: number
+): Promise<{ subdomain: string; available: boolean }> {
+  const params = new URLSearchParams({ gymName });
+  if (excludeGymId != null) params.set("excludeGymId", String(excludeGymId));
+  const response = await fetch(`${API_URL}/public/gyms/subdomain/check?${params.toString()}`);
+  if (!response.ok) await parseApiError(response, "Nie udało się sprawdzić dostępności domeny");
+  return response.json();
+}
+
 export async function updateOwnerGymTheme(
   auth: AuthState,
   gymId: number,

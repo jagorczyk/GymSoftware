@@ -91,9 +91,15 @@ public final class GymDtos {
 
     public record UpdateGymRequest(
             @NotBlank String name,
+            @NotBlank(message = "Adres jest wymagany")
+            @jakarta.validation.constraints.Size(min = 5, message = "Podaj pełny adres ulicy i numer")
+            @jakarta.validation.constraints.Pattern(
+                    regexp = "^(?=.*[A-Za-zÀ-žĄĆĘŁŃÓŚŹŻąćęłńóśźż]).+$",
+                    message = "Adres musi zawierać nazwę ulicy"
+            )
             String address,
-            String city,
-            @jakarta.validation.constraints.Pattern(regexp = "^\\d{2}-\\d{3}$", message = "Nieprawidłowy kod pocztowy") String postalCode,
+            @NotBlank(message = "Miasto jest wymagane") String city,
+            @jakarta.validation.constraints.Pattern(regexp = "^\\d{2}-\\d{3}$", message = "Nieprawidłowy kod pocztowy (format 00-000)") String postalCode,
             @jakarta.validation.constraints.Pattern(regexp = "^\\d{10}$", message = "NIP musi składać się z 10 cyfr") String nip,
             String themeColor
     ) {}

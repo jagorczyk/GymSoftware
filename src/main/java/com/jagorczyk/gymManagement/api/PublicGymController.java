@@ -2,6 +2,7 @@ package com.jagorczyk.gymManagement.api;
 
 import com.jagorczyk.gymManagement.domain.Gym;
 import com.jagorczyk.gymManagement.repository.GymRepository;
+import com.jagorczyk.gymManagement.service.SubdomainService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,20 @@ import java.util.Map;
 public class PublicGymController {
 
     private final GymRepository gymRepository;
+    private final SubdomainService subdomainService;
+
+    @GetMapping("/subdomain/check")
+    public ResponseEntity<Map<String, Object>> checkSubdomainAvailability(
+            @RequestParam String gymName,
+            @RequestParam(required = false) Long excludeGymId
+    ) {
+        String subdomain = subdomainService.toSubdomainSlug(gymName);
+        boolean available = subdomainService.isSubdomainAvailable(subdomain, excludeGymId);
+        return ResponseEntity.ok(Map.of(
+                "subdomain", subdomain,
+                "available", available
+        ));
+    }
 
     @GetMapping("/subdomain/{subdomain}")
     public ResponseEntity<?> getGymBySubdomain(@PathVariable String subdomain) {

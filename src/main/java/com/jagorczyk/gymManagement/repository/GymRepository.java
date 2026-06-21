@@ -8,4 +8,5 @@ public interface GymRepository extends JpaRepository<Gym, Long> {
     List<Gym> findByOwnerUserId(Long ownerUserId);
     List<Gym> findBySubdomain(String subdomain);
     boolean existsBySubdomain(String subdomain);
+    boolean existsBySubdomainAndIdNot(String subdomain, Long id);
 }

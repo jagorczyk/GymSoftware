@@ -300,11 +300,21 @@ public class OwnerService {
         Gym gym = gymRepository.findById(gymId)
                 .filter(g -> g.getOwnerUser().getId().equals(ownerUserId))
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono siłowni lub brak uprawnień właściciela."));
-        // gym.setName(request.name()); // Nazwa siłowni jest niezmienna
-        if (request.address() != null) gym.setAddress(request.address());
-        if (request.city() != null) gym.setCity(request.city());
-        if (request.postalCode() != null) gym.setPostalCode(request.postalCode());
-        if (request.nip() != null) gym.setNip(request.nip());
+
+        boolean initialSetup = SubdomainService.isPlaceholderGymName(gym.getName()) || "-".equals(gym.getAddress());
+        if (initialSetup) {
+            String subdomain = subdomainService.toSubdomainSlug(request.name());
+            if (!subdomainService.isSubdomainAvailable(subdomain, gym.getId())) {
+                throw new IllegalArgumentException("Adres " + subdomain + ".gymlos.pl jest już zajęty. Wybierz inną nazwę siłowni.");
+            }
+            gym.setName(request.name());
+            gym.setSubdomain(subdomain);
+        }
+
+        gym.setAddress(request.address());
+        gym.setCity(request.city());
+        gym.setPostalCode(request.postalCode());
+        gym.setNip(request.nip());
         if (request.themeColor() != null) gym.setThemeColor(request.themeColor());
         Gym saved = gymRepository.save(gym);
         auditLogService.log(saved, saved.getOwnerUser(), "GYM_UPDATED", "gymId=" + saved.getId());
