@@ -149,7 +149,7 @@ export function AppShell() {
 
   const clientNavItems = useMemo(
     () => [
-      { label: "Dashboard", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+      { label: "Pulpit", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
       { label: "Zajęcia i Treningi", to: "/client/activities", icon: <CalendarDays className="w-5 h-5" /> },
       { label: "Dołącz do siłowni", to: "/client/gyms/join", icon: <Store className="w-5 h-5" /> },
     ],

@@ -74,9 +74,9 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header Info */}
       <div>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Skaner Wejścia QR</h2>
+        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Skaner wejścia (dev)</h2>
         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
-          Symulator optycznego skanera kodów QR przy bramkach wejściowych do klubu.
+          Narzędzie deweloperskie do testowania tokenów QR. W produkcji klient melduje się w recepcji — personel wyszukuje gościa i robi check-in ręcznie.
         </p>
       </div>
 
@@ -105,7 +105,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
               SKANER AKTYWNY
             </span>
             <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
-              Skieruj kod QR wygenerowany na profilu klienta w stronę czytnika.
+              Skieruj kod QR z aplikacji mobilnej (przyszła funkcja) w stronę czytnika — lub wklej token testowy poniżej.
             </p>
           </div>
         </div>
@@ -186,12 +186,11 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
 
       {/* Instructions */}
       <div className="bg-slate-100 dark:bg-slate-950/40 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/80 transition-colors duration-200">
-        <h4 className="font-bold text-slate-800 dark:text-slate-250 text-sm mb-2">Jak to przetestować?</h4>
+        <h4 className="font-bold text-slate-800 dark:text-slate-250 text-sm mb-2">Test integracji QR (opcjonalnie)</h4>
         <ol className="list-decimal pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
-          <li>Zaloguj się jako klient (np. klient posiadający aktywny karnet w tym klubie).</li>
-          <li>Kliknij przycisk <span className="font-bold">"Wygeneruj kod wejścia QR"</span> na pulpicie klienta.</li>
-          <li>Skopiuj zaszyfrowany token z wyświetlonego okna modalnego.</li>
-          <li>Wróć do tego panelu (skanera pracownika) i wklej token w powyższe pole, a następnie kliknij <span className="font-bold">"Zatwierdź wejście"</span>.</li>
+          <li>Endpoint <span className="font-mono">GET /api/client/checkin-qr-token</span> nadal istnieje pod przyszłą aplikację mobilną.</li>
+          <li>Panel klienta w przeglądarce nie pokazuje QR — wejście odbywa się przez recepcję.</li>
+          <li>Do testów: pobierz token JWT check-in (np. Postman) i wklej poniżej, potem kliknij <span className="font-bold">„Zatwierdź wejście”</span>.</li>
         </ol>
       </div>
     </div>

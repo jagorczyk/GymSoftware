@@ -172,6 +172,14 @@ export async function downloadInvoicePdf(
   return response.blob();
 }
 
+export async function getGlobalClientStats(auth: AuthState): Promise<{ activePasses: number; workoutsThisMonth: number }> {
+  const response = await fetch(`${API_URL}/client/dashboard/global-stats`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk");
+  return response.json();
+}
+
 export async function getCheckInQrToken(auth: AuthState): Promise<{ qrToken: string }> {
   const response = await fetch(`${API_URL}/client/checkin-qr-token`, {
     headers: { Authorization: `Bearer ${auth.token}` },
