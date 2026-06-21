@@ -37,4 +37,10 @@ public final class AuthDtos {
             String token
     ) {
     }
+
+    public record GoogleAuthRequest(
+            @NotBlank String idToken,
+            Role role
+    ) {
+    }
 }

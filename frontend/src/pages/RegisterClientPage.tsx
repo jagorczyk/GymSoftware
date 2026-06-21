@@ -1,13 +1,15 @@
 import { FormEvent, useState, useEffect } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import { Dumbbell, Mail, Lock, UserPlus, ShieldCheck, MapPin } from "lucide-react";
-import { register, verifyEmail } from "../api";
+import { Mail, Lock, MapPin } from "lucide-react";
+import { register, verifyEmail, loginWithGoogle } from "../api";
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
 import { VerifyEmailForm } from "../components/VerifyEmailForm";
+import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
 import { useTenant } from "../tenantContext";
 import { joinGym } from "../clientApi";
+import { decodeGoogleIdToken } from "../utils/googleJwt";
 
 export function RegisterClientPage() {
   const { login: saveLogin } = useAuth();
@@ -55,6 +57,37 @@ export function RegisterClientPage() {
     }
   }
 
+  async function handleGoogleRegister(idToken: string) {
+    if (!selectedLocationId) {
+      showError("Wybierz lokalizację przed rejestracją.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const profile = decodeGoogleIdToken(idToken);
+      const result = await loginWithGoogle(idToken, "GUEST");
+      const authState = saveLogin(result.token);
+      const joinedGym = locations.find((l) => String(l.id) === selectedLocationId);
+      try {
+        await joinGym(authState, {
+          gymId: Number(selectedLocationId),
+          firstName: profile.given_name || firstName || "Klient",
+          lastName: profile.family_name || lastName || "",
+          phone: phoneNumber,
+        });
+        showSuccess(`Konto utworzone! Zostałeś dodany do ${joinedGym?.name || "siłowni"}.`);
+      } catch (joinErr) {
+        console.error("Auto-join failed", joinErr);
+        showSuccess("Konto utworzone! Witamy w systemie.");
+      }
+      navigate("/client/dashboard", { replace: true });
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Błąd rejestracji Google");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleVerify(code: string) {
     try {
       const result = await verifyEmail(email, code);
@@ -90,6 +123,13 @@ export function RegisterClientPage() {
         <>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Stwórz konto</h2>
           <p className="text-slate-500 dark:text-slate-400 mb-10 font-medium">Wypełnij poniższe dane, aby rozpocząć</p>
+
+          <GoogleSignInButton
+            text="signup_with"
+            onSuccess={handleGoogleRegister}
+            onError={showError}
+          />
+          <AuthDivider />
 
           <form onSubmit={handleRegister} className="space-y-5">
             {locations && locations.length > 0 && (

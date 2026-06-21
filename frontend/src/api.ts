@@ -36,6 +36,18 @@ export async function login(email: string, password: string): Promise<{ token: s
   return response.json();
 }
 
+export async function loginWithGoogle(idToken: string, role?: string): Promise<{ token: string }> {
+  const body: { idToken: string; role?: string } = { idToken };
+  if (role) body.role = role;
+  const response = await fetch(`${API_URL}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) await parseApiError(response, "Logowanie Google nie powiodło się");
+  return response.json();
+}
+
 export async function register(email: string, password: string, role: string): Promise<void> {
   const response = await fetch(`${API_URL}/auth/register`, {
     method: "POST",

@@ -96,6 +96,9 @@ public class AuthService {
         if (!user.isEmailVerified()) {
             throw new IllegalArgumentException("Konto nie jest zweryfikowane");
         }
+        if (user.getPasswordHash() == null) {
+            throw new IllegalArgumentException("To konto korzysta z logowania Google — użyj przycisku „Zaloguj przez Google”");
+        }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();

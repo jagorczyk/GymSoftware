@@ -9,6 +9,7 @@ import { clientRouteObjects } from "./routes/clientRouteObjects";
 import { superAdminRouteObjects } from "./routes/superAdminRouteObjects";
 import { RegisterClientPage } from "./pages/RegisterClientPage";
 import { RegisterGymPage } from "./pages/RegisterGymPage";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { SubscriptionSuccessPage } from "./pages/owner/SubscriptionSuccessPage";
 
 export const appRouter = createBrowserRouter([
@@ -26,6 +27,10 @@ export const appRouter = createBrowserRouter([
     path: "/register-gym",
     Component: LoginRoute,
     children: [{ index: true, Component: RegisterGymPage }],
+  },
+  {
+    path: "/polityka-prywatnosci",
+    Component: PrivacyPolicyPage,
   },
   {
     Component: RequireAuth,

@@ -1,17 +1,17 @@
 import { FormEvent, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Dumbbell, Mail, Lock } from "lucide-react";
-import { login, getOwnerGyms } from "../api";
-import { useAuth } from "../authContext";
-import { useTenant } from "../tenantContext";
+import { Link } from "react-router-dom";
+import { Mail, Lock } from "lucide-react";
+import { login, loginWithGoogle } from "../api";
 import { useToast } from "../components/Toast";
 import { AuthLayout } from "../components/AuthLayout";
+import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
+import { usePostAuthRedirect } from "../hooks/usePostAuthRedirect";
+import { useTenant } from "../tenantContext";
 
 export function LoginPage() {
-  const { login: saveLogin } = useAuth();
   const { subdomain } = useTenant();
-  const navigate = useNavigate();
   const { showError } = useToast();
+  const { redirectAfterAuth } = usePostAuthRedirect();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -19,28 +19,18 @@ export function LoginPage() {
     event.preventDefault();
     try {
       const result = await login(email, password);
-      const next = saveLogin(result.token);
-      
-      if (!subdomain && next.role === "OWNER") {
-        try {
-          const gyms = await getOwnerGyms(next);
-          if (gyms.length > 0 && gyms[0].subdomain) {
-            const proto = window.location.protocol;
-            const host = window.location.host; // e.g. "gymlos.pl"
-            window.location.href = `${proto}//${gyms[0].subdomain}.${host}/owner/dashboard`;
-            return;
-          }
-        } catch (e) {
-          console.error("Failed to fetch owner gyms for redirect", e);
-        }
-      }
-
-      const dest = next.role === "OWNER" ? "/owner/dashboard" : next.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard";
-      navigate(dest, {
-        replace: true,
-      });
+      await redirectAfterAuth(result.token);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd logowania");
+    }
+  }
+
+  async function handleGoogleLogin(idToken: string) {
+    try {
+      const result = await loginWithGoogle(idToken);
+      await redirectAfterAuth(result.token);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Błąd logowania Google");
     }
   }
 
@@ -55,6 +45,9 @@ export function LoginPage() {
       <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
         Zaloguj się na swoje konto, aby kontynuować
       </p>
+
+      <GoogleSignInButton onSuccess={handleGoogleLogin} onError={showError} />
+      <AuthDivider />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">

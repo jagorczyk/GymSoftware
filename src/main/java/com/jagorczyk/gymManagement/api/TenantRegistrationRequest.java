@@ -14,8 +14,8 @@ public class TenantRegistrationRequest {
     @Email
     @NotBlank
     private String ownerEmail;
-    @NotBlank
     private String ownerPassword;
+    private String googleIdToken;
     @NotNull
     private Long saasPlanId;
     @NotBlank

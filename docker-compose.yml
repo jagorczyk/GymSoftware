@@ -36,6 +36,7 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME:-twój_email@gmail.com}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-twój_app_password}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "8080:8080"
     restart: always
@@ -44,6 +45,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     container_name: gym-frontend
     depends_on:
       - backend

@@ -11,12 +11,13 @@ import com.jagorczyk.gymManagement.repository.GymRepository;
 import com.jagorczyk.gymManagement.repository.GymSubscriptionRepository;
 import com.jagorczyk.gymManagement.repository.SaaSPlanRepository;
 import com.jagorczyk.gymManagement.repository.UserRepository;
+import com.jagorczyk.gymManagement.security.GoogleTokenVerifier;
+import com.jagorczyk.gymManagement.security.GoogleUserInfo;
 import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -30,14 +31,15 @@ public class TenantRegistrationService {
     private final StripeService stripeService;
     private final EmailService emailService;
     private final SubdomainService subdomainService;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     @Transactional
     public String registerTenant(TenantRegistrationRequest request) throws StripeException {
-        // 1. Verify SaaS plan
+        validateAuthCredentials(request);
+
         SaaSPlan plan = saasPlanRepository.findById(request.getSaasPlanId())
                 .orElseThrow(() -> new IllegalArgumentException("SaaS Plan not found"));
 
-        // 2. Create Owner User
         if (userRepository.findByEmail(request.getOwnerEmail()).isPresent()) {
             throw new IllegalArgumentException("Email is already registered");
         }
@@ -45,17 +47,40 @@ public class TenantRegistrationService {
         User owner = new User();
         owner.setFirstName(request.getOwnerFirstName());
         owner.setLastName(request.getOwnerLastName());
-        owner.setEmail(request.getOwnerEmail());
-        owner.setPasswordHash(passwordEncoder.encode(request.getOwnerPassword()));
         owner.setRole(Role.OWNER);
-        owner.setEmailVerified(false);
-        String code = String.format("%06d", new java.util.Random().nextInt(999999));
-        owner.setVerificationCode(code);
+
+        boolean googleRegistration = hasGoogleToken(request);
+        if (googleRegistration) {
+            GoogleUserInfo googleUser = googleTokenVerifier.verify(request.getGoogleIdToken());
+            if (!googleUser.email().equalsIgnoreCase(request.getOwnerEmail())) {
+                throw new IllegalArgumentException("Adres e-mail nie zgadza się z kontem Google");
+            }
+            owner.setEmail(googleUser.email());
+            owner.setGoogleId(googleUser.googleId());
+            owner.setEmailVerified(true);
+            if (owner.getFirstName() == null && googleUser.firstName() != null) {
+                owner.setFirstName(googleUser.firstName());
+            }
+            if (owner.getLastName() == null && googleUser.lastName() != null) {
+                owner.setLastName(googleUser.lastName());
+            }
+            if (googleUser.pictureUrl() != null) {
+                owner.setAvatarUrl(googleUser.pictureUrl());
+            }
+        } else {
+            owner.setEmail(request.getOwnerEmail());
+            owner.setPasswordHash(passwordEncoder.encode(request.getOwnerPassword()));
+            owner.setEmailVerified(false);
+            String code = String.format("%06d", new java.util.Random().nextInt(999999));
+            owner.setVerificationCode(code);
+        }
+
         owner = userRepository.save(owner);
 
-        emailService.sendVerificationEmail(owner.getEmail(), code);
+        if (!googleRegistration) {
+            emailService.sendVerificationEmail(owner.getEmail(), owner.getVerificationCode());
+        }
 
-        // 3. Create Gym
         Gym gym = new Gym();
         gym.setName(request.getGymName());
         gym.setSubdomain(subdomainService.generateUniqueSubdomain(request.getGymName()));
@@ -66,7 +91,6 @@ public class TenantRegistrationService {
         gym.setOwnerUser(owner);
         gym = gymRepository.save(gym);
 
-        // 4. Create GymSubscription (Unpaid Status)
         GymSubscription subscription = new GymSubscription();
         subscription.setGym(gym);
         subscription.setSaasPlan(plan);
@@ -75,7 +99,18 @@ public class TenantRegistrationService {
         subscription.setCurrentPeriodEnd(null);
         gymSubscriptionRepository.save(subscription);
 
-        // 5. Return success
         return "success";
+    }
+
+    private void validateAuthCredentials(TenantRegistrationRequest request) {
+        boolean hasPassword = request.getOwnerPassword() != null && !request.getOwnerPassword().isBlank();
+        boolean hasGoogle = hasGoogleToken(request);
+        if (hasPassword == hasGoogle) {
+            throw new IllegalArgumentException("Podaj hasło lub zaloguj się przez Google");
+        }
+    }
+
+    private boolean hasGoogleToken(TenantRegistrationRequest request) {
+        return request.getGoogleIdToken() != null && !request.getGoogleIdToken().isBlank();
     }
 }
