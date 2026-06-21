@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { flushSync } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { login, loginWithGoogle } from "../api";
 import { useToast } from "../components/Toast";
@@ -8,12 +8,14 @@ import { AuthLayout } from "../components/AuthLayout";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
 import { primaryButtonClassName } from "../components/formStyles";
 import { usePostAuthRedirect } from "../hooks/usePostAuthRedirect";
+import { routeAuthLoginResult } from "../hooks/useAuthLoginFlow";
 import { useTenant } from "../tenantContext";
 
 export function LoginPage() {
   const { subdomain } = useTenant();
   const { showError } = useToast();
   const { redirectAfterAuth } = usePostAuthRedirect();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,7 @@ export function LoginPage() {
     flushSync(() => setLoading(true));
     try {
       const result = await login(email, password);
-      await redirectAfterAuth(result.token);
+      await routeAuthLoginResult(result, navigate, redirectAfterAuth);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd logowania");
       setLoading(false);
@@ -36,7 +38,7 @@ export function LoginPage() {
     flushSync(() => setLoading(true));
     try {
       const result = await loginWithGoogle(idToken);
-      await redirectAfterAuth(result.token);
+      await routeAuthLoginResult(result, navigate, redirectAfterAuth);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd logowania Google");
       setLoading(false);

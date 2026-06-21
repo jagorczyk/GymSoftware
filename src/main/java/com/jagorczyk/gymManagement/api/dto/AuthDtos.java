@@ -34,7 +34,43 @@ public final class AuthDtos {
     }
 
     public record AuthResponse(
-            String token
+            String token,
+            boolean mfaRequired,
+            boolean mfaSetupRequired,
+            String mfaToken
+    ) {
+        public static AuthResponse withToken(String token) {
+            return new AuthResponse(token, false, false, null);
+        }
+
+        public static AuthResponse pendingRegistration() {
+            return new AuthResponse(null, false, false, null);
+        }
+
+        public static AuthResponse mfaChallenge(String mfaToken) {
+            return new AuthResponse(null, true, false, mfaToken);
+        }
+
+        public static AuthResponse mfaSetup(String mfaToken) {
+            return new AuthResponse(null, false, true, mfaToken);
+        }
+    }
+
+    public record MfaTokenRequest(
+            @NotBlank String mfaToken
+    ) {
+    }
+
+    public record MfaCodeRequest(
+            @NotBlank String mfaToken,
+            @NotBlank String code
+    ) {
+    }
+
+    public record MfaSetupResponse(
+            String secret,
+            String qrCodeDataUrl,
+            String otpauthUrl
     ) {
     }
 

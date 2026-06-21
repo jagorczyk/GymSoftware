@@ -23,19 +23,22 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final MfaService mfaService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService,
-            EmailService emailService
+            EmailService emailService,
+            MfaService mfaService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.emailService = emailService;
+        this.mfaService = mfaService;
     }
 
     @Transactional
@@ -56,7 +59,7 @@ public class AuthService {
         
         emailService.sendVerificationEmail(saved.getEmail(), code);
         
-        return new AuthResponse(null);
+        return AuthResponse.pendingRegistration();
     }
 
     @Transactional
@@ -72,7 +75,7 @@ public class AuthService {
         user.setEmailVerified(true);
         user.setVerificationCode(null);
         userRepository.save(user);
-        return new AuthResponse(jwtService.generateToken(new CustomUserPrincipal(user)));
+        return mfaService.resolveAuthResponse(user);
     }
 
     @Transactional
@@ -102,6 +105,18 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-        return new AuthResponse(jwtService.generateToken(principal));
+        return mfaService.resolveAuthResponse(principal.getUser());
+    }
+
+    public AuthResponse completeMfaSetup(String mfaToken, String code) {
+        return mfaService.confirmSetup(mfaToken, code);
+    }
+
+    public AuthResponse verifyMfaLogin(String mfaToken, String code) {
+        return mfaService.verifyLogin(mfaToken, code);
+    }
+
+    public com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaSetupResponse beginMfaSetup(String mfaToken) {
+        return mfaService.createSetup(mfaToken);
     }
 }

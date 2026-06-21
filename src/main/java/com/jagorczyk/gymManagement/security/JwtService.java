@@ -24,6 +24,29 @@ public class JwtService {
         this.expirationMinutes = expirationMinutes;
     }
 
+    public String generateMfaToken(Long userId, String purpose) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("purpose", purpose)
+                .claim("mfa", true)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(10 * 60)))
+                .signWith(key)
+                .compact();
+    }
+
+    public Long validateMfaToken(String token, String expectedPurpose) {
+        Claims claims = extractClaims(token);
+        if (!Boolean.TRUE.equals(claims.get("mfa"))) {
+            throw new IllegalArgumentException("Nieprawidłowy token MFA");
+        }
+        if (!expectedPurpose.equals(claims.get("purpose"))) {
+            throw new IllegalArgumentException("Nieprawidłowy token MFA");
+        }
+        return Long.parseLong(claims.getSubject());
+    }
+
     public String generateToken(CustomUserPrincipal principal) {
         Instant now = Instant.now();
         return Jwts.builder()

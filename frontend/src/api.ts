@@ -1,5 +1,6 @@
 import { AuthState } from "./auth";
 import type { EmployeePermission } from "./permissions";
+import { AuthLoginResult, normalizeAuthLoginResult } from "./authMfa";
 
 const API_URL = "/api";
 
@@ -26,17 +27,19 @@ async function parseApiError(response: Response, fallback: string): Promise<neve
   throw new Error(message);
 }
 
-export async function login(email: string, password: string): Promise<{ token: string }> {
+export type { AuthLoginResult } from "./authMfa";
+
+export async function login(email: string, password: string): Promise<AuthLoginResult> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
   if (!response.ok) await parseApiError(response, "Logowanie nie powiodło się");
-  return response.json();
+  return normalizeAuthLoginResult(await response.json());
 }
 
-export async function loginWithGoogle(idToken: string, role?: string): Promise<{ token: string }> {
+export async function loginWithGoogle(idToken: string, role?: string): Promise<AuthLoginResult> {
   const body: { idToken: string; role?: string } = { idToken };
   if (role) body.role = role;
   const response = await fetch(`${API_URL}/auth/google`, {
@@ -45,7 +48,7 @@ export async function loginWithGoogle(idToken: string, role?: string): Promise<{
     body: JSON.stringify(body),
   });
   if (!response.ok) await parseApiError(response, "Logowanie Google nie powiodło się");
-  return response.json();
+  return normalizeAuthLoginResult(await response.json());
 }
 
 export async function register(email: string, password: string, role: string): Promise<void> {
@@ -57,14 +60,44 @@ export async function register(email: string, password: string, role: string): P
   if (!response.ok) await parseApiError(response, "Rejestracja nie powiodła się");
 }
 
-export async function verifyEmail(email: string, code: string): Promise<{ token: string }> {
+export async function verifyEmail(email: string, code: string): Promise<AuthLoginResult> {
   const response = await fetch(`${API_URL}/auth/verify-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, code }),
   });
   if (!response.ok) await parseApiError(response, "Weryfikacja nie powiodła się");
+  return normalizeAuthLoginResult(await response.json());
+}
+
+export async function beginMfaSetup(mfaToken: string): Promise<{ secret: string; qrCodeDataUrl: string; otpauthUrl: string }> {
+  const response = await fetch(`${API_URL}/auth/mfa/setup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mfaToken }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć konfiguracji MFA");
   return response.json();
+}
+
+export async function confirmMfaSetup(mfaToken: string, code: string): Promise<AuthLoginResult> {
+  const response = await fetch(`${API_URL}/auth/mfa/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mfaToken, code }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się aktywować MFA");
+  return normalizeAuthLoginResult(await response.json());
+}
+
+export async function verifyMfaLogin(mfaToken: string, code: string): Promise<AuthLoginResult> {
+  const response = await fetch(`${API_URL}/auth/mfa/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mfaToken, code }),
+  });
+  if (!response.ok) await parseApiError(response, "Nieprawidłowy kod MFA");
+  return normalizeAuthLoginResult(await response.json());
 }
 
 export async function resendVerification(email: string): Promise<void> {

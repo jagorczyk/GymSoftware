@@ -5,10 +5,8 @@ import com.jagorczyk.gymManagement.api.dto.AuthDtos.GoogleAuthRequest;
 import com.jagorczyk.gymManagement.domain.Role;
 import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.UserRepository;
-import com.jagorczyk.gymManagement.security.CustomUserPrincipal;
 import com.jagorczyk.gymManagement.security.GoogleTokenVerifier;
 import com.jagorczyk.gymManagement.security.GoogleUserInfo;
-import com.jagorczyk.gymManagement.security.JwtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,23 +14,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class GoogleAuthService {
     private final GoogleTokenVerifier googleTokenVerifier;
     private final UserRepository userRepository;
-    private final JwtService jwtService;
+    private final MfaService mfaService;
 
     public GoogleAuthService(
             GoogleTokenVerifier googleTokenVerifier,
             UserRepository userRepository,
-            JwtService jwtService
+            MfaService mfaService
     ) {
         this.googleTokenVerifier = googleTokenVerifier;
         this.userRepository = userRepository;
-        this.jwtService = jwtService;
+        this.mfaService = mfaService;
     }
 
     @Transactional
     public AuthResponse loginOrRegister(GoogleAuthRequest request) {
         GoogleUserInfo googleUser = googleTokenVerifier.verify(request.idToken());
         User user = resolveUser(googleUser, request.role());
-        return new AuthResponse(jwtService.generateToken(new CustomUserPrincipal(user)));
+        return mfaService.resolveAuthResponse(user);
     }
 
     private User resolveUser(GoogleUserInfo googleUser, Role requestedRole) {

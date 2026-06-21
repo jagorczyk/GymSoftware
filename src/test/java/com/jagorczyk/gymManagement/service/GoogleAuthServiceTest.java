@@ -7,7 +7,7 @@ import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.UserRepository;
 import com.jagorczyk.gymManagement.security.GoogleTokenVerifier;
 import com.jagorczyk.gymManagement.security.GoogleUserInfo;
-import com.jagorczyk.gymManagement.security.JwtService;
+import com.jagorczyk.gymManagement.service.MfaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +33,7 @@ class GoogleAuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private JwtService jwtService;
+    private MfaService mfaService;
 
     @InjectMocks
     private GoogleAuthService googleAuthService;
@@ -57,7 +57,10 @@ class GoogleAuthServiceTest {
             user.setId(10L);
             return user;
         });
-        when(jwtService.generateToken(any())).thenReturn("jwt-token");
+        when(mfaService.resolveAuthResponse(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return AuthResponse.withToken("jwt-token");
+        });
 
         AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", Role.GUEST));
 
@@ -78,7 +81,10 @@ class GoogleAuthServiceTest {
         when(userRepository.findByGoogleId("google-sub-1")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(existing));
         when(userRepository.save(existing)).thenReturn(existing);
-        when(jwtService.generateToken(any())).thenReturn("jwt-token");
+        when(mfaService.resolveAuthResponse(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return AuthResponse.withToken("jwt-token");
+        });
 
         AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null));
 

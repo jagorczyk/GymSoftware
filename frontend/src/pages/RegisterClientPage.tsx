@@ -77,6 +77,9 @@ export function RegisterClientPage() {
     try {
       const profile = decodeGoogleIdToken(idToken);
       const result = await loginWithGoogle(idToken, "GUEST");
+      if (!result.token) {
+        throw new Error("Brak tokenu po rejestracji Google");
+      }
       const authState = saveLogin(result.token);
       const joinedGym = locations.find((l) => String(l.id) === selectedLocationId);
       try {
@@ -102,6 +105,9 @@ export function RegisterClientPage() {
   async function handleVerify(code: string) {
     try {
       const result = await verifyEmail(email, code);
+      if (!result.token) {
+        throw new Error("Brak tokenu po weryfikacji");
+      }
       saveLogin(result.token);
 
       if (selectedLocationId) {

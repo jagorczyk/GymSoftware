@@ -2,9 +2,12 @@ package com.jagorczyk.gymManagement.api;
 
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.AuthResponse;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.GoogleAuthRequest;
+import com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaSetupResponse;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.LoginRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.RegisterRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest;
+import com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaCodeRequest;
+import com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaTokenRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.ResendVerificationRequest;
 import com.jagorczyk.gymManagement.service.AuthService;
 import com.jagorczyk.gymManagement.service.GoogleAuthService;
@@ -51,5 +54,20 @@ public class AuthController {
     @PostMapping("/google")
     public AuthResponse loginWithGoogle(@Valid @RequestBody GoogleAuthRequest request) {
         return googleAuthService.loginOrRegister(request);
+    }
+
+    @PostMapping("/mfa/setup")
+    public MfaSetupResponse beginMfaSetup(@Valid @RequestBody MfaTokenRequest request) {
+        return authService.beginMfaSetup(request.mfaToken());
+    }
+
+    @PostMapping("/mfa/confirm")
+    public AuthResponse confirmMfaSetup(@Valid @RequestBody MfaCodeRequest request) {
+        return authService.completeMfaSetup(request.mfaToken(), request.code());
+    }
+
+    @PostMapping("/mfa/verify")
+    public AuthResponse verifyMfaLogin(@Valid @RequestBody MfaCodeRequest request) {
+        return authService.verifyMfaLogin(request.mfaToken(), request.code());
     }
 }

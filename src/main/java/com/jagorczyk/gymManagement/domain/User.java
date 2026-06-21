@@ -51,4 +51,10 @@ public class User {
 
     @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "mfa_secret", length = 64)
+    private String mfaSecret;
+
+    @Column(name = "mfa_enabled", nullable = false)
+    private boolean mfaEnabled = false;
 }

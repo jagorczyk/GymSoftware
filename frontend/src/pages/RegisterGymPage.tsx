@@ -1,5 +1,5 @@
 import { FormEvent, useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Loader2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, loginWithGoogle, SaaSPlan } from "../api";
 import { setOwnerStripeCheckoutPending } from "../auth";
@@ -11,6 +11,7 @@ import { VerifyEmailForm } from "../components/VerifyEmailForm";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
 import { primaryButtonClassName } from "../components/formStyles";
 import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
+import { isMfaPending } from "../authMfa";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
 import { RegisterPlanPicker, pickDefaultPlanId } from "../components/RegisterPlanPicker";
 
@@ -20,6 +21,7 @@ export function RegisterGymPage() {
   const { showError, showSuccess } = useToast();
   const { login } = useAuth();
   const { subdomain } = useTenant();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [showEmailForm, setShowEmailForm] = useState(false);
@@ -76,8 +78,21 @@ export function RegisterGymPage() {
       };
       await registerTenant(payload);
       setOwnerStripeCheckoutPending(true);
-      const { token } = await loginWithGoogle(idToken);
-      const authState = login(token);
+      const authResult = await loginWithGoogle(idToken);
+      if (isMfaPending(authResult)) {
+        navigate("/mfa", {
+          state: {
+            mfaToken: authResult.mfaToken,
+            setup: authResult.mfaSetupRequired,
+            ownerStripeCheckout: true,
+          },
+        });
+        return;
+      }
+      if (!authResult.token) {
+        throw new Error("Brak tokenu po rejestracji");
+      }
+      const authState = login(authResult.token);
       await redirectOwnerToStripeCheckout(authState, showError);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Wystąpił błąd podczas rejestracji");
@@ -128,11 +143,24 @@ export function RegisterGymPage() {
   }
 
   async function handleVerify(code: string) {
-    setStep(3);
-    setOwnerStripeCheckoutPending(true);
     try {
-      const { token } = await verifyEmail(ownerEmail, code);
-      const authState = login(token);
+      const result = await verifyEmail(ownerEmail, code);
+      if (isMfaPending(result)) {
+        navigate("/mfa", {
+          state: {
+            mfaToken: result.mfaToken,
+            setup: result.mfaSetupRequired,
+            ownerStripeCheckout: true,
+          },
+        });
+        return;
+      }
+      setStep(3);
+      setOwnerStripeCheckoutPending(true);
+      if (!result.token) {
+        throw new Error("Brak tokenu po weryfikacji");
+      }
+      const authState = login(result.token);
       await redirectOwnerToStripeCheckout(authState, showError);
     } catch (err) {
       setOwnerStripeCheckoutPending(false);

@@ -9,6 +9,7 @@ import { clientRouteObjects } from "./routes/clientRouteObjects";
 import { superAdminRouteObjects } from "./routes/superAdminRouteObjects";
 import { RegisterClientPage } from "./pages/RegisterClientPage";
 import { RegisterGymPage } from "./pages/RegisterGymPage";
+import { MfaPage } from "./pages/MfaPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { SubscriptionSuccessPage } from "./pages/owner/SubscriptionSuccessPage";
 
@@ -22,6 +23,11 @@ export const appRouter = createBrowserRouter([
     path: "/register",
     Component: LoginRoute,
     children: [{ index: true, Component: RegisterClientPage }],
+  },
+  {
+    path: "/mfa",
+    Component: LoginRoute,
+    children: [{ index: true, Component: MfaPage }],
   },
   {
     path: "/register-gym",
