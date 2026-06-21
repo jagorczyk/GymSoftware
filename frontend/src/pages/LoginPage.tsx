@@ -48,17 +48,10 @@ export function LoginPage() {
       title="Gymlos"
       subtitle="Wielooddziałowy, inteligentny ekosystem do zarzadzania siecią klubów fitness."
     >
-      <h2 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
-        Witaj ponownie
-      </h2>
-      <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
-        Zaloguj się na swoje konto, aby kontynuować
-      </p>
-
       <div className="relative">
         {loading && (
           <div
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm"
+            className="absolute -inset-8 md:-inset-12 z-20 flex flex-col items-center justify-center gap-4 bg-white dark:bg-slate-900"
             aria-live="polite"
             aria-busy="true"
           >
@@ -70,6 +63,13 @@ export function LoginPage() {
             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Logowanie...</p>
           </div>
         )}
+
+      <h2 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
+        Witaj ponownie
+      </h2>
+      <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">
+        Zaloguj się na swoje konto, aby kontynuować
+      </p>
 
         <GoogleSignInButton disabled={loading} onSuccess={handleGoogleLogin} onError={showError} />
         <AuthDivider />
@@ -124,7 +124,6 @@ export function LoginPage() {
           Zaloguj się
         </button>
         </form>
-      </div>
 
       <div className="mt-8 space-y-3 text-center text-sm font-medium text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-6">
         {subdomain && (
@@ -143,6 +142,7 @@ export function LoginPage() {
             </Link>
           </div>
         )}
+      </div>
       </div>
     </AuthLayout>
   );
