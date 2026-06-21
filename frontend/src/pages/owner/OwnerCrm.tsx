@@ -4,6 +4,8 @@ import { createEmailCampaign, EmailCampaignView, getEmailCampaigns } from "../..
 import { Megaphone, Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2, Info } from "lucide-react";
 import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
+import { CampaignImageUpload } from "../../components/CampaignImageUpload";
+import { primaryButtonClassName } from "../../components/formStyles";
 
 export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
   const { selectedGymId } = ctx;
@@ -18,6 +20,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
   const [body, setBody] = useState("");
   const [segment, setSegment] = useState("ALL_GUESTS");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -46,6 +49,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
         body,
         targetSegment: segment,
         scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        imageUrl,
       });
       setCampaigns([newCamp, ...campaigns]);
       showSuccess("Kampania została zaplanowana/wysłana!");
@@ -53,6 +57,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
       setSubject("");
       setBody("");
       setScheduledAt("");
+      setImageUrl(null);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd wysyłania kampanii");
     } finally {
@@ -88,10 +93,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Zarządzaj kampaniami mailowymi i docieraj do klientów</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-primary-500/30"
-        >
+        <button onClick={() => setIsModalOpen(true)} className={primaryButtonClassName}>
           <Plus className="w-5 h-5" />
           Nowa Kampania
         </button>
@@ -104,7 +106,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
         <div>
           <h3 className="font-bold text-slate-900 dark:text-white text-lg">Personalizacja wiadomości</h3>
           <p className="text-slate-600 dark:text-slate-400 mt-1 mb-3">
-            Tworząc nową kampanię, możesz użyć specjalnych zmiennych (placeholderów) oraz prostego formatowania, aby uatrakcyjnić treść maila:
+            Możesz użyć zmiennych, pogrubień oraz własnych zdjęć. W mailu kampanii nie dodajemy żadnych grafik systemowych — tylko to, co sam wgrasz.
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-900 border border-primary-200 dark:border-primary-800/50 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-sm">
@@ -164,6 +166,13 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                       )}
                     </h3>
                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 line-clamp-1">{camp.body}</p>
+                    {camp.imageUrl ? (
+                      <img
+                        src={camp.imageUrl}
+                        alt=""
+                        className="mt-3 h-20 w-auto max-w-full rounded-xl border border-slate-200 dark:border-slate-700 object-cover"
+                      />
+                    ) : null}
                   </div>
                   <div className="flex flex-col sm:items-end gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
@@ -234,6 +243,15 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Zdjęcie kampanii (opcjonalnie)</label>
+                <CampaignImageUpload
+                  imageUrl={imageUrl}
+                  onImageUrlChange={setImageUrl}
+                  disabled={sending}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Treść wiadomości</label>
                 <textarea
                   required
@@ -292,7 +310,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                 <button
                   type="submit"
                   disabled={sending || !subject.trim() || !body.trim()}
-                  className="px-8 py-3 rounded-xl font-bold text-white bg-primary-600 hover:bg-primary-700 transition-all shadow-lg hover:shadow-primary-500/30 disabled:opacity-50 flex items-center gap-2"
+                  className={`${primaryButtonClassName} disabled:opacity-50`}
                 >
                   {sending ? (
                     <>Wysyłanie...</>

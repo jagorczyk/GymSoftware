@@ -4,6 +4,7 @@ import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
 import { getOwnerTrainers, createOwnerTrainer, updateOwnerTrainer, getOwnerGymDetails } from "../../api";
 import { PageHeader } from "../../components/PageHeader";
+import { primaryButtonClassName } from "../../components/formStyles";
 import { ArrowLeft, Save } from "lucide-react";
 
 import { OwnerContext } from "./types";
@@ -161,11 +162,7 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
         </div>
 
         <div className="pt-4 flex justify-end">
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 bg-slate-900 dark:bg-primary-500 hover:bg-slate-800 dark:hover:bg-primary-400 text-white dark:text-slate-950 px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
-          >
+          <button type="submit" disabled={saving} className={primaryButtonClassName}>
             <Save className="w-5 h-5" />
             {saving ? "Zapisywanie..." : "Zapisz"}
           </button>

@@ -6,6 +6,7 @@ import type { OwnerContext } from "./types";
 import { LoadingState } from "../../components/LoadingState";
 import { EmptyState } from "../../components/EmptyState";
 import { PageHeader } from "../../components/PageHeader";
+import { primaryButtonClassName, secondaryButtonClassName } from "../../components/formStyles";
 
 export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
   const { auth, selectedGymId, setError } = ctx;
@@ -39,10 +40,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
         title="Zarządzanie rangami"
         subtitle="Twórz i edytuj rangi z uprawnieniami dla pracowników."
         action={
-          <Link
-            to={`/owner/ranks/new`}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20"
-          >
+          <Link to={`/owner/ranks/new`} className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowa ranga
           </Link>
         }
@@ -54,10 +52,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
           title="Brak rang"
           description="Nie zdefiniowano jeszcze żadnych rang w tej siłowni."
           action={
-            <Link
-              to={`/owner/ranks/new`}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 font-bold border border-primary-200 dark:border-primary-800 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-950/20 transition-colors"
-            >
+            <Link to={`/owner/ranks/new`} className={`mt-4 ${secondaryButtonClassName}`}>
               <Plus className="w-5 h-5" /> Dodaj pierwszą rangę
             </Link>
           }

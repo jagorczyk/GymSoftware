@@ -1,6 +1,8 @@
 package com.jagorczyk.gymManagement.service;
 
 import jakarta.mail.internet.MimeMessage;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +49,7 @@ public class EmailService {
         }
     }
 
-    public void sendCampaignEmail(String to, String subject, String body) {
+    public void sendCampaignEmail(String to, String subject, String body, String imageUrl) {
         if (mailSender == null) {
             logger.info("Mocking campaign email to: {} with subject: {}", to, subject);
             return;
@@ -58,18 +60,93 @@ public class EmailService {
             helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
-            
-            // Zachowujemy formatowanie tekstu w HTML (zamiana enterów na nowe linie i pogrubienia)
-            String formattedBody = body.replace("\n", "<br>");
-            formattedBody = formattedBody.replaceAll("\\*\\*(.*?)\\*\\*", "<strong>$1</strong>");
-            
-            String htmlBody = buildHtmlTemplate(subject, "<p>" + formattedBody + "</p>");
-            
+
+            String formattedBody = formatCampaignBody(body);
+            String headerHtml = buildCampaignHeaderHtml(imageUrl);
+            String htmlBody = buildCampaignHtmlTemplate(subject, headerHtml, formattedBody);
+
             helper.setText(htmlBody, true);
             mailSender.send(message);
         } catch (Exception e) {
             logger.error("Błąd podczas wysyłania e-maila kampanii: {}", e.getMessage());
         }
+    }
+
+    private String formatCampaignBody(String body) {
+        if (body == null) {
+            return "";
+        }
+        String formattedBody = body.replace("\n", "<br>");
+        formattedBody = formattedBody.replaceAll("\\*\\*(.*?)\\*\\*", "<strong>$1</strong>");
+        formattedBody = formattedBody.replaceAll(
+                "!\\[(.*?)\\]\\((.*?)\\)",
+                "<img src=\"$2\" alt=\"$1\" style=\"max-width:100%;height:auto;border-radius:8px;margin:16px 0;display:block;\" />"
+        );
+        return resolveRelativeUrls(formattedBody);
+    }
+
+    private String buildCampaignHeaderHtml(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return "";
+        }
+        String absoluteUrl = resolvePublicUrl(imageUrl);
+        return "<div class=\"header\"><img src=\"" + absoluteUrl + "\" alt=\"\" style=\"max-width:100%;height:auto;display:block;margin:0 auto;border-radius:8px;\" /></div>";
+    }
+
+    private String resolvePublicUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return "";
+        }
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return url;
+        }
+        String base = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+        return url.startsWith("/") ? base + url : base + "/" + url;
+    }
+
+    private String resolveRelativeUrls(String html) {
+        Pattern pattern = Pattern.compile("src=\"(/uploads/[^\"]+)\"");
+        Matcher matcher = pattern.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, "src=\"" + Matcher.quoteReplacement(resolvePublicUrl(matcher.group(1))) + "\"");
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
+    private String buildCampaignHtmlTemplate(String title, String headerHtml, String contentHtml) {
+        return "<!DOCTYPE html>" +
+               "<html>" +
+               "<head>" +
+               "<meta charset=\"UTF-8\">" +
+               "<style>" +
+               "  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #334155; }" +
+               "  .wrapper { padding: 40px 20px; }" +
+               "  .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); border: 1px solid #f1f5f9; }" +
+               "  .header { padding: 24px 24px 0 24px; text-align: center; }" +
+               "  .content { padding: 40px; line-height: 1.7; font-size: 16px; color: #475569; }" +
+               "  .content h2 { color: #1e293b; font-size: 24px; margin-top: 0; margin-bottom: 20px; font-weight: 700; }" +
+               "  .content p { margin-bottom: 20px; }" +
+               "  .footer { background-color: #f8fafc; padding: 30px 40px; text-align: center; font-size: 13px; color: #94a3b8; border-top: 1px solid #f1f5f9; }" +
+               "  .footer-logo { font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }" +
+               "</style>" +
+               "</head>" +
+               "<body>" +
+               "  <div class=\"wrapper\">" +
+               "    <div class=\"container\">" +
+               headerHtml +
+               "      <div class=\"content\">" +
+               "<p>" + contentHtml + "</p>" +
+               "      </div>" +
+               "      <div class=\"footer\">" +
+               "        <div class=\"footer-logo\">Gymlos Software</div>" +
+               "        Ta wiadomość została wygenerowana automatycznie.<br>Prosimy na nią nie odpowiadać." +
+               "      </div>" +
+               "    </div>" +
+               "  </div>" +
+               "</body>" +
+               "</html>";
     }
     
     private String buildHtmlTemplate(String title, String contentHtml) {

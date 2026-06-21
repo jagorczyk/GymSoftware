@@ -1018,6 +1018,19 @@ export async function uploadAvatar(auth: AuthState, file: File): Promise<{ url: 
   return response.json();
 }
 
+export async function uploadImage(auth: AuthState, file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/upload/image`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+    body: formData,
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wgrać zdjęcia");
+  return response.json();
+}
+
 export type GroupClassView = {
   id: number;
   instructorId: number;
@@ -1393,6 +1406,7 @@ export interface EmailCampaignView {
   createdAt: string;
   sentAt: string | null;
   scheduledAt?: string;
+  imageUrl?: string | null;
 }
 
 export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise<EmailCampaignView[]> {
@@ -1403,7 +1417,11 @@ export async function getEmailCampaigns(auth: AuthState, gymId: number): Promise
   return response.json();
 }
 
-export async function createEmailCampaign(auth: AuthState, gymId: number, payload: { subject: string; body: string; targetSegment: string; scheduledAt?: string }): Promise<EmailCampaignView> {
+export async function createEmailCampaign(
+  auth: AuthState,
+  gymId: number,
+  payload: { subject: string; body: string; targetSegment: string; scheduledAt?: string; imageUrl?: string | null }
+): Promise<EmailCampaignView> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/crm/campaigns`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },

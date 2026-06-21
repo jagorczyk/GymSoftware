@@ -46,6 +46,7 @@ public class CrmService {
         campaign.setSubject(request.subject());
         campaign.setBody(request.body());
         campaign.setTargetSegment(request.targetSegment());
+        campaign.setImageUrl(request.imageUrl());
 
         if (request.scheduledAt() != null && request.scheduledAt().isAfter(LocalDateTime.now())) {
             campaign.setStatus("SCHEDULED");
@@ -92,7 +93,7 @@ public class CrmService {
                         .replace("{{email}}", guest.getEmail() != null ? guest.getEmail() : "")
                         .replace("{{telefon}}", guest.getPhone() != null ? guest.getPhone() : "");
             }
-            emailService.sendCampaignEmail(guest.getEmail(), campaign.getSubject(), personalizedBody);
+            emailService.sendCampaignEmail(guest.getEmail(), campaign.getSubject(), personalizedBody, campaign.getImageUrl());
         }
     }
 
@@ -120,7 +121,8 @@ public class CrmService {
                 campaign.getStatus(),
                 campaign.getCreatedAt(),
                 campaign.getSentAt(),
-                campaign.getScheduledAt()
+                campaign.getScheduledAt(),
+                campaign.getImageUrl()
         );
     }
 }

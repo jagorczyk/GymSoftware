@@ -7,6 +7,7 @@ import { PageHeader } from "../../components/PageHeader";
 import { EmptyState } from "../../components/EmptyState";
 import { LoadingState } from "../../components/LoadingState";
 import { UserCircle, Plus, Edit2, Trash2 } from "lucide-react";
+import { primaryButtonClassName } from "../../components/formStyles";
 
 import { OwnerContext } from "./types";
 
@@ -49,10 +50,7 @@ export function OwnerTrainersList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <PageHeader title="Trenerzy Personalni" subtitle="Zarządzaj trenerami na tej siłowni" />
-        <Link
-          to={`/owner/trainers/new`}
-          className="flex items-center gap-2 bg-slate-900 dark:bg-primary-500 hover:bg-slate-800 dark:hover:bg-primary-400 text-white dark:text-slate-950 px-4 py-2 rounded-xl font-bold transition-colors"
-        >
+        <Link to={`/owner/trainers/new`} className={primaryButtonClassName}>
           <Plus className="w-4 h-4" />
           Dodaj trenera
         </Link>
