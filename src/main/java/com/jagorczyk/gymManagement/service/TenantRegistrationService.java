@@ -81,13 +81,19 @@ public class TenantRegistrationService {
             emailService.sendVerificationEmail(owner.getEmail(), owner.getVerificationCode());
         }
 
+        String gymName = googleRegistration ? "Twoja Siłownia (Tymczasowa)" : request.getGymName();
+        String gymCity = googleRegistration ? "-" : request.getGymCity();
+        String gymAddress = googleRegistration ? "-" : request.getGymAddress();
+        String gymPostalCode = googleRegistration ? "00-000" : request.getGymPostalCode();
+        String gymNip = googleRegistration ? "0000000000" : request.getGymNip();
+
         Gym gym = new Gym();
-        gym.setName(request.getGymName());
-        gym.setSubdomain(subdomainService.generateUniqueSubdomain(request.getGymName()));
-        gym.setAddress(request.getGymAddress());
-        gym.setCity(request.getGymCity());
-        gym.setPostalCode(request.getGymPostalCode());
-        gym.setNip(request.getGymNip());
+        gym.setName(gymName);
+        gym.setSubdomain(subdomainService.generateUniqueSubdomain(gymName));
+        gym.setAddress(gymAddress);
+        gym.setCity(gymCity);
+        gym.setPostalCode(gymPostalCode);
+        gym.setNip(gymNip);
         gym.setOwnerUser(owner);
         gym = gymRepository.save(gym);
 

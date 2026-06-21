@@ -1,16 +1,18 @@
 import { FormEvent, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useTenant } from "../tenantContext";
 import { User, Mail, Lock, CheckCircle2, Loader2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, loginWithGoogle, SaaSPlan } from "../api";
 import { saveAuth } from "../auth";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../authContext";
+import { useTenant } from "../tenantContext";
 import { AuthLayout } from "../components/AuthLayout";
 import { VerifyEmailForm } from "../components/VerifyEmailForm";
 import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButton";
 import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
+
+const PLACEHOLDER_GYM_NAME = "Twoja Siłownia (Tymczasowa)";
 
 export function RegisterGymPage() {
   const { showError, showSuccess } = useToast();
@@ -18,6 +20,7 @@ export function RegisterGymPage() {
   const { subdomain } = useTenant();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
@@ -54,12 +57,12 @@ export function RegisterGymPage() {
       const profile = decodeGoogleIdToken(idToken);
       const email = profile.email || ownerEmail;
       const payload = {
-        ownerFirstName: profile.given_name || ownerFirstName,
-        ownerLastName: profile.family_name || ownerLastName,
+        ownerFirstName: profile.given_name || ownerFirstName || "Właściciel",
+        ownerLastName: profile.family_name || ownerLastName || "",
         ownerEmail: email,
         googleIdToken: idToken,
         saasPlanId: selectedPlanId,
-        gymName: gymName || "Twoja Siłownia",
+        gymName: PLACEHOLDER_GYM_NAME,
         gymCity: "-",
         gymAddress: "-",
         gymPostalCode: "00-000",
@@ -83,19 +86,14 @@ export function RegisterGymPage() {
     if (profile.family_name) setOwnerLastName(profile.family_name);
     if (profile.email) setOwnerEmail(profile.email);
     setGoogleIdToken(idToken);
-    setOwnerPassword("");
-    showSuccess("Dane z Google zostały uzupełnione. Wybierz plan i kliknij „Utwórz konto”.");
+    setShowEmailForm(false);
+    showSuccess("Konto Google połączone. Wybierz plan i przejdź do płatności.");
   }
 
   async function handleRegister(event: FormEvent) {
     event.preventDefault();
     if (!selectedPlanId) {
       showError("Wybierz plan subskrypcji, aby kontynuować.");
-      return;
-    }
-
-    if (googleIdToken) {
-      await completeGoogleRegistration(googleIdToken);
       return;
     }
 
@@ -136,21 +134,128 @@ export function RegisterGymPage() {
     }
   }
 
+  function renderPlanPicker() {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xl font-bold text-slate-800 dark:text-white">Wybierz plan</h3>
+        {loadingPlans ? (
+          <div className="flex justify-center p-4">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {plans.map((plan) => (
+              <div
+                key={plan.id}
+                onClick={() => !submitting && setSelectedPlanId(plan.id)}
+                className={`relative cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
+                  selectedPlanId === plan.id
+                    ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/20 shadow-md shadow-primary-500/10"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
+              >
+                {selectedPlanId === plan.id && (
+                  <div className="absolute top-4 right-4 text-primary-500">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                )}
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h4>
+                <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">
+                  {plan.price} zł <span className="text-sm font-medium text-slate-500 dark:text-slate-400">/ mies.</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <AuthLayout
       title="Rozpocznij biznes"
       subtitle="Zarejestruj się, wybierz plan i zacznij zarządzać swoim biznesem w chmurze."
     >
-      {step === 1 && (
-        <form onSubmit={handleRegister} className="space-y-6">
-          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Dane Właściciela</h2>
+      {step === 1 && googleIdToken && !showEmailForm && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Wybierz plan</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
+            Zalogowano jako <span className="font-semibold text-slate-800 dark:text-slate-200">{ownerEmail}</span>.
+            Po opłaceniu planu skonfigurujesz nazwę i dane siłowni.
+          </p>
 
-          <GoogleSignInButton
-            text="signup_with"
-            onSuccess={handleGoogleCredential}
-            onError={showError}
-          />
+          {renderPlanPicker()}
+
+          <button
+            type="button"
+            disabled={submitting || !selectedPlanId}
+            onClick={() => void completeGoogleRegistration(googleIdToken)}
+            className="w-full mt-6 bg-slate-900 dark:bg-slate-800 hover:bg-primary-500 text-white font-bold py-4 px-4 rounded-2xl transition-all shadow-md hover:shadow-xl focus:ring-4 focus:ring-primary-500/20 outline-none flex justify-center items-center gap-2 disabled:opacity-50"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Przekierowanie do płatności...
+              </>
+            ) : (
+              "Przejdź do płatności"
+            )}
+          </button>
+
+          <div className="text-center text-sm text-slate-500 dark:text-slate-400">
+            <button
+              type="button"
+              onClick={() => {
+                setGoogleIdToken(null);
+                setSelectedPlanId(null);
+              }}
+              className="text-primary-600 hover:text-primary-500 font-semibold"
+            >
+              Użyj innego konta Google
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 1 && !googleIdToken && !showEmailForm && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Szybka rejestracja</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">
+            Zarejestruj się przez Google — wybierzesz tylko plan. Nazwę siłowni ustawisz po płatności.
+          </p>
+
+          <GoogleSignInButton text="signup_with" onSuccess={handleGoogleCredential} onError={showError} />
+
           <AuthDivider />
+
+          <button
+            type="button"
+            onClick={() => setShowEmailForm(true)}
+            className="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            Zarejestruj się przez e-mail
+          </button>
+
+          <div className="text-center text-slate-500 dark:text-slate-400 text-sm font-medium">
+            Masz już konto?{" "}
+            <Link to="/login" className="text-primary-600 hover:text-primary-500 font-bold underline decoration-2 underline-offset-4">
+              Zaloguj się
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {step === 1 && showEmailForm && !googleIdToken && (
+        <form onSubmit={handleRegister} className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Rejestracja e-mail</h2>
+            <button
+              type="button"
+              onClick={() => setShowEmailForm(false)}
+              className="text-sm font-semibold text-primary-600 hover:text-primary-500"
+            >
+              Wróć
+            </button>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -202,73 +307,38 @@ export function RegisterGymPage() {
             </div>
           </div>
 
-          {!googleIdToken && (
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Hasło</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                </div>
-                <input
-                  type="password"
-                  value={ownerPassword}
-                  onChange={(e) => setOwnerPassword(e.target.value)}
-                  required
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
-                  placeholder="••••••••"
-                  disabled={submitting}
-                />
-              </div>
-            </div>
-          )}
-
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Nazwa Twojej Siłowni</label>
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Hasło</label>
             <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+              </div>
               <input
-                type="text"
-                value={gymName}
-                onChange={(e) => setGymName(e.target.value)}
+                type="password"
+                value={ownerPassword}
+                onChange={(e) => setOwnerPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
-                placeholder="np. Wellfitnes"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+                placeholder="••••••••"
                 disabled={submitting}
               />
             </div>
           </div>
 
-          <div className="space-y-4 pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Wybierz plan</h3>
-            {loadingPlans ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {plans.map((plan) => (
-                  <div
-                    key={plan.id}
-                    onClick={() => !submitting && setSelectedPlanId(plan.id)}
-                    className={`relative cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-                      selectedPlanId === plan.id
-                        ? "border-primary-500 bg-primary-50/50 dark:bg-primary-900/20 shadow-md shadow-primary-500/10"
-                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-600"
-                    }`}
-                  >
-                    {selectedPlanId === plan.id && (
-                      <div className="absolute top-4 right-4 text-primary-500">
-                        <CheckCircle2 className="w-5 h-5" />
-                      </div>
-                    )}
-                    <h4 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h4>
-                    <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">
-                      {plan.price} zł <span className="text-sm font-medium text-slate-500 dark:text-slate-400">/ mies.</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Nazwa Twojej Siłowni</label>
+            <input
+              type="text"
+              value={gymName}
+              onChange={(e) => setGymName(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 outline-none transition-all"
+              placeholder="np. Wellfitnes"
+              disabled={submitting}
+            />
           </div>
+
+          {renderPlanPicker()}
 
           <button
             type="submit"
@@ -283,16 +353,6 @@ export function RegisterGymPage() {
               "Utwórz konto"
             )}
           </button>
-
-          <div className="text-center text-slate-500 dark:text-slate-400 mt-4 text-sm font-medium">
-            Masz już konto?{" "}
-            <Link
-              to="/login"
-              className="text-primary-600 hover:text-primary-500 font-bold underline decoration-2 underline-offset-4 transition-colors"
-            >
-              Zaloguj się
-            </Link>
-          </div>
         </form>
       )}
 

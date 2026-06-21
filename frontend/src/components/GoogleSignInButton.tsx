@@ -40,10 +40,12 @@ export function GoogleSignInButton({ onSuccess, onError, text = "signin_with" }:
   }
 
   if (!isValidGoogleClientId()) {
+    const raw = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    const hint = raw?.includes("=") ? " Wygląda na literówkę: użyj myślnika (-) zamiast znaku (=)." : "";
     return (
       <div className="rounded-xl border border-red-300 bg-red-50 dark:bg-red-950/30 p-4 text-sm text-red-800 dark:text-red-200">
-        Logowanie Google nie jest skonfigurowane na serwerze (brak lub nieprawidłowy VITE_GOOGLE_CLIENT_ID).
-        Przebuduj frontend z poprawnym Client ID z Google Cloud Console.
+        Logowanie Google nie jest skonfigurowane (brak lub nieprawidłowy VITE_GOOGLE_CLIENT_ID). Przebuduj
+        frontend z poprawnym Client ID z Google Cloud Console.{hint}
       </div>
     );
   }
