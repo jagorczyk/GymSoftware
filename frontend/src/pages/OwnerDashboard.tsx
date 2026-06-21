@@ -15,7 +15,7 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
   const { setBrandName } = useSelectedGymBrand();
   const { setSelectorState } = useAppGymSelector();
   const { showSuccess, showError } = useToast();
-  const [gyms, setGyms] = useState<Array<{ id: number; name: string; address: string; themeColor?: string }>>([]);
+  const [gyms, setGyms] = useState<Array<{ id: number; name: string; address: string; city?: string; themeColor?: string }>>([]);
   const [selectedGymId, setSelectedGymId] = useState<number | "">("");
   const [details, setDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
 
   useEffect(() => {
     setSelectorState({
-      gyms: gyms.map((g) => ({ id: g.id, name: g.name, address: g.address, themeColor: g.themeColor })),
+      gyms: gyms.map((g) => ({ id: g.id, name: g.name, address: g.address, city: g.city, themeColor: g.themeColor })),
       selectedGymId,
       onSelectGym: onGymChange,
     });

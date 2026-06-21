@@ -1,10 +1,10 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { getAllGymsForClient, joinGym, ClientGymView } from "../clientApi";
 import { ArrowLeft, MapPin, User, Phone, CheckCircle2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { formatGymAddressLine } from "../utils/gymLabel";
 
 export function ClientGymJoinPage() {
   const { auth } = useAuth();
@@ -91,7 +91,9 @@ export function ClientGymJoinPage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-white">{g.name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{g.address}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {formatGymAddressLine(g) || "Brak adresu"}
+                        </p>
                       </div>
                     </div>
                     {selectedGymId === g.id && (

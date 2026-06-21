@@ -43,6 +43,7 @@ import { useTheme } from "./ThemeContext";
 import { SubscriptionExpiredView } from "./components/SubscriptionExpiredView";
 import { PRESET_THEMES, generateThemeVars } from "./utils/colorUtils";
 import { updateOwnerGymTheme } from "./api";
+import { formatGymOptionLabel } from "./utils/gymLabel";
 
 export function AppShell() {
   const { auth, logout } = useAuth();
@@ -209,7 +210,7 @@ export function AppShell() {
       >
         {gymSelector.gyms.map((g) => (
           <option key={g.id} value={g.id}>
-            {g.name}
+            {formatGymOptionLabel(g)}
           </option>
         ))}
       </select>
@@ -354,7 +355,7 @@ export function AppShell() {
                 >
                   {gymSelector.gyms.map((g) => (
                     <option key={g.id} value={g.id}>
-                      {g.name}
+                      {formatGymOptionLabel(g)}
                     </option>
                   ))}
                 </select>

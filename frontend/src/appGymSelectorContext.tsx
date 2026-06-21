@@ -4,6 +4,7 @@ export type AppGymOption = {
   id: number;
   name: string;
   address?: string;
+  city?: string;
   themeColor?: string;
 };
 
