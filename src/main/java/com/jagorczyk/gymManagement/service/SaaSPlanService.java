@@ -1,6 +1,7 @@
 package com.jagorczyk.gymManagement.service;
 
 import com.jagorczyk.gymManagement.api.CreateSaaSPlanRequest;
+import com.jagorczyk.gymManagement.api.UpdateSaaSPlanRequest;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
 import com.jagorczyk.gymManagement.repository.GymSubscriptionRepository;
 import com.jagorczyk.gymManagement.repository.SaaSPlanRepository;
@@ -40,6 +41,30 @@ public class SaaSPlanService {
         plan.setPrice(request.price());
         plan.setFeatures(request.features() != null ? request.features().trim() : null);
         plan.setActive(request.active() == null || request.active());
+        if (request.featureFlags() != null) {
+            plan.setFeatureFlags(request.featureFlags());
+        } else {
+            plan.setFeatureFlags(null);
+        }
+        return saasPlanRepository.save(plan);
+    }
+
+    @Transactional
+    public SaaSPlan updatePlan(Long id, UpdateSaaSPlanRequest request) {
+        SaaSPlan plan = getPlanById(id);
+        String name = request.name().trim();
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Nazwa planu jest wymagana");
+        }
+        plan.setName(name);
+        plan.setPrice(request.price());
+        plan.setFeatures(request.features() != null ? request.features().trim() : null);
+        if (request.active() != null) {
+            plan.setActive(request.active());
+        }
+        if (request.featureFlags() != null) {
+            plan.setFeatureFlags(request.featureFlags());
+        }
         return saasPlanRepository.save(plan);
     }
 

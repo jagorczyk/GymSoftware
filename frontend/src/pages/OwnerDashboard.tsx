@@ -3,17 +3,19 @@ import { useSelectedGymBrand } from "../selectedGymBrandContext";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { OwnerDashboardProvider } from "../ownerDashboardContext";
 import { RefreshCcw } from "lucide-react";
-import { getOwnerGymDetails, getOwnerGyms } from "../api";
+import { getOwnerGymDetails, getOwnerGyms, getOwnerGymSubscription } from "../api";
 import type { AuthState } from "../auth";
 import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
 import { useToast } from "../components/Toast";
+import { usePlanFeatures } from "../planFeaturesContext";
 import type { OwnerContext } from "./owner/types";
 
 export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) {
   const { auth, children } = props;
   const { setBrandName } = useSelectedGymBrand();
   const { setSelectorState } = useAppGymSelector();
+  const { setFeatureFlags } = usePlanFeatures();
   const { showSuccess, showError } = useToast();
   const [gyms, setGyms] = useState<Array<{ id: number; name: string; address: string; city?: string; themeColor?: string }>>([]);
   const [selectedGymId, setSelectedGymId] = useState<number | "">("");
@@ -46,19 +48,39 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
     async (nextId: number) => {
       setSelectedGymId(nextId);
       try {
-        const gymDetails = await getOwnerGymDetails(auth, nextId);
+        const [gymDetails, subscription] = await Promise.all([
+          getOwnerGymDetails(auth, nextId),
+          getOwnerGymSubscription(auth, nextId),
+        ]);
         setDetails(gymDetails);
+        setFeatureFlags(subscription?.featureFlags ?? []);
       } catch (err) {
         showError(err instanceof Error ? err.message : "Nie udało się pobrać szczegółów siłowni");
       }
     },
-    [auth, showError]
+    [auth, showError, setFeatureFlags]
   );
 
   useEffect(() => {
     loadGymsAndDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
+
+  useEffect(() => {
+    if (!selectedGymId) {
+      setFeatureFlags([]);
+      return;
+    }
+    getOwnerGymSubscription(auth, Number(selectedGymId))
+      .then((subscription) => setFeatureFlags(subscription?.featureFlags ?? []))
+      .catch(() => setFeatureFlags([]));
+  }, [auth, selectedGymId, setFeatureFlags]);
+
+  useEffect(() => {
+    return () => {
+      setFeatureFlags([]);
+    };
+  }, [setFeatureFlags]);
 
   useEffect(() => {
     const fromList = gyms.find((g) => g.id === Number(selectedGymId))?.name;

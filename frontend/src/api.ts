@@ -83,6 +83,7 @@ export interface GymSubscriptionView {
   status: string;
   currentPeriodStart: string;
   currentPeriodEnd: string;
+  featureFlags?: string[];
 }
 
 export async function getOwnerGymSubscription(auth: AuthState, gymId: number): Promise<GymSubscriptionView | null> {
@@ -1481,6 +1482,7 @@ export type SaaSPlan = {
   stripePriceId: string;
   features: string;
   active: boolean;
+  featureFlags?: string[];
 };
 
 export type GymSubscriptionDTO = {
@@ -1512,7 +1514,10 @@ export type CreateSaaSPlanPayload = {
   price: number;
   features?: string;
   active?: boolean;
+  featureFlags?: string[];
 };
+
+export type UpdateSaaSPlanPayload = CreateSaaSPlanPayload;
 
 export async function createSaaSPlan(auth: AuthState, payload: CreateSaaSPlanPayload): Promise<SaaSPlan> {
   const response = await fetch(`${API_URL}/admin/saas/plans`, {
@@ -1524,6 +1529,19 @@ export async function createSaaSPlan(auth: AuthState, payload: CreateSaaSPlanPay
     body: JSON.stringify(payload),
   });
   if (!response.ok) await parseApiError(response, "Nie udało się utworzyć planu");
+  return response.json();
+}
+
+export async function updateSaaSPlan(auth: AuthState, planId: number, payload: UpdateSaaSPlanPayload): Promise<SaaSPlan> {
+  const response = await fetch(`${API_URL}/admin/saas/plans/${planId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaktualizować planu");
   return response.json();
 }
 

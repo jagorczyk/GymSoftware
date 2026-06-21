@@ -413,6 +413,7 @@ public final class GymDtos {
             String saasPlanName,
             String status,
             String currentPeriodStart,
-            String currentPeriodEnd
+            String currentPeriodEnd,
+            java.util.List<String> featureFlags
     ) {}
 }

@@ -44,6 +44,8 @@ import { SubscriptionExpiredView } from "./components/SubscriptionExpiredView";
 import { PRESET_THEMES, generateThemeVars } from "./utils/colorUtils";
 import { updateOwnerGymTheme } from "./api";
 import { formatGymOptionLabel } from "./utils/gymLabel";
+import { usePlanFeatures } from "./planFeaturesContext";
+import type { SaasPlanFeatureId } from "./saasPlanFeatures";
 
 export function AppShell() {
   const { auth, logout } = useAuth();
@@ -57,6 +59,7 @@ export function AppShell() {
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const displayName = brandName.trim();
+  const { hasFeature } = usePlanFeatures();
   const [subscriptionExpired, setSubscriptionExpired] = useState(false);
 
   const currentGym = gymSelector.gyms.find((g) => g.id === gymSelector.selectedGymId);
@@ -163,30 +166,35 @@ export function AppShell() {
     []
   );
 
+  const ownerNavItems = useMemo(() => {
+    const items: Array<{ label: string; to: string; icon: ReactElement; feature?: SaasPlanFeatureId }> = [
+      { label: "Podsumowanie", to: "/owner/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+      { label: "Siłownie", to: "/owner/gyms", icon: <Store className="w-5 h-5" /> },
+      { label: "Klienci", to: "/owner/guests", icon: <Users className="w-5 h-5" /> },
+      { label: "Pracownicy", to: "/owner/employees", icon: <BadgeCheck className="w-5 h-5" /> },
+      { label: "Trenerzy", to: "/owner/trainers", icon: <UserCircle className="w-5 h-5" />, feature: "TRAINER_BOOKINGS" },
+      { label: "Rangi", to: "/owner/ranks", icon: <Award className="w-5 h-5" /> },
+      { label: "Oferta", to: "/owner/pass-types", icon: <ListPlus className="w-5 h-5" /> },
+      { label: "Karnety", to: "/owner/passes", icon: <Ticket className="w-5 h-5" /> },
+      { label: "Magazyn", to: "/owner/products", icon: <Package className="w-5 h-5" />, feature: "INVENTORY" },
+      { label: "Szafki", to: "/owner/lockers", icon: <Lock className="w-5 h-5" />, feature: "LOCKERS" },
+      { label: "Terminarz", to: "/owner/schedule", icon: <CalendarDays className="w-5 h-5" />, feature: "SCHEDULE" },
+      { label: "Grafik", to: "/owner/work-schedule", icon: <CalendarClock className="w-5 h-5" />, feature: "WORK_SCHEDULE" },
+      { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" />, feature: "SALES_REPORT" },
+      { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" />, feature: "ANALYTICS" },
+      { label: "Marketing i CRM", to: "/owner/crm", icon: <Megaphone className="w-5 h-5" />, feature: "CRM" },
+      { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" />, feature: "CLASS_RATINGS" },
+      { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" />, feature: "NOTIFICATIONS" },
+      { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" />, feature: "AUDIT_LOG" },
+    ];
+    return items.filter((item) => !item.feature || hasFeature(item.feature));
+  }, [hasFeature]);
+
   const navItems =
     auth?.role === "SUPER_ADMIN"
       ? superAdminNavItems
       : auth?.role === "OWNER"
-      ? [
-          { label: "Podsumowanie", to: "/owner/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
-          { label: "Siłownie", to: "/owner/gyms", icon: <Store className="w-5 h-5" /> },
-          { label: "Klienci", to: "/owner/guests", icon: <Users className="w-5 h-5" /> },
-          { label: "Pracownicy", to: "/owner/employees", icon: <BadgeCheck className="w-5 h-5" /> },
-          { label: "Trenerzy", to: "/owner/trainers", icon: <UserCircle className="w-5 h-5" /> },
-          { label: "Rangi", to: "/owner/ranks", icon: <Award className="w-5 h-5" /> },
-          { label: "Oferta", to: "/owner/pass-types", icon: <ListPlus className="w-5 h-5" /> },
-          { label: "Karnety", to: "/owner/passes", icon: <Ticket className="w-5 h-5" /> },
-          { label: "Magazyn", to: "/owner/products", icon: <Package className="w-5 h-5" /> },
-          { label: "Szafki", to: "/owner/lockers", icon: <Lock className="w-5 h-5" /> },
-          { label: "Terminarz", to: "/owner/schedule", icon: <CalendarDays className="w-5 h-5" /> },
-          { label: "Grafik", to: "/owner/work-schedule", icon: <CalendarClock className="w-5 h-5" /> },
-          { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" /> },
-          { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" /> },
-          { label: "Marketing i CRM", to: "/owner/crm", icon: <Megaphone className="w-5 h-5" /> },
-          { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" /> },
-          { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" /> },
-          { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" /> },
-        ]
+      ? ownerNavItems
       : auth?.role === "GUEST"
       ? clientNavItems
       : employeeNavItems;

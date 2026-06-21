@@ -9,6 +9,7 @@ import { ToastProvider } from "./components/Toast";
 import { EmployeePermissionsProvider } from "./employeePermissionsContext";
 import { SelectedGymBrandProvider } from "./selectedGymBrandContext";
 import { AppGymSelectorProvider } from "./appGymSelectorContext";
+import { PlanFeaturesProvider } from "./planFeaturesContext";
 import { WebSocketProvider } from "./WebSocketContext";
 import { TenantProvider } from "./tenantContext";
 import { CookieConsentBanner } from "./components/CookieConsentBanner";
@@ -27,8 +28,10 @@ function AppProviders({ children }: { children: React.ReactNode }) {
                   <EmployeePermissionsProvider>
                     <SelectedGymBrandProvider>
                       <AppGymSelectorProvider>
-                        {children}
-                        <CookieConsentBanner />
+                        <PlanFeaturesProvider>
+                          {children}
+                          <CookieConsentBanner />
+                        </PlanFeaturesProvider>
                       </AppGymSelectorProvider>
                     </SelectedGymBrandProvider>
                   </EmployeePermissionsProvider>

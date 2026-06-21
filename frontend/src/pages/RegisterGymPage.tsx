@@ -12,6 +12,7 @@ import { AuthDivider, GoogleSignInButton } from "../components/GoogleSignInButto
 import { primaryButtonClassName } from "../components/formStyles";
 import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
+import { formatSaasPlanFeatureLabels } from "../saasPlanFeatures";
 
 const PLACEHOLDER_GYM_NAME = "Twoja Siłownia (Tymczasowa)";
 
@@ -164,9 +165,17 @@ export function RegisterGymPage() {
                   </div>
                 )}
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h4>
-                <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-1">
+                <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">
                   {plan.price} zł <span className="text-sm font-medium text-slate-500 dark:text-slate-400">/ mies.</span>
                 </div>
+                {plan.features ? (
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{plan.features}</p>
+                ) : null}
+                <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                  {formatSaasPlanFeatureLabels(plan.featureFlags).map((label) => (
+                    <li key={label}>• {label}</li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 package com.jagorczyk.gymManagement.api;
 
 import com.jagorczyk.gymManagement.api.CreateSaaSPlanRequest;
+import com.jagorczyk.gymManagement.api.UpdateSaaSPlanRequest;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
 import com.jagorczyk.gymManagement.service.SaaSPlanService;
 import com.jagorczyk.gymManagement.service.SaaSAdminService;
@@ -12,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +53,12 @@ public class SaaSAdminController {
     @GetMapping("/plans/{id}")
     public ResponseEntity<SaaSPlan> getPlan(@PathVariable Long id) {
         return ResponseEntity.ok(saasPlanService.getPlanById(id));
+    }
+
+    @PutMapping("/plans/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<SaaSPlan> updatePlan(@PathVariable Long id, @Valid @RequestBody UpdateSaaSPlanRequest request) {
+        return ResponseEntity.ok(saasPlanService.updatePlan(id, request));
     }
 
     @DeleteMapping("/plans/{id}")

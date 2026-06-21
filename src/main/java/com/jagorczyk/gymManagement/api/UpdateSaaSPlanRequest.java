@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record CreateSaaSPlanRequest(
+public record UpdateSaaSPlanRequest(
         @NotBlank @Size(max = 255) String name,
         @NotNull @DecimalMin("0.01") BigDecimal price,
         @Size(max = 1000) String features,

@@ -131,7 +131,8 @@ public class OwnerService {
                         sub.getSaasPlan().getName(),
                         sub.getStatus().name(),
                         sub.getCurrentPeriodStart() != null ? sub.getCurrentPeriodStart().toString() : null,
-                        sub.getCurrentPeriodEnd() != null ? sub.getCurrentPeriodEnd().toString() : null
+                        sub.getCurrentPeriodEnd() != null ? sub.getCurrentPeriodEnd().toString() : null,
+                        sub.getSaasPlan().getFeatureFlags()
                 ))
                 .orElse(null);
     }

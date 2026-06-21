@@ -3,6 +3,7 @@ import { useAuth } from '../../authContext';
 import { getOwnerGymSubscription, createOwnerCustomerPortalSession, createOwnerSaaSCheckoutSession, GymSubscriptionView } from '../../api';
 import { useAppGymSelector } from '../../appGymSelectorContext';
 import { Crown, CheckCircle2, AlertCircle, Clock, ExternalLink } from 'lucide-react';
+import { formatSaasPlanFeatureLabels } from '../../saasPlanFeatures';
 
 export function OwnerSubscription() {
   const { auth } = useAuth();
@@ -136,6 +137,16 @@ export function OwnerSubscription() {
                   <span className="text-white font-medium">
                     {subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString('pl-PL') : 'Brak danych'}
                   </span>
+                </div>
+                <div className="pt-2">
+                  <span className="text-indigo-200 text-sm block mb-2">Dostępne moduły</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {formatSaasPlanFeatureLabels(subscription.featureFlags).map((label) => (
+                      <span key={label} className="px-2 py-0.5 rounded-full text-xs bg-white/10 border border-white/10 text-indigo-100">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
