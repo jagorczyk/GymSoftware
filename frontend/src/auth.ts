@@ -122,6 +122,28 @@ export function isMainAuthDomain(): boolean {
   return hostname === "localhost" || hostname === "gymlos.pl" || hostname === "www.gymlos.pl";
 }
 
+export const OWNER_STRIPE_CHECKOUT_KEY = "owner_stripe_checkout_pending";
+
+export function isOwnerStripeCheckoutPending(): boolean {
+  try {
+    return sessionStorage.getItem(OWNER_STRIPE_CHECKOUT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setOwnerStripeCheckoutPending(pending: boolean): void {
+  try {
+    if (pending) {
+      sessionStorage.setItem(OWNER_STRIPE_CHECKOUT_KEY, "1");
+    } else {
+      sessionStorage.removeItem(OWNER_STRIPE_CHECKOUT_KEY);
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export function buildCentralLoginUrl(returnTo?: string): string {
   const hostname = window.location.hostname;
   const protocol = window.location.protocol;

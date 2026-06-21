@@ -2,7 +2,7 @@ import { FormEvent, useState, useEffect } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { User, Mail, Lock, CheckCircle2, Loader2 } from "lucide-react";
 import { getTenantSaaSPlans, registerTenant, verifyEmail, loginWithGoogle, SaaSPlan } from "../api";
-import { saveAuth } from "../auth";
+import { setOwnerStripeCheckoutPending } from "../auth";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
@@ -54,6 +54,7 @@ export function RegisterGymPage() {
     }
 
     setSubmitting(true);
+    setStep(3);
     try {
       const profile = decodeGoogleIdToken(idToken);
       const email = profile.email || ownerEmail;
@@ -70,9 +71,9 @@ export function RegisterGymPage() {
         gymNip: "0000000000",
       };
       await registerTenant(payload);
+      setOwnerStripeCheckoutPending(true);
       const { token } = await loginWithGoogle(idToken);
       const authState = login(token);
-      setStep(3);
       await redirectOwnerToStripeCheckout(authState, showError);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Wystąpił błąd podczas rejestracji");
@@ -123,14 +124,16 @@ export function RegisterGymPage() {
   }
 
   async function handleVerify(code: string) {
+    setStep(3);
+    setOwnerStripeCheckoutPending(true);
     try {
       const { token } = await verifyEmail(ownerEmail, code);
-      const authState = { token, role: "OWNER" as const, email: ownerEmail };
-      saveAuth(authState);
-      setStep(3);
+      const authState = login(token);
       await redirectOwnerToStripeCheckout(authState, showError);
     } catch (err) {
+      setOwnerStripeCheckoutPending(false);
       showError(err instanceof Error ? err.message : "Błędny kod weryfikacyjny");
+      setStep(2);
       throw err;
     }
   }

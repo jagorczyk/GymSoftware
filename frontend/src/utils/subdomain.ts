@@ -10,19 +10,21 @@ export function gymNameToSubdomain(gymName: string): string {
 }
 
 export function getDomainPreview(subdomain: string): string {
-  const hostname = window.location.hostname;
+  return buildTenantUrl(subdomain).replace(/^https?:\/\//, "");
+}
+
+export function buildTenantUrl(subdomain: string, path = "/"): string {
+  const protocol = window.location.protocol;
   const port = window.location.port ? `:${window.location.port}` : "";
+  const hostname = window.location.hostname;
 
-  if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return `${subdomain}.localhost${port}`;
-  }
+  const rootHost =
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")
+      ? `localhost${port}`
+      : "gymlos.pl";
 
-  if (hostname === "gymlos.pl" || hostname === "www.gymlos.pl") {
-    return `${subdomain}.gymlos.pl`;
-  }
-
-  const root = hostname.includes("localhost") ? `localhost${port}` : "gymlos.pl";
-  return `${subdomain}.${root}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${protocol}//${subdomain}.${rootHost}${normalizedPath}`;
 }
 
 export const POSTAL_CODE_REGEX = /^\d{2}-\d{3}$/;

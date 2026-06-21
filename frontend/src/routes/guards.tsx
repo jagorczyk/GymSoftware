@@ -1,10 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../authContext";
+import { isOwnerStripeCheckoutPending } from "../auth";
 import type { Role } from "../auth";
 
 export function LoginRoute() {
   const { auth } = useAuth();
   if (auth) {
+    if (auth.role === "OWNER" && isOwnerStripeCheckoutPending()) {
+      return <Outlet />;
+    }
     if (auth.role === "SUPER_ADMIN") return <Navigate to="/superadmin/subscriptions" replace />;
     return (
       <Navigate

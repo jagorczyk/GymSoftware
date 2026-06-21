@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../authContext";
+import { isMainAuthDomain } from "../auth";
+import { getOwnerGyms } from "../api";
+import { buildTenantUrl } from "../utils/subdomain";
+import { getSubdomain } from "../utils/tenant";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { useSelectedGymBrand } from "../selectedGymBrandContext";
 import { getClientGyms, ClientGymView } from "../clientApi";
@@ -12,10 +16,35 @@ import { EmployeeDashboard } from "../pages/EmployeeDashboard";
 export function OwnerDashboardWrapper() {
   const { auth } = useAuth();
   const location = useLocation();
+  const subdomain = getSubdomain();
+  const [redirecting, setRedirecting] = useState(() => auth?.role === "OWNER" && isMainAuthDomain() && !subdomain);
+
+  useEffect(() => {
+    if (!auth || auth.role !== "OWNER" || subdomain) {
+      setRedirecting(false);
+      return;
+    }
+
+    setRedirecting(true);
+    getOwnerGyms(auth)
+      .then((gyms) => {
+        const gymSubdomain = gyms[0]?.subdomain;
+        if (!gymSubdomain) {
+          setRedirecting(false);
+          return;
+        }
+        const targetPath = `${location.pathname}${location.search}${location.hash}`;
+        window.location.replace(buildTenantUrl(gymSubdomain, targetPath));
+      })
+      .catch(() => setRedirecting(false));
+  }, [auth, subdomain, location.pathname, location.search, location.hash]);
 
   if (!auth) return <Navigate to="/login" replace />;
   if (auth.role !== "OWNER") {
     return <Navigate to={auth.role === "EMPLOYEE" ? "/employee/dashboard" : "/client/dashboard"} replace />;
+  }
+  if (redirecting) {
+    return <LoadingState message="Przekierowanie do panelu siłowni..." />;
   }
   if (location.pathname === "/owner" || location.pathname === "/owner/") {
     return <Navigate to="/owner/dashboard" replace />;

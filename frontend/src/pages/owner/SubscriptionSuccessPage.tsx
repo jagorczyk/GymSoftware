@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Building2, Loader2, CheckCircle2, XCircle, Globe } from "lucide-react";
 import { updateOwnerGym, getOwnerGyms, checkGymSubdomainAvailability } from "../../api";
+import { setOwnerStripeCheckoutPending } from "../../auth";
 import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
 import { AuthLayout } from "../../components/AuthLayout";
@@ -40,6 +41,10 @@ export function SubscriptionSuccessPage() {
 
   const postalError = gymPostalCode ? validatePostalCode(gymPostalCode) : null;
   const addressError = gymAddress ? validateAddress(gymAddress) : null;
+
+  useEffect(() => {
+    setOwnerStripeCheckoutPending(false);
+  }, []);
 
   useEffect(() => {
     if (!auth) return;

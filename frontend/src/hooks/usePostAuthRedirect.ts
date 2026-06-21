@@ -1,9 +1,11 @@
 import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCheckoutUrl, getOwnerGyms } from "../api";
+import { setOwnerStripeCheckoutPending } from "../auth";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
 import { isSafeReturnTo } from "../auth";
+import { buildTenantUrl } from "../utils/subdomain";
 import type { AuthState } from "../auth";
 
 export function usePostAuthRedirect() {
@@ -26,14 +28,7 @@ export function usePostAuthRedirect() {
         try {
           const gyms = await getOwnerGyms(next);
           if (gyms.length > 0 && gyms[0].subdomain) {
-            const proto = window.location.protocol;
-            const hostname = window.location.hostname;
-            const port = window.location.port ? `:${window.location.port}` : "";
-            const rootHost =
-              hostname === "localhost" || hostname.endsWith(".localhost")
-                ? `localhost${port}`
-                : "gymlos.pl";
-            window.location.href = `${proto}//${gyms[0].subdomain}.${rootHost}/owner/dashboard`;
+            window.location.replace(buildTenantUrl(gyms[0].subdomain, "/owner/dashboard"));
             return next;
           }
         } catch (e) {
@@ -59,11 +54,18 @@ export function usePostAuthRedirect() {
 }
 
 export async function redirectOwnerToStripeCheckout(auth: AuthState, showError: (msg: string) => void) {
-  const gyms = await getOwnerGyms(auth);
-  if (gyms && gyms.length > 0) {
-    const { checkoutUrl } = await getCheckoutUrl(auth, gyms[0].id);
-    window.location.href = checkoutUrl;
-  } else {
+  setOwnerStripeCheckoutPending(true);
+  try {
+    const gyms = await getOwnerGyms(auth);
+    if (gyms && gyms.length > 0) {
+      const { checkoutUrl } = await getCheckoutUrl(auth, gyms[0].id);
+      window.location.replace(checkoutUrl);
+      return;
+    }
+    setOwnerStripeCheckoutPending(false);
     showError("Nie znaleziono przypisanej siłowni.");
+  } catch (err) {
+    setOwnerStripeCheckoutPending(false);
+    throw err;
   }
 }
