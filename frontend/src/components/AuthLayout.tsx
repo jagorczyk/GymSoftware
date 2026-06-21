@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { GymLosLogo } from "./GymLosLogo";
-import { AuthGymBackground } from "./AuthGymBackground";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -12,9 +11,8 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
       <div className="md:w-[45%] bg-slate-900 text-white flex flex-col justify-center items-center p-8 md:p-12 relative overflow-hidden shrink-0">
-        <AuthGymBackground />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob" />
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-2000" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
         
         <div className="z-10 text-center max-w-md mx-auto">
           <GymLosLogo className="w-28 h-28 md:w-36 md:h-36 text-white mx-auto mb-8" />
