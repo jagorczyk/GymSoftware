@@ -48,6 +48,16 @@ export function hasConsent(): boolean {
 export function setConsent(status: ConsentStatus): void {
   localStorage.setItem(STORAGE_KEY, status);
   writeConsentCookie(status);
+  window.dispatchEvent(new CustomEvent("gym-cookie-consent-changed", { detail: status }));
+}
+
+export function resetConsent(): void {
+  localStorage.removeItem(STORAGE_KEY);
+  const domain = getAuthCookieDomain();
+  const domainPart = domain ? `; domain=${domain}` : "";
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0${domainPart}${secure}`;
+  window.dispatchEvent(new CustomEvent("gym-cookie-consent-changed", { detail: null }));
 }
 
 export function isAnalyticsAllowed(): boolean {

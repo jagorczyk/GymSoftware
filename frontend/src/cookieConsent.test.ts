@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { getConsent, hasConsent, setConsent } from "./cookieConsent";
+import { getConsent, hasConsent, resetConsent, setConsent } from "./cookieConsent";
 
 describe("cookieConsent", () => {
   beforeEach(() => {
@@ -28,5 +28,12 @@ describe("cookieConsent", () => {
   it("reads consent from cookie when localStorage is empty", () => {
     document.cookie = "gym_cookie_consent=rejected; path=/";
     expect(getConsent()).toBe("rejected");
+  });
+
+  it("resetConsent clears stored decision", () => {
+    setConsent("accepted");
+    resetConsent();
+    expect(getConsent()).toBeNull();
+    expect(hasConsent()).toBe(false);
   });
 });
