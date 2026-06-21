@@ -27,6 +27,17 @@ export function buildTenantUrl(subdomain: string, path = "/"): string {
   return `${protocol}//${subdomain}.${rootHost}${normalizedPath}`;
 }
 
+/** Returns subdomain to redirect to, or null if the current host is correct. */
+export function resolveGymSubdomainRedirect(
+  currentSubdomain: string | null,
+  gymSubdomains: Array<string | undefined | null>
+): string | null {
+  const allowed = [...new Set(gymSubdomains.filter((value): value is string => !!value))];
+  if (allowed.length === 0) return null;
+  if (currentSubdomain && allowed.includes(currentSubdomain)) return null;
+  return allowed[0];
+}
+
 export const POSTAL_CODE_REGEX = /^\d{2}-\d{3}$/;
 export const ADDRESS_REGEX = /^(?=.*[A-Za-zÀ-žĄĆĘŁŃÓŚŹŻąćęłńóśźż]).{4,}$/;
 

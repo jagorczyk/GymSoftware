@@ -1,12 +1,45 @@
 import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getCheckoutUrl, getOwnerGyms } from "../api";
+import { getCheckoutUrl, getEmployeeGyms, getOwnerGyms } from "../api";
 import { setOwnerStripeCheckoutPending } from "../auth";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
 import { isSafeReturnTo } from "../auth";
-import { buildTenantUrl } from "../utils/subdomain";
+import { buildTenantUrl, resolveGymSubdomainRedirect } from "../utils/subdomain";
 import type { AuthState } from "../auth";
+
+async function redirectToRoleHomeOnOwnSubdomain(
+  auth: AuthState,
+  currentSubdomain: string | null
+): Promise<boolean> {
+  if (auth.role === "OWNER") {
+    const gyms = await getOwnerGyms(auth);
+    const targetSubdomain = resolveGymSubdomainRedirect(
+      currentSubdomain,
+      gyms.map((gym) => gym.subdomain)
+    );
+    if (targetSubdomain) {
+      window.location.replace(buildTenantUrl(targetSubdomain, "/owner/dashboard"));
+      return true;
+    }
+    return false;
+  }
+
+  if (auth.role === "EMPLOYEE") {
+    const gyms = await getEmployeeGyms(auth);
+    const targetSubdomain = resolveGymSubdomainRedirect(
+      currentSubdomain,
+      gyms.map((gym) => gym.subdomain)
+    );
+    if (targetSubdomain) {
+      window.location.replace(buildTenantUrl(targetSubdomain, "/employee/dashboard"));
+      return true;
+    }
+    return false;
+  }
+
+  return false;
+}
 
 export function usePostAuthRedirect() {
   const { login: saveLogin } = useAuth();
@@ -24,15 +57,12 @@ export function usePostAuthRedirect() {
         return next;
       }
 
-      if (!subdomain && next.role === "OWNER") {
+      if (next.role === "OWNER" || next.role === "EMPLOYEE") {
         try {
-          const gyms = await getOwnerGyms(next);
-          if (gyms.length > 0 && gyms[0].subdomain) {
-            window.location.replace(buildTenantUrl(gyms[0].subdomain, "/owner/dashboard"));
-            return next;
-          }
+          const redirected = await redirectToRoleHomeOnOwnSubdomain(next, subdomain);
+          if (redirected) return next;
         } catch (e) {
-          console.error("Failed to fetch owner gyms for redirect", e);
+          console.error("Failed to resolve gym subdomain redirect", e);
         }
       }
 

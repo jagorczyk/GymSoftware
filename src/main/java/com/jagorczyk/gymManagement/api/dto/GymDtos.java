@@ -120,6 +120,7 @@ public final class GymDtos {
             String gymName,
             String gymAddress,
             String themeColor,
+            String subdomain,
             List<String> permissions
     ) {}
 

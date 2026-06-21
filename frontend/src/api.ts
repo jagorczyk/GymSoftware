@@ -312,7 +312,7 @@ export async function sellPass(auth: AuthState, gymId: number, payload: any): Pr
 }
 
 export async function getEmployeeGyms(auth: AuthState): Promise<
-  Array<{ employeeId: number; gymId: number; gymName: string; gymAddress: string; permissions: string[]; themeColor?: string }>
+  Array<{ employeeId: number; gymId: number; gymName: string; gymAddress: string; subdomain?: string; permissions: string[]; themeColor?: string }>
 > {
   const response = await fetch(`${API_URL}/employee/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
