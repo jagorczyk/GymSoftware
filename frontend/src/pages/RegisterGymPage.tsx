@@ -17,10 +17,6 @@ export function RegisterGymPage() {
   const { login } = useAuth();
   const { subdomain } = useTenant();
 
-  if (subdomain) {
-    return <Navigate to="/login" replace />;
-  }
-
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
@@ -42,6 +38,10 @@ export function RegisterGymPage() {
       .catch((err) => showError(err.message))
       .finally(() => setLoadingPlans(false));
   }, [showError]);
+
+  if (subdomain) {
+    return <Navigate to="/login" replace />;
+  }
 
   async function completeGoogleRegistration(idToken: string) {
     if (!selectedPlanId) {

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { clearAuth, decodeRoleFromJwt, decodeEmailFromJwt, loadAuth, saveAuth, type AuthState } from "./auth";
+import { clearAuth, decodeEmailFromJwt, loadAuth, saveAuth, safeDecodeRoleFromJwt, type AuthState } from "./auth";
 
 type AuthContextValue = {
   auth: AuthState | null;
@@ -14,9 +14,14 @@ export function AuthProvider(props: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthState | null>(() => loadAuth());
 
   const login = useCallback((token: string) => {
+    const role = safeDecodeRoleFromJwt(token);
+    if (!role) {
+      clearAuth();
+      throw new Error("Nieprawidłowy token uwierzytelniający");
+    }
     const next: AuthState = {
       token,
-      role: decodeRoleFromJwt(token),
+      role,
       email: decodeEmailFromJwt(token),
     };
     saveAuth(next);

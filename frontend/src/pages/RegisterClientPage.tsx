@@ -16,12 +16,7 @@ export function RegisterClientPage() {
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
   const { subdomain, tenant, locations } = useTenant();
-  
-  // Client registration is only allowed on a gym's subdomain
-  if (!subdomain) {
-    return <Navigate to="/" replace />;
-  }
-  
+
   const [step, setStep] = useState<"register" | "verify">("register");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,6 +33,10 @@ export function RegisterClientPage() {
       setSelectedLocationId(String(locations[0].id));
     }
   }, [locations, selectedLocationId]);
+
+  if (!subdomain) {
+    return <Navigate to="/" replace />;
+  }
 
   async function handleRegister(event: FormEvent) {
     event.preventDefault();

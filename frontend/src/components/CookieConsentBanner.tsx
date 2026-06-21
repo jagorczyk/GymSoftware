@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { getConsent, setConsent } from "../cookieConsent";
 
 export function CookieConsentBanner() {
@@ -23,12 +22,12 @@ export function CookieConsentBanner() {
       <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl p-5 sm:p-6">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Pliki cookie i pamięć lokalna</h2>
         <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-          Gymlos korzysta z niezbędnych plików cookie oraz localStorage (m.in. sesja logowania, preferencje
-          motywu, zapis Twojej decyzji o zgodzie). Po akceptacji możemy też uruchamiać funkcje takie jak
+          Gymlos korzysta z niezbędnych plików cookie (m.in. sesja logowania współdzielona między subdomenami,
+          preferencje motywu, zapis Twojej decyzji o zgodzie). Po akceptacji możemy też uruchamiać funkcje takie jak
           logowanie przez Google. Więcej informacji znajdziesz w{" "}
-          <Link to="/polityka-prywatnosci" className="text-primary-600 dark:text-primary-400 font-semibold underline">
+          <a href="/polityka-prywatnosci" className="text-primary-600 dark:text-primary-400 font-semibold underline">
             polityce prywatności
-          </Link>
+          </a>
           .
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">

@@ -1,26 +1,39 @@
 import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCheckoutUrl, getOwnerGyms } from "../api";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
+import { isSafeReturnTo } from "../auth";
 import type { AuthState } from "../auth";
 
 export function usePostAuthRedirect() {
   const { login: saveLogin } = useAuth();
   const { subdomain } = useTenant();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const redirectAfterAuth = useCallback(
     async (token: string) => {
       const next = saveLogin(token);
+
+      const returnTo = searchParams.get("returnTo");
+      if (returnTo && isSafeReturnTo(returnTo)) {
+        window.location.href = returnTo;
+        return next;
+      }
 
       if (!subdomain && next.role === "OWNER") {
         try {
           const gyms = await getOwnerGyms(next);
           if (gyms.length > 0 && gyms[0].subdomain) {
             const proto = window.location.protocol;
-            const host = window.location.host;
-            window.location.href = `${proto}//${gyms[0].subdomain}.${host}/owner/dashboard`;
+            const hostname = window.location.hostname;
+            const port = window.location.port ? `:${window.location.port}` : "";
+            const rootHost =
+              hostname === "localhost" || hostname.endsWith(".localhost")
+                ? `localhost${port}`
+                : "gymlos.pl";
+            window.location.href = `${proto}//${gyms[0].subdomain}.${rootHost}/owner/dashboard`;
             return next;
           }
         } catch (e) {
@@ -39,7 +52,7 @@ export function usePostAuthRedirect() {
       navigate(dest, { replace: true });
       return next;
     },
-    [saveLogin, subdomain, navigate]
+    [saveLogin, subdomain, navigate, searchParams]
   );
 
   return { redirectAfterAuth };
