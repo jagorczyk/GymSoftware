@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../authContext";
-import { useToast } from "../../components/Toast";
+import { Save } from "lucide-react";
 import { getOwnerTrainers, createOwnerTrainer, updateOwnerTrainer, getOwnerGymDetails } from "../../api";
-import { PageHeader } from "../../components/PageHeader";
+import {
+  OwnerFormLayout,
+  ownerFormCardClassName,
+  ownerFormInputClassName,
+  ownerFormLabelClassName,
+} from "../../components/OwnerFormLayout";
+import { LoadingState } from "../../components/LoadingState";
 import { primaryButtonClassName } from "../../components/formStyles";
-import { ArrowLeft, Save } from "lucide-react";
-
+import { useToast } from "../../components/Toast";
 import { OwnerContext } from "./types";
 
 export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
-  const { auth } = useAuth();
+  const { auth } = ctx;
   const { trainerId } = useParams();
   const gymId = ctx.selectedGymId;
   const navigate = useNavigate();
@@ -29,11 +33,8 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
   useEffect(() => {
     if (!auth || !gymId) return;
 
-    // Load employees for dropdown
     getOwnerGymDetails(auth, Number(gymId))
-      .then((res) => {
-        setEmployees(res.employees || []);
-      })
+      .then((res) => setEmployees(res.employees || []))
       .catch((err) => showError(err.message));
 
     if (isEdit) {
@@ -48,7 +49,7 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
             setHourlyRate(String(t.hourlyRate));
           } else {
             showError("Nie znaleziono trenera");
-            navigate(`/owner/trainers`);
+            navigate("/owner/trainers");
           }
         })
         .catch((err) => showError(err.message))
@@ -59,8 +60,8 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!auth || !gymId) return;
-    
-    if (!employeeId) {
+
+    if (!isEdit && !employeeId) {
       showError("Wybierz pracownika");
       return;
     }
@@ -83,7 +84,7 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
         });
         showSuccess("Trener dodany pomyślnie");
       }
-      navigate(`/owner/trainers`);
+      navigate("/owner/trainers");
     } catch (err: any) {
       showError(err.message || "Wystąpił błąd");
     } finally {
@@ -91,43 +92,41 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
     }
   }
 
-  if (loading) return <div>Wczytywanie...</div>;
+  if (loading) return <LoadingState message="Wczytywanie trenera..." />;
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate(`/owner/trainers`)}
-          className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-500 dark:text-slate-400"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <PageHeader title={isEdit ? "Edytuj trenera" : "Dodaj trenera"} />
-      </div>
-
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-5">
+    <OwnerFormLayout
+      backTo="/owner/trainers"
+      title={isEdit ? "Edycja trenera" : "Nowy trener"}
+      subtitle="Profil trenera personalnego w siłowni"
+    >
+      <form onSubmit={handleSubmit} className={ownerFormCardClassName}>
         {!isEdit && (
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Pracownik</label>
+          <div>
+            <label className={ownerFormLabelClassName}>Pracownik</label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+              Możesz dodać tylko pracownika przypisanego do tej siłowni.
+            </p>
             <select
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 text-slate-900 dark:text-white"
+              className={ownerFormInputClassName}
             >
               <option value="">Wybierz pracownika</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.email}
+                  {emp.firstName || emp.lastName
+                    ? `${emp.firstName ?? ""} ${emp.lastName ?? ""}`.trim()
+                    : emp.email}
                 </option>
               ))}
             </select>
-            <p className="text-xs text-slate-500">Możesz dodać tylko pracownika, który jest już przypisany do tej siłowni.</p>
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Stawka godzinowa (PLN)</label>
+        <div>
+          <label className={ownerFormLabelClassName}>Stawka godzinowa (PLN)</label>
           <input
             type="number"
             step="0.01"
@@ -135,39 +134,39 @@ export function OwnerTrainerForm({ ctx }: { ctx: OwnerContext }) {
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 text-slate-900 dark:text-white"
+            className={ownerFormInputClassName}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Specjalizacja</label>
+        <div>
+          <label className={ownerFormLabelClassName}>Specjalizacja</label>
           <input
             type="text"
             value={specialization}
             onChange={(e) => setSpecialization(e.target.value)}
             placeholder="np. Kulturystyka, Trening Funkcjonalny"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 text-slate-900 dark:text-white"
+            className={ownerFormInputClassName}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Biografia / Opis</label>
+        <div>
+          <label className={ownerFormLabelClassName}>Biografia / Opis</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             placeholder="Krótki opis doświadczenia i podejścia do treningu..."
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 text-slate-900 dark:text-white resize-y"
+            className={`${ownerFormInputClassName} resize-y`}
           />
         </div>
 
         <div className="pt-4 flex justify-end">
           <button type="submit" disabled={saving} className={primaryButtonClassName}>
             <Save className="w-5 h-5" />
-            {saving ? "Zapisywanie..." : "Zapisz"}
+            {saving ? "Zapisywanie..." : "Zapisz trenera"}
           </button>
         </div>
       </form>
-    </div>
+    </OwnerFormLayout>
   );
 }

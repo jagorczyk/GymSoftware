@@ -48,13 +48,15 @@ export function OwnerTrainersList({ ctx }: { ctx: OwnerContext }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader title="Trenerzy Personalni" subtitle="Zarządzaj trenerami na tej siłowni" />
-        <Link to={`/owner/trainers/new`} className={primaryButtonClassName}>
-          <Plus className="w-4 h-4" />
-          Dodaj trenera
-        </Link>
-      </div>
+      <PageHeader
+        title="Trenerzy personalni"
+        subtitle="Zarządzaj trenerami na tej siłowni."
+        action={
+          <Link to="/owner/trainers/new" className={primaryButtonClassName}>
+            <Plus className="w-5 h-5" /> Nowy trener
+          </Link>
+        }
+      />
 
       {trainers.length === 0 ? (
         <EmptyState

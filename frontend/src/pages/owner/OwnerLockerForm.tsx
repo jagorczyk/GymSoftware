@@ -1,22 +1,29 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Save } from "lucide-react";
 import { createOwnerLocker } from "../../api";
-import { DetailPageLayout } from "../../components/DetailPageLayout";
-import { FormSection } from "../../components/FormSection";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
-import { inputClassName, labelClassName, primaryButtonClassName } from "../../components/formStyles";
+import {
+  OwnerFormLayout,
+  ownerFormCardClassName,
+  ownerFormInputClassName,
+  ownerFormLabelClassName,
+} from "../../components/OwnerFormLayout";
+import { primaryButtonClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
 
 export function OwnerLockerForm({ ctx }: { ctx: OwnerContext }) {
   const { auth, selectedGymId, details, loadGymsAndDetails, setError, setInfo } = ctx;
   const navigate = useNavigate();
   const [lockerNumber, setLockerNumber] = useState("");
+  const [saving, setSaving] = useState(false);
 
   if (!details) return <SelectGymPrompt />;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!selectedGymId) return;
+    setSaving(true);
     try {
       await createOwnerLocker(auth, Number(selectedGymId), { lockerNumber });
       setInfo(`Dodano szafkę nr ${lockerNumber} do siłowni`);
@@ -24,33 +31,36 @@ export function OwnerLockerForm({ ctx }: { ctx: OwnerContext }) {
       navigate("/owner/lockers");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się dodać szafki");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <DetailPageLayout
+    <OwnerFormLayout
       backTo="/owner/lockers"
-      breadcrumb="Szafki"
       title="Nowa szafka"
       subtitle="Dodaj szafkę do wybranej siłowni"
     >
-      <FormSection title="Numer szafki">
-        <form onSubmit={onSubmit} className="space-y-4 max-w-lg">
-          <div>
-            <label className={labelClassName}>Numer szafki</label>
-            <input
-              type="text"
-              value={lockerNumber}
-              onChange={(e) => setLockerNumber(e.target.value)}
-              className={inputClassName}
-              required
-            />
-          </div>
-          <button type="submit" className={primaryButtonClassName}>
-            Dodaj szafkę
+      <form onSubmit={onSubmit} className={ownerFormCardClassName}>
+        <div>
+          <label className={ownerFormLabelClassName}>Numer szafki</label>
+          <input
+            type="text"
+            value={lockerNumber}
+            onChange={(e) => setLockerNumber(e.target.value)}
+            className={ownerFormInputClassName}
+            placeholder="np. A-12"
+            required
+          />
+        </div>
+        <div className="pt-4 flex justify-end">
+          <button type="submit" disabled={saving} className={primaryButtonClassName}>
+            <Save className="w-5 h-5" />
+            {saving ? "Zapisywanie..." : "Dodaj szafkę"}
           </button>
-        </form>
-      </FormSection>
-    </DetailPageLayout>
+        </div>
+      </form>
+    </OwnerFormLayout>
   );
 }

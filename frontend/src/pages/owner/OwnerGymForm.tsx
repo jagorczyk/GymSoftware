@@ -1,15 +1,14 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { createOwnerGym, deleteOwnerGym, updateOwnerGym } from "../../api";
-import { DetailPageLayout } from "../../components/DetailPageLayout";
-import { FormSection } from "../../components/FormSection";
 import {
-  dangerButtonClassName,
-  inputClassName,
-  labelClassName,
-  primaryButtonClassName,
-} from "../../components/formStyles";
+  OwnerFormLayout,
+  ownerFormCardClassName,
+  ownerFormInputClassName,
+  ownerFormLabelClassName,
+} from "../../components/OwnerFormLayout";
+import { dangerButtonClassName, primaryButtonClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
 
 export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" | "edit" }) {
@@ -26,17 +25,21 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
   const [city, setCity] = useState(gym?.city ?? "");
   const [postalCode, setPostalCode] = useState(gym?.postalCode ?? "");
   const [nip, setNip] = useState(gym?.nip ?? "");
+  const [saving, setSaving] = useState(false);
 
   if (mode === "edit" && gymId && !gym) {
     return (
-      <DetailPageLayout backTo="/owner/gyms" title="Siłownia nie znaleziona">
-        <p className="text-slate-500">Nie znaleziono siłowni o podanym ID.</p>
-      </DetailPageLayout>
+      <OwnerFormLayout backTo="/owner/gyms" title="Siłownia nie znaleziona">
+        <div className={ownerFormCardClassName}>
+          <p className="text-slate-500 dark:text-slate-400">Nie znaleziono siłowni o podanym ID.</p>
+        </div>
+      </OwnerFormLayout>
     );
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    setSaving(true);
     setError(null);
     try {
       if (mode === "create") {
@@ -50,11 +53,15 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
       navigate("/owner/gyms");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się zapisać siłowni");
+    } finally {
+      setSaving(false);
     }
   }
 
   async function onDelete() {
     if (!gym) return;
+    if (!window.confirm("Czy na pewno chcesz usunąć tę siłownię?")) return;
+    setSaving(true);
     try {
       await deleteOwnerGym(auth, gym.id);
       setInfo(`Usunięto siłownię „${gym.name}”`);
@@ -62,52 +69,91 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
       navigate("/owner/gyms");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się usunąć siłowni");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <DetailPageLayout
+    <OwnerFormLayout
       backTo="/owner/gyms"
-      breadcrumb="Siłownie"
       title={mode === "create" ? "Nowa siłownia" : gym!.name}
       subtitle={mode === "edit" ? "Edytuj dane siłowni" : "Utwórz nową siłownię"}
       headerExtra={
         mode === "edit" ? (
-          <button type="button" onClick={onDelete} className={dangerButtonClassName}>
+          <button type="button" onClick={onDelete} disabled={saving} className={dangerButtonClassName}>
             <Trash2 className="w-4 h-4" />
             Usuń
           </button>
         ) : undefined
       }
     >
-      <FormSection title="Dane siłowni">
-        <form onSubmit={onSubmit} className="space-y-4 max-w-lg">
-          <div>
-            <label className={labelClassName}>Nazwa siłowni</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClassName} required disabled={isNameFixed} />
-            {isNameFixed && <p className="text-xs text-slate-500 mt-1">Nazwa siłowni jest wspólna dla całej Twojej sieci i nie można jej zmienić.</p>}
-          </div>
-          <div>
-            <label className={labelClassName}>Miasto</label>
-            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className={inputClassName} required />
-          </div>
-          <div>
-            <label className={labelClassName}>Kod pocztowy (00-000)</label>
-            <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} pattern="^\d{2}-\d{3}$" className={inputClassName} required />
-          </div>
-          <div>
-            <label className={labelClassName}>Adres</label>
-            <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClassName} required />
-          </div>
-          <div>
-            <label className={labelClassName}>NIP (10 cyfr)</label>
-            <input type="text" value={nip} onChange={(e) => setNip(e.target.value)} pattern="^\d{10}$" className={inputClassName} required />
-          </div>
-          <button type="submit" className={primaryButtonClassName}>
-            {mode === "create" ? "Utwórz siłownię" : "Zapisz zmiany"}
+      <form onSubmit={onSubmit} className={ownerFormCardClassName}>
+        <div>
+          <label className={ownerFormLabelClassName}>Nazwa siłowni</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={ownerFormInputClassName}
+            required
+            disabled={isNameFixed}
+          />
+          {isNameFixed && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Nazwa siłowni jest wspólna dla całej Twojej sieci i nie można jej zmienić.
+            </p>
+          )}
+        </div>
+        <div>
+          <label className={ownerFormLabelClassName}>Miasto</label>
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className={ownerFormInputClassName}
+            required
+          />
+        </div>
+        <div>
+          <label className={ownerFormLabelClassName}>Kod pocztowy (00-000)</label>
+          <input
+            type="text"
+            value={postalCode}
+            onChange={(e) => setPostalCode(e.target.value)}
+            pattern="^\d{2}-\d{3}$"
+            className={ownerFormInputClassName}
+            required
+          />
+        </div>
+        <div>
+          <label className={ownerFormLabelClassName}>Adres</label>
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className={ownerFormInputClassName}
+            required
+          />
+        </div>
+        <div>
+          <label className={ownerFormLabelClassName}>NIP (10 cyfr)</label>
+          <input
+            type="text"
+            value={nip}
+            onChange={(e) => setNip(e.target.value)}
+            pattern="^\d{10}$"
+            className={ownerFormInputClassName}
+            required
+          />
+        </div>
+        <div className="pt-4 flex justify-end">
+          <button type="submit" disabled={saving} className={primaryButtonClassName}>
+            <Save className="w-5 h-5" />
+            {saving ? "Zapisywanie..." : mode === "create" ? "Utwórz siłownię" : "Zapisz zmiany"}
           </button>
-        </form>
-      </FormSection>
-    </DetailPageLayout>
+        </div>
+      </form>
+    </OwnerFormLayout>
   );
 }

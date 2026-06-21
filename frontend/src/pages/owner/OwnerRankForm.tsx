@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Save } from "lucide-react";
 import { getOwnerRanks, createOwnerRank, updateOwnerRank } from "../../api";
 import type { OwnerContext } from "./types";
 import { PERMISSION_LABELS, type EmployeePermission } from "../../permissions";
-import { PageHeader } from "../../components/PageHeader";
+import { OwnerFormLayout, ownerFormCardClassName, ownerFormInputClassName, ownerFormLabelClassName } from "../../components/OwnerFormLayout";
+import { PermissionCheckboxGrid } from "../../components/PermissionCheckboxGrid";
 import { primaryButtonClassName } from "../../components/formStyles";
 
 const ALL_PERMISSIONS = Object.keys(PERMISSION_LABELS) as EmployeePermission[];
@@ -75,58 +76,34 @@ export function OwnerRankForm({ ctx, mode }: { ctx: OwnerContext; mode: "create"
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <PageHeader
-        title={mode === "create" ? "Nowa ranga" : "Edycja rangi"}
-        subtitle="Zdefiniuj nazwę oraz przypisane uprawnienia"
-        action={
-          <Link
-            to="/owner/ranks"
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" /> Wróć
-          </Link>
-        }
-      />
-
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 transition-colors duration-200">
+    <OwnerFormLayout
+      backTo="/owner/ranks"
+      title={mode === "create" ? "Nowa ranga" : "Edycja rangi"}
+      subtitle="Zdefiniuj nazwę oraz przypisane uprawnienia"
+    >
+      <form onSubmit={handleSubmit} className={ownerFormCardClassName}>
         <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nazwa rangi</label>
+          <label className={ownerFormLabelClassName}>Nazwa rangi</label>
           <input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all dark:text-white"
+            className={ownerFormInputClassName}
             placeholder="np. Menadżer, Trener Personalny..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Uprawnienia</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {ALL_PERMISSIONS.map((p) => {
-              const isSelected = selectedPermissions.includes(p);
-              return (
-                <label
-                  key={p}
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    isSelected
-                      ? "bg-primary-50 dark:bg-primary-950/20 border-primary-200 dark:border-primary-900/40 text-primary-900 dark:text-primary-300"
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    className="mt-1 w-4 h-4 text-primary-600 rounded border-slate-300 dark:border-slate-700 focus:ring-primary-500 dark:bg-slate-950"
-                    checked={isSelected}
-                    onChange={() => togglePermission(p)}
-                  />
-                  <span className="text-sm font-medium">{PERMISSION_LABELS[p]}</span>
-                </label>
-              );
-            })}
-          </div>
+          <label className={`${ownerFormLabelClassName} mb-3`}>Uprawnienia</label>
+          <PermissionCheckboxGrid
+            items={ALL_PERMISSIONS.map((p) => ({
+              key: p,
+              label: PERMISSION_LABELS[p],
+              selected: selectedPermissions.includes(p),
+              onToggle: () => togglePermission(p),
+            }))}
+          />
         </div>
 
         <div className="pt-4 flex justify-end">
@@ -136,6 +113,6 @@ export function OwnerRankForm({ ctx, mode }: { ctx: OwnerContext; mode: "create"
           </button>
         </div>
       </form>
-    </div>
+    </OwnerFormLayout>
   );
 }

@@ -1,16 +1,15 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { createPassType, deletePassType, updatePassType } from "../../api";
-import { DetailPageLayout } from "../../components/DetailPageLayout";
-import { FormSection } from "../../components/FormSection";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import {
-  dangerButtonClassName,
-  inputClassName,
-  labelClassName,
-  primaryButtonClassName,
-} from "../../components/formStyles";
+  OwnerFormLayout,
+  ownerFormCardClassName,
+  ownerFormInputClassName,
+  ownerFormLabelClassName,
+} from "../../components/OwnerFormLayout";
+import { dangerButtonClassName, primaryButtonClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
 
 export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" | "edit" }) {
@@ -25,20 +24,24 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
   const [name, setName] = useState(passType?.name ?? "");
   const [price, setPrice] = useState(passType ? String(passType.price) : "");
   const [durationDays, setDurationDays] = useState(passType ? String(passType.durationDays) : "30");
+  const [saving, setSaving] = useState(false);
 
   if (!details) return <SelectGymPrompt />;
 
   if (mode === "edit" && passTypeId && !passType) {
     return (
-      <DetailPageLayout backTo="/owner/pass-types" title="Typ karnetu nie znaleziony">
-        <p className="text-slate-500">Nie znaleziono typu karnetu o podanym ID.</p>
-      </DetailPageLayout>
+      <OwnerFormLayout backTo="/owner/pass-types" title="Typ karnetu nie znaleziony">
+        <div className={ownerFormCardClassName}>
+          <p className="text-slate-500 dark:text-slate-400">Nie znaleziono typu karnetu o podanym ID.</p>
+        </div>
+      </OwnerFormLayout>
     );
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     if (!selectedGymId) return;
+    setSaving(true);
     try {
       if (mode === "create") {
         await createPassType(auth, Number(selectedGymId), {
@@ -59,11 +62,15 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
       navigate("/owner/pass-types");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się zapisać typu karnetu");
+    } finally {
+      setSaving(false);
     }
   }
 
   async function onDelete() {
     if (!selectedGymId || !passType) return;
+    if (!window.confirm("Czy na pewno chcesz usunąć ten typ karnetu?")) return;
+    setSaving(true);
     try {
       await deletePassType(auth, Number(selectedGymId), passType.id);
       setInfo(`Usunięto typ karnetu „${passType.name}”`);
@@ -71,89 +78,66 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
       navigate("/owner/pass-types");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się usunąć typu karnetu");
+    } finally {
+      setSaving(false);
     }
   }
 
-  if (mode === "edit" && passType) {
-    return (
-      <DetailPageLayout
-        backTo="/owner/pass-types"
-        breadcrumb="Oferta"
-        title="Edycja typu karnetu"
-        subtitle={passType.name}
-        headerExtra={
-          <button type="button" onClick={onDelete} className={dangerButtonClassName}>
+  return (
+    <OwnerFormLayout
+      backTo="/owner/pass-types"
+      title={mode === "create" ? "Nowy typ karnetu" : "Edycja typu karnetu"}
+      subtitle={mode === "edit" ? passType!.name : "Zdefiniuj ofertę karnetów"}
+      headerExtra={
+        mode === "edit" ? (
+          <button type="button" onClick={onDelete} disabled={saving} className={dangerButtonClassName}>
             <Trash2 className="w-4 h-4" />
             Usuń
           </button>
-        }
-      >
-        <FormSection title="Dane oferty">
-          <form onSubmit={onSubmit} className="space-y-4 max-w-lg">
-            <div>
-              <label className={labelClassName}>Nazwa karnetu</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClassName} required />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={labelClassName}>Cena (zł)</label>
-                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={inputClassName} required />
-              </div>
-              <div>
-                <label className={labelClassName}>Czas trwania (dni)</label>
-                <input type="number" value={durationDays} onChange={(e) => setDurationDays(e.target.value)} className={inputClassName} required />
-              </div>
-            </div>
-            <button type="submit" className={primaryButtonClassName}>
-              Zapisz zmiany
-            </button>
-          </form>
-        </FormSection>
-      </DetailPageLayout>
-    );
-  }
-
-  return (
-    <DetailPageLayout
-      backTo="/owner/pass-types"
-      breadcrumb="Oferta"
-      title="Nowy typ karnetu"
-      subtitle="Zdefiniuj ofertę karnetów"
+        ) : undefined
+      }
     >
-      <FormSection title="Dane karnetu">
-        <form onSubmit={onSubmit} className="space-y-4 max-w-lg">
+      <form onSubmit={onSubmit} className={ownerFormCardClassName}>
+        <div>
+          <label className={ownerFormLabelClassName}>Nazwa karnetu</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={ownerFormInputClassName}
+            placeholder="np. Karnet OPEN 30 dni"
+            required
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClassName}>Nazwa karnetu</label>
+            <label className={ownerFormLabelClassName}>Cena (zł)</label>
             <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputClassName}
-              placeholder="np. Karnet OPEN 30 dni"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className={ownerFormInputClassName}
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClassName}>Cena (zł)</label>
-              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={inputClassName} required />
-            </div>
-            <div>
-              <label className={labelClassName}>Czas trwania (dni)</label>
-              <input
-                type="number"
-                value={durationDays}
-                onChange={(e) => setDurationDays(e.target.value)}
-                className={inputClassName}
-                required
-              />
-            </div>
+          <div>
+            <label className={ownerFormLabelClassName}>Czas trwania (dni)</label>
+            <input
+              type="number"
+              value={durationDays}
+              onChange={(e) => setDurationDays(e.target.value)}
+              className={ownerFormInputClassName}
+              required
+            />
           </div>
-          <button type="submit" className={primaryButtonClassName}>
-            Dodaj typ karnetu
+        </div>
+        <div className="pt-4 flex justify-end">
+          <button type="submit" disabled={saving} className={primaryButtonClassName}>
+            <Save className="w-5 h-5" />
+            {saving ? "Zapisywanie..." : mode === "create" ? "Dodaj typ karnetu" : "Zapisz zmiany"}
           </button>
-        </form>
-      </FormSection>
-    </DetailPageLayout>
+        </div>
+      </form>
+    </OwnerFormLayout>
   );
 }
