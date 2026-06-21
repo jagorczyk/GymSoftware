@@ -15,10 +15,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
         
         <div className="z-10 text-center max-w-md mx-auto">
-          <div className="mx-auto w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center backdrop-blur-md mb-8 border border-white/10 shadow-2xl relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-transparent rounded-[2rem]"></div>
-            <GymLosLogo className="w-12 h-12 text-white" />
-          </div>
+          <GymLosLogo className="w-20 h-20 md:w-24 md:h-24 text-white mx-auto mb-8" />
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{title}</h1>
           <p className="text-slate-400 text-lg md:text-xl font-medium">
             {subtitle}
