@@ -104,7 +104,17 @@ public class EmployeeService {
         GymPass saved = gymPassRepository.save(pass);
 
         auditLogService.log(employee.getGym(), currentUser, "PASS_SOLD", "passId=" + saved.getId() + ",guestId=" + guest.getId());
-        return new PassView(saved.getId(), guest.getId(), saved.getPassType(), saved.getStatus(), saved.getStartDate(), saved.getEndDate(), saved.getPrice());
+        return new PassView(
+                saved.getId(),
+                guest.getId(),
+                saved.getPassType(),
+                saved.getStatus(),
+                saved.getStartDate(),
+                saved.getEndDate(),
+                saved.getPrice(),
+                guest.getFirstName(),
+                guest.getLastName()
+        );
     }
 
     @Transactional
@@ -268,11 +278,18 @@ public class EmployeeService {
                     var activeAssignment = lockerAssignmentRepository.findByLockerGymIdAndReturnedAtIsNull(gymId).stream()
                             .filter(a -> a.getLocker().getId().equals(l.getId()))
                             .findFirst();
+                    if (activeAssignment.isEmpty()) {
+                        return new com.jagorczyk.gymManagement.api.dto.GymDtos.LockerView(
+                                l.getId(), l.getLockerNumber(), l.getStatus(), null, null, null);
+                    }
+                    var guest = activeAssignment.get().getGuest();
                     return new com.jagorczyk.gymManagement.api.dto.GymDtos.LockerView(
                             l.getId(),
                             l.getLockerNumber(),
                             l.getStatus(),
-                            activeAssignment.map(a -> a.getGuest().getId()).orElse(null)
+                            guest.getId(),
+                            guest.getFirstName(),
+                            guest.getLastName()
                     );
                 })
                 .toList();
@@ -490,7 +507,7 @@ public class EmployeeService {
         locker = lockerRepository.save(locker);
 
         auditLogService.log(employee.getGym(), currentUser, "LOCKER_CREATED", "lockerNumber=" + locker.getLockerNumber());
-        return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null);
+        return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null, null, null);
     }
 
     @Transactional(readOnly = true)

@@ -10,7 +10,10 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.GuestDetailView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GuestView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GymSummary;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.LockerView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ExpiringPassItem;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerDashboardStats;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerGymDetails;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.PageResponse;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.PassTypeView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.PassView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateEmployeeRequest;
@@ -22,7 +25,9 @@ import com.jagorczyk.gymManagement.domain.EmployeePermission;
 import com.jagorczyk.gymManagement.domain.Guest;
 import com.jagorczyk.gymManagement.domain.Gym;
 import com.jagorczyk.gymManagement.domain.GymPass;
+import com.jagorczyk.gymManagement.domain.Locker;
 import com.jagorczyk.gymManagement.domain.LockerAssignment;
+import com.jagorczyk.gymManagement.domain.LockerStatus;
 import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.domain.PassType;
 import com.jagorczyk.gymManagement.domain.Role;
@@ -36,9 +41,19 @@ import com.jagorczyk.gymManagement.repository.LockerAssignmentRepository;
 import com.jagorczyk.gymManagement.repository.LockerRepository;
 import com.jagorczyk.gymManagement.repository.PassTypeRepository;
 import com.jagorczyk.gymManagement.repository.UserRepository;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -162,32 +177,19 @@ public class OwnerService {
     public OwnerGymDetails gymDetails(Long ownerUserId, Long gymId) {
         Gym gym = requireOwnerGym(ownerUserId, gymId);
 
-        List<Guest> allGymGuests = guestRepository.findByGymId(gymId);
         List<GymPass> allPasses = gymPassRepository.findByGymId(gymId);
-        Set<Long> checkedIn = guestPresenceService.activeCheckInGuestIds(gymId);
-        Set<Long> lockerGuests = guestPresenceService.activeLockerGuestIds(gymId);
+        Map<Long, LockerAssignment> assignmentsByLockerId = lockerAssignmentRepository
+                .findByLockerGymIdAndReturnedAtIsNull(gymId).stream()
+                .collect(Collectors.toMap(a -> a.getLocker().getId(), a -> a, (a, b) -> a));
 
-        List<GuestView> guests = allGymGuests.stream()
-                .map(g -> guestPresenceService.toGuestView(g, allPasses, checkedIn, lockerGuests))
-                .toList();
         List<EmployeeView> employees = employeeRepository.findByGymId(gymId).stream()
                 .map(this::toEmployeeView)
                 .toList();
-        List<PassView> passes = gymPassRepository.findByGymId(gymId).stream()
-                .map(p -> new PassView(p.getId(), p.getGuest().getId(), p.getPassType(), p.getStatus(), p.getStartDate(), p.getEndDate(), p.getPrice()))
+        List<PassView> passes = allPasses.stream()
+                .map(guestPresenceService::toPassView)
                 .toList();
         List<LockerView> lockers = lockerRepository.findByGymId(gymId).stream()
-                .map(l -> {
-                    var activeAssignment = lockerAssignmentRepository.findByLockerGymIdAndReturnedAtIsNull(gymId).stream()
-                            .filter(a -> a.getLocker().getId().equals(l.getId()))
-                            .findFirst();
-                    return new LockerView(
-                            l.getId(),
-                            l.getLockerNumber(),
-                            l.getStatus(),
-                            activeAssignment.map(a -> a.getGuest().getId()).orElse(null)
-                    );
-                })
+                .map(locker -> toLockerView(locker, assignmentsByLockerId.get(locker.getId())))
                 .toList();
         List<AuditLogView> logs = auditLogRepository.findTop100ByGymIdOrderByCreatedAtDesc(gymId).stream()
                 .map(log -> new AuditLogView(
@@ -201,7 +203,88 @@ public class OwnerService {
         List<PassTypeView> passTypes = passTypeRepository.findByGymId(gymId).stream()
                 .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
                 .toList();
-        return new OwnerGymDetails(new GymSummary(gym.getId(), gym.getName(), gym.getAddress(), gym.getCity(), gym.getPostalCode(), gym.getNip(), gym.getThemeColor(), gym.getSubdomain()), guests, employees, passes, lockers, logs, passTypes);
+        return new OwnerGymDetails(
+                new GymSummary(gym.getId(), gym.getName(), gym.getAddress(), gym.getCity(), gym.getPostalCode(), gym.getNip(), gym.getThemeColor(), gym.getSubdomain()),
+                employees,
+                passes,
+                lockers,
+                logs,
+                passTypes
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<GuestView> ownerGuests(Long ownerUserId, Long gymId, String q, int page, int size) {
+        requireOwnerGym(ownerUserId, gymId);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        Pageable pageable = PageRequest.of(Math.max(page, 0), safeSize, Sort.by("lastName", "firstName"));
+        String query = q == null ? "" : q.trim();
+        Page<Guest> guestPage = guestRepository.searchByGymId(gymId, query.isEmpty() ? null : query, pageable);
+        List<GymPass> allPasses = gymPassRepository.findByGymId(gymId);
+        Set<Long> checkedIn = guestPresenceService.activeCheckInGuestIds(gymId);
+        Set<Long> lockerGuests = guestPresenceService.activeLockerGuestIds(gymId);
+        List<GuestView> content = guestPage.getContent().stream()
+                .map(g -> guestPresenceService.toGuestView(g, allPasses, checkedIn, lockerGuests))
+                .toList();
+        return new PageResponse<>(content, guestPage.getNumber(), guestPage.getSize(), guestPage.getTotalElements(), guestPage.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public OwnerDashboardStats dashboardStats(Long ownerUserId, Long gymId) {
+        requireOwnerGym(ownerUserId, gymId);
+
+        int presentNow = guestPresenceService.activeCheckInGuestIds(gymId).size();
+        List<Locker> lockers = lockerRepository.findByGymId(gymId);
+        int freeLockers = (int) lockers.stream().filter(l -> l.getStatus() == LockerStatus.AVAILABLE).count();
+        int occupiedLockers = (int) lockers.stream().filter(l -> l.getStatus() == LockerStatus.OCCUPIED).count();
+
+        LocalDate today = LocalDate.now();
+        LocalDate weekAgo = today.minusDays(7);
+        LocalDate expiringUntil = today.plusDays(7);
+        List<GymPass> gymPasses = gymPassRepository.findByGymId(gymId);
+        int activePassesCount = (int) gymPasses.stream().filter(p -> p.getStatus() == PassStatus.ACTIVE).count();
+        BigDecimal salesLast7Days = gymPasses.stream()
+                .filter(p -> !p.getStartDate().isBefore(weekAgo))
+                .map(GymPass::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<ExpiringPassItem> expiringPasses = gymPasses.stream()
+                .filter(p -> p.getStatus() == PassStatus.ACTIVE)
+                .filter(p -> !p.getEndDate().isBefore(today) && !p.getEndDate().isAfter(expiringUntil))
+                .map(p -> new ExpiringPassItem(
+                        p.getGuest().getId(),
+                        p.getGuest().getFirstName(),
+                        p.getGuest().getLastName(),
+                        p.getEndDate(),
+                        ChronoUnit.DAYS.between(today, p.getEndDate())
+                ))
+                .sorted(Comparator.comparing(ExpiringPassItem::endDate))
+                .toList();
+
+        return new OwnerDashboardStats(
+                presentNow,
+                freeLockers,
+                occupiedLockers,
+                expiringPasses.size(),
+                activePassesCount,
+                salesLast7Days,
+                expiringPasses
+        );
+    }
+
+    private LockerView toLockerView(Locker locker, LockerAssignment assignment) {
+        if (assignment == null) {
+            return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null, null, null);
+        }
+        Guest guest = assignment.getGuest();
+        return new LockerView(
+                locker.getId(),
+                locker.getLockerNumber(),
+                locker.getStatus(),
+                guest.getId(),
+                guest.getFirstName(),
+                guest.getLastName()
+        );
     }
 
     @Transactional
@@ -426,7 +509,7 @@ public class OwnerService {
         locker = lockerRepository.save(locker);
 
         auditLogService.log(gym, gym.getOwnerUser(), "LOCKER_CREATED", "lockerNumber=" + locker.getLockerNumber());
-        return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null);
+        return new LockerView(locker.getId(), locker.getLockerNumber(), locker.getStatus(), null, null, null);
     }
 
     @Transactional

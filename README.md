@@ -2,7 +2,7 @@
 
 Multi-tenant platform for gym owners: SaaS subscriptions, multi-location management, employees with permissions, passes, lockers, POS, schedules, CRM, and a client portal for bookings and payments.
 
-**Stack:** Java 21 · Spring Boot 3 · PostgreSQL · Flyway · Stripe · React 18 · TypeScript · Vite · Tailwind
+**Stack:** Java 21 · Spring Boot 4 · PostgreSQL · Flyway · Stripe · React 19 · TypeScript · Vite · Tailwind
 
 ---
 
@@ -62,7 +62,10 @@ Do **not** run `docker volume prune` — it can delete `postgres_data`.
 
 | Variable | Description |
 |---|---|
-| `JWT_SECRET` | JWT signing key |
+| `JWT_SECRET` | JWT signing key (min. 32 chars in production) |
+| `JWT_REQUIRE_SECURE_SECRET` | Set `true` in production to reject default JWT secret |
+| `UPLOAD_MAX_BYTES` | Max image upload size (default 5 MB) |
+| `AUTH_RATE_LIMIT_MAX` | Max auth requests per IP per window (default 30) |
 | `GOOGLE_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID` | Google Sign-In |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Payments |
 | `FRONTEND_URL` | Public URL (emails, redirects) |
@@ -119,9 +122,9 @@ Base: `/api` · Dates: ISO-8601 · Errors: JSON with `error` / `message`
 
 Gym CRUD, employees, ranks, pass types, guests, passes, lockers, calendar, work schedule, products, sales report, notifications, audit log, trainers, analytics, subscription/Stripe checkout.
 
-Key paths: `/gyms`, `/gyms/{gymId}/details`, `/gyms/{gymId}/subscription`, `/gyms/{gymId}/analytics`, `/gyms/{gymId}/crm/campaigns`.
+Key paths: `/gyms`, `/gyms/{gymId}/details`, `/gyms/{gymId}/dashboard-stats`, `/gyms/{gymId}/guests?page=&size=&q=`, `/gyms/{gymId}/subscription`, `/gyms/{gymId}/analytics`, `/gyms/{gymId}/crm/campaigns`.
 
-`GET /gyms/{gymId}/details` returns gym + guests + employees + passes + lockers + logs + pass types in one payload.
+`GET /gyms/{gymId}/details` returns gym + employees + passes + lockers + logs + pass types (guests are paginated via `/guests`).
 
 ### CRM — `/api/owner/gyms/{gymId}/crm` (`OWNER`, `CRM` flag)
 

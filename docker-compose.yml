@@ -32,6 +32,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       # Replace these values with secure ones in production!
       JWT_SECRET: ${JWT_SECRET:-your-very-long-secret-key-your-very-long-secret-key}
+      JWT_REQUIRE_SECURE_SECRET: ${JWT_REQUIRE_SECURE_SECRET:-false}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-http://localhost:5173/client/gyms/{gymId}/passes?success=true}
@@ -44,6 +45,8 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
@@ -71,3 +74,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

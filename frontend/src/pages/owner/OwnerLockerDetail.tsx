@@ -11,8 +11,12 @@ export function OwnerLockerDetail({ ctx }: { ctx: OwnerContext }) {
 
   if (!details) return <SelectGymPrompt />;
 
-  const locker = details.lockers.find((l: any) => l.id === Number(lockerId));
-  const guest = locker?.guestId ? details.guests.find((g: any) => g.id === locker.guestId) : null;
+  const locker = details.lockers.find((l) => l.id === Number(lockerId));
+  const guestName = locker?.guestId && locker.guestFirstName
+    ? `${locker.guestFirstName} ${locker.guestLastName ?? ""}`.trim()
+    : locker?.guestId
+      ? `Klient ID: ${locker.guestId}`
+      : null;
 
   if (!locker) {
     return (
@@ -27,7 +31,7 @@ export function OwnerLockerDetail({ ctx }: { ctx: OwnerContext }) {
       backTo="/owner/lockers"
       breadcrumb="Szafki"
       title={`Szafka ${locker.lockerNumber}`}
-      subtitle={guest ? `${guest.firstName} ${guest.lastName}` : "Wolna"}
+      subtitle={guestName ?? "Wolna"}
     >
       <FormSection title="Szczegóły szafki" description="Podgląd statusu szafki.">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -43,9 +47,7 @@ export function OwnerLockerDetail({ ctx }: { ctx: OwnerContext }) {
           </div>
           <div>
             <dt className="text-slate-500">Przypisany klient</dt>
-            <dd className="font-medium text-slate-900 mt-1">
-              {guest ? `${guest.firstName} ${guest.lastName}` : "—"}
-            </dd>
+            <dd className="font-medium text-slate-900 mt-1">{guestName ?? "—"}</dd>
           </div>
         </dl>
       </FormSection>

@@ -3,7 +3,8 @@ import { useSelectedGymBrand } from "../selectedGymBrandContext";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { OwnerDashboardProvider } from "../ownerDashboardContext";
 import { RefreshCcw } from "lucide-react";
-import { getOwnerGymDetails, getOwnerGyms, getOwnerGymSubscription } from "../api";
+import { getOwnerGymDetails, getOwnerGyms, getOwnerGymSubscription, getOwnerDashboardStats } from "../api";
+import type { OwnerDashboardStats, OwnerGymDetails } from "../api";
 import type { AuthState } from "../auth";
 import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
@@ -19,7 +20,8 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
   const { showSuccess, showError } = useToast();
   const [gyms, setGyms] = useState<Array<{ id: number; name: string; address: string; city?: string; themeColor?: string }>>([]);
   const [selectedGymId, setSelectedGymId] = useState<number | "">("");
-  const [details, setDetails] = useState<any | null>(null);
+  const [details, setDetails] = useState<OwnerGymDetails | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<OwnerDashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function loadGymsAndDetails() {
@@ -31,11 +33,16 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
       const gymIdToLoad = (selectedGymId || gymsResponse[0]?.id) as number | undefined;
       if (!gymIdToLoad) {
         setDetails(null);
+        setDashboardStats(null);
         setSelectedGymId("");
       } else {
         setSelectedGymId(gymIdToLoad);
-        const gymDetails = await getOwnerGymDetails(auth, gymIdToLoad);
+        const [gymDetails, stats] = await Promise.all([
+          getOwnerGymDetails(auth, gymIdToLoad),
+          getOwnerDashboardStats(auth, gymIdToLoad),
+        ]);
         setDetails(gymDetails);
+        setDashboardStats(stats);
       }
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd pobierania danych");
@@ -48,11 +55,13 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
     async (nextId: number) => {
       setSelectedGymId(nextId);
       try {
-        const [gymDetails, subscription] = await Promise.all([
+        const [gymDetails, subscription, stats] = await Promise.all([
           getOwnerGymDetails(auth, nextId),
           getOwnerGymSubscription(auth, nextId),
+          getOwnerDashboardStats(auth, nextId),
         ]);
         setDetails(gymDetails);
+        setDashboardStats(stats);
         setFeatureFlags(subscription?.featureFlags ?? []);
       } catch (err) {
         showError(err instanceof Error ? err.message : "Nie udało się pobrać szczegółów siłowni");
@@ -115,6 +124,7 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
     gyms,
     selectedGymId,
     details,
+    dashboardStats,
     loadGymsAndDetails,
     onGymChange,
     setError,

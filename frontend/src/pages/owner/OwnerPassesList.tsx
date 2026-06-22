@@ -7,28 +7,27 @@ import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import { StatusChip } from "../../components/StatusChip";
 import type { OwnerContext } from "./types";
 
+function guestName(pass: { guestId: number; guestFirstName?: string; guestLastName?: string }) {
+  if (pass.guestFirstName) {
+    return `${pass.guestFirstName} ${pass.guestLastName ?? ""}`.trim();
+  }
+  return `Klient ID: ${pass.guestId}`;
+}
+
 export function OwnerPassesList({ ctx }: { ctx: OwnerContext }) {
   const { details } = ctx;
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
 
-  const guestNameById = useMemo(() => {
-    const map = new Map<number, string>();
-    if (details) {
-      for (const g of details.guests) map.set(g.id, `${g.firstName} ${g.lastName}`);
-    }
-    return map;
-  }, [details]);
-
   const filtered = useMemo(() => {
     if (!details) return [];
     const q = query.trim().toLowerCase();
     if (!q) return details.passes;
-    return details.passes.filter((p: any) => {
-      const client = guestNameById.get(p.guestId) ?? "";
+    return details.passes.filter((p) => {
+      const client = guestName(p);
       return client.toLowerCase().includes(q) || p.passType.toLowerCase().includes(q);
     });
-  }, [details, query, guestNameById]);
+  }, [details, query]);
 
   if (!details) return <SelectGymPrompt />;
 
@@ -36,10 +35,10 @@ export function OwnerPassesList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-4">
       <ListToolbar searchValue={query} onSearchChange={setQuery} searchPlaceholder="Szukaj karnetu..." />
       <EntityList emptyMessage="Brak karnetów">
-        {filtered.map((p: any) => (
+        {filtered.map((p) => (
           <EntityListCard
             key={p.id}
-            title={guestNameById.get(p.guestId) ?? `Klient ID: ${p.guestId}`}
+            title={guestName(p)}
             subtitle={p.passType}
             metadata={
               <>

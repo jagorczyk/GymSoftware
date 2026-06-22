@@ -12,8 +12,12 @@ export function OwnerPassDetail({ ctx }: { ctx: OwnerContext }) {
 
   if (!details || !selectedGymId) return <SelectGymPrompt />;
 
-  const pass = details.passes.find((p: any) => p.id === Number(passId));
-  const guest = pass ? details.guests.find((g: any) => g.id === pass.guestId) : null;
+  const pass = details.passes.find((p) => p.id === Number(passId));
+  const guestName = pass?.guestFirstName
+    ? `${pass.guestFirstName} ${pass.guestLastName ?? ""}`.trim()
+    : pass
+      ? `Klient ID: ${pass.guestId}`
+      : "";
 
   if (!pass) {
     return (
@@ -28,15 +32,13 @@ export function OwnerPassDetail({ ctx }: { ctx: OwnerContext }) {
       backTo="/owner/passes"
       breadcrumb="Karnety"
       title={pass.passType}
-      subtitle={guest ? `${guest.firstName} ${guest.lastName}` : `Klient ID: ${pass.guestId}`}
+      subtitle={guestName}
     >
       <FormSection title="Szczegóły karnetu">
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
           <div>
             <dt className="text-slate-500">Klient</dt>
-            <dd className="font-medium text-slate-900 mt-1">
-              {guest ? `${guest.firstName} ${guest.lastName}` : `ID: ${pass.guestId}`}
-            </dd>
+            <dd className="font-medium text-slate-900 mt-1">{guestName}</dd>
           </div>
           <div>
             <dt className="text-slate-500">Status</dt>

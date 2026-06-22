@@ -1,22 +1,30 @@
 package com.jagorczyk.gymManagement.api;
 
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.ResponseEntity;
+import com.jagorczyk.gymManagement.service.ImageUploadValidator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/upload")
+@PreAuthorize("isAuthenticated()")
 public class UploadController {
 
     private final Path uploadDir = Paths.get("uploads", "images");
+    private final ImageUploadValidator imageUploadValidator;
 
-    public UploadController() {
+    public UploadController(ImageUploadValidator imageUploadValidator) {
+        this.imageUploadValidator = imageUploadValidator;
         try {
             Files.createDirectories(uploadDir);
         } catch (Exception e) {
@@ -27,22 +35,13 @@ public class UploadController {
     @PostMapping("/image")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Plik jest pusty"));
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-
-            String filename = UUID.randomUUID().toString() + extension;
+            String extension = imageUploadValidator.validateAndResolveExtension(file);
+            String filename = UUID.randomUUID() + extension;
             Path targetLocation = uploadDir.resolve(filename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileUrl = "/uploads/images/" + filename;
-            return ResponseEntity.ok(Map.of("url", fileUrl));
+            return ResponseEntity.ok(Map.of("url", "/uploads/images/" + filename));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Wystąpił błąd podczas wgrywania pliku"));
         }

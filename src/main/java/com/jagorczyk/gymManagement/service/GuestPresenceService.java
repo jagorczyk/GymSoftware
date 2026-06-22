@@ -88,14 +88,17 @@ public class GuestPresenceService {
     }
 
     public PassView toPassView(GymPass pass) {
+        Guest guest = pass.getGuest();
         return new PassView(
                 pass.getId(),
-                pass.getGuest().getId(),
+                guest.getId(),
                 pass.getPassType(),
                 pass.getStatus(),
                 pass.getStartDate(),
                 pass.getEndDate(),
-                pass.getPrice()
+                pass.getPrice(),
+                guest.getFirstName(),
+                guest.getLastName()
         );
     }
 

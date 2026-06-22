@@ -1,6 +1,8 @@
 package com.jagorczyk.gymManagement.api;
 
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIllegalArgument(IllegalArgumentException ex) {
@@ -58,5 +62,12 @@ public class RestExceptionHandler {
             return Map.of("error", "Nie udało się nadać szafki — baza danych wymaga migracji. Zrestartuj backend.");
         }
         return Map.of("error", "Operacja naruszyła reguły bazy danych. Sprawdź dane i spróbuj ponownie.");
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleUnexpected(Exception ex) {
+        log.error("Nieobsłużony wyjątek", ex);
+        return Map.of("error", "Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później.");
     }
 }

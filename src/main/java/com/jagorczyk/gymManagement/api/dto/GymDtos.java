@@ -36,19 +36,42 @@ public final class GymDtos {
 
     public record GuestDetailView(GuestView guest, List<PassView> passes, List<CheckInView> recentCheckIns, List<PassFreezeView> activeFreezes) {}
     public record EmployeeView(Long id, Long userId, String email, String firstName, String lastName, List<String> permissions, Long rankId, String rankName, String avatarUrl) {}
-    public record PassView(Long id, Long guestId, String passType, PassStatus status, LocalDate startDate, LocalDate endDate, BigDecimal price) {}
-    public record LockerView(Long id, String lockerNumber, LockerStatus status, Long guestId) {}
+    public record PassView(
+            Long id,
+            Long guestId,
+            String passType,
+            PassStatus status,
+            LocalDate startDate,
+            LocalDate endDate,
+            BigDecimal price,
+            String guestFirstName,
+            String guestLastName
+    ) {}
+    public record LockerView(Long id, String lockerNumber, LockerStatus status, Long guestId, String guestFirstName, String guestLastName) {}
     public record AuditLogView(Long id, String action, String payload, LocalDateTime createdAt, String actorEmail) {}
     public record PassTypeView(Long id, String name, BigDecimal price, Integer durationDays) {}
 
     public record OwnerGymDetails(
             GymSummary gym,
-            List<GuestView> guests,
             List<EmployeeView> employees,
             List<PassView> passes,
             List<LockerView> lockers,
             List<AuditLogView> logs,
             List<PassTypeView> passTypes
+    ) {}
+
+    public record PageResponse<T>(List<T> content, int page, int size, long totalElements, int totalPages) {}
+
+    public record ExpiringPassItem(Long guestId, String firstName, String lastName, LocalDate endDate, long daysRemaining) {}
+
+    public record OwnerDashboardStats(
+            int presentNow,
+            int freeLockers,
+            int occupiedLockers,
+            int expiringPassesCount,
+            int activePassesCount,
+            BigDecimal salesLast7Days,
+            List<ExpiringPassItem> expiringPasses
     ) {}
 
     public record SellPassRequest(

@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { StatCard } from "../../components/StatCard";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import { ExpiringPassesList } from "../../components/ExpiringPassesList";
-import { computeOwnerKpis, ownerExpiringPasses } from "../../utils/dashboardStats";
 import type { OwnerContext } from "./types";
 
 function formatMoney(value: number) {
@@ -11,19 +10,24 @@ function formatMoney(value: number) {
 }
 
 export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
-  const { details } = ctx;
-  if (!details) return <SelectGymPrompt />;
+  const { dashboardStats } = ctx;
+  if (!dashboardStats) return <SelectGymPrompt />;
 
-  const kpis = computeOwnerKpis(details);
-  const expiring = ownerExpiringPasses(details);
+  const expiring = dashboardStats.expiringPasses.map((g) => ({
+    guestId: g.guestId,
+    firstName: g.firstName,
+    lastName: g.lastName,
+    endDate: g.endDate,
+    daysRemaining: g.daysRemaining,
+  }));
 
   const stats = [
-    { label: "Obecni teraz", value: kpis.presentNow, icon: <MapPin className="w-6 h-6" /> },
-    { label: "Wolne szafki", value: kpis.freeLockers, icon: <Lock className="w-6 h-6" /> },
-    { label: "Zajęte szafki", value: kpis.occupiedLockers, icon: <KeyRound className="w-6 h-6" /> },
-    { label: "Karnety wygasają (7 dni)", value: kpis.expiringPassesCount, icon: <AlertTriangle className="w-6 h-6" /> },
-    { label: "Sprzedaż (7 dni)", value: formatMoney(kpis.salesLast7Days), icon: <Wallet className="w-6 h-6" /> },
-    { label: "Aktywne karnety", value: details.passes.filter((p: { status: string }) => p.status === "ACTIVE").length, icon: <Ticket className="w-6 h-6" /> },
+    { label: "Obecni teraz", value: dashboardStats.presentNow, icon: <MapPin className="w-6 h-6" /> },
+    { label: "Wolne szafki", value: dashboardStats.freeLockers, icon: <Lock className="w-6 h-6" /> },
+    { label: "Zajęte szafki", value: dashboardStats.occupiedLockers, icon: <KeyRound className="w-6 h-6" /> },
+    { label: "Karnety wygasają (7 dni)", value: dashboardStats.expiringPassesCount, icon: <AlertTriangle className="w-6 h-6" /> },
+    { label: "Sprzedaż (7 dni)", value: formatMoney(Number(dashboardStats.salesLast7Days)), icon: <Wallet className="w-6 h-6" /> },
+    { label: "Aktywne karnety", value: dashboardStats.activePassesCount, icon: <Ticket className="w-6 h-6" /> },
   ];
 
   return (

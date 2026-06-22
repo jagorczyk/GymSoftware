@@ -330,11 +330,77 @@ export async function deleteOwnerGym(auth: AuthState, gymId: number): Promise<vo
   if (!response.ok) await parseApiError(response, "Nie udało się usunąć siłowni");
 }
 
-export async function getOwnerGymDetails(auth: AuthState, gymId: number): Promise<any> {
+export async function getOwnerGymDetails(auth: AuthState, gymId: number): Promise<OwnerGymDetails> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/details`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
   if (!response.ok) await parseApiError(response, "Nie udało się pobrać szczegółów siłowni");
+  return response.json();
+}
+
+export type OwnerGymDetails = {
+  gym: { id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string; subdomain?: string };
+  employees: Array<{ id: number; userId: number; email: string; firstName?: string; lastName?: string; permissions: string[]; rankId?: number; rankName?: string; avatarUrl?: string }>;
+  passes: Array<{ id: number; guestId: number; passType: string; status: string; startDate: string; endDate: string; price: number; guestFirstName?: string; guestLastName?: string }>;
+  lockers: Array<{ id: number; lockerNumber: string; status: string; guestId?: number | null; guestFirstName?: string; guestLastName?: string }>;
+  logs: Array<{ id: number; action: string; payload: string; createdAt: string; actorEmail?: string }>;
+  passTypes: Array<{ id: number; name: string; price: number; durationDays: number }>;
+};
+
+export type OwnerDashboardStats = {
+  presentNow: number;
+  freeLockers: number;
+  occupiedLockers: number;
+  expiringPassesCount: number;
+  activePassesCount: number;
+  salesLast7Days: number;
+  expiringPasses: Array<{ guestId: number; firstName: string; lastName: string; endDate: string; daysRemaining: number }>;
+};
+
+export type PagedResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+export type OwnerGuest = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  hasActivePass: boolean;
+  isPresent: boolean;
+  hasLocker: boolean;
+  activePassEndDate?: string | null;
+  avatarUrl?: string | null;
+};
+
+export async function getOwnerDashboardStats(auth: AuthState, gymId: number): Promise<OwnerDashboardStats> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/dashboard-stats`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk");
+  return response.json();
+}
+
+export async function getOwnerGuests(
+  auth: AuthState,
+  gymId: number,
+  params?: { q?: string; page?: number; size?: number }
+): Promise<PagedResponse<OwnerGuest>> {
+  const search = new URLSearchParams();
+  if (params?.q) search.set("q", params.q);
+  if (params?.page !== undefined) search.set("page", String(params.page));
+  if (params?.size !== undefined) search.set("size", String(params.size));
+  const query = search.toString();
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/guests${query ? `?${query}` : ""}`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać listy klientów");
   return response.json();
 }
 

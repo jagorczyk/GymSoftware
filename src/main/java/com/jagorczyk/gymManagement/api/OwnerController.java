@@ -51,7 +51,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -108,6 +107,21 @@ public class OwnerController {
     @GetMapping("/gyms/{gymId}/details")
     public OwnerGymDetails gymDetails(@PathVariable Long gymId) {
         return ownerService.gymDetails(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @GetMapping("/gyms/{gymId}/dashboard-stats")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerDashboardStats dashboardStats(@PathVariable Long gymId) {
+        return ownerService.dashboardStats(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @GetMapping("/gyms/{gymId}/guests")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.PageResponse<GuestView> listGuests(
+            @PathVariable Long gymId,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ownerService.ownerGuests(currentUserService.getCurrentUser().getId(), gymId, q, page, size);
     }
 
     @PostMapping("/gyms")
