@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, BarChart3, CalendarDays, Check, Loader2, Shield, Users } from "lucide-react";
 import { getTenantSaaSPlans, type SaaSPlan } from "../api";
 import { GymLosLogo } from "../components/GymLosLogo";
@@ -87,8 +87,14 @@ function PlanCard({
 }
 
 export function LandingPage() {
+  const navigate = useNavigate();
+  const pricingRef = useRef<HTMLElement>(null);
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+
+  function scrollToPricing() {
+    pricingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   useEffect(() => {
     getTenantSaaSPlans()
@@ -125,17 +131,12 @@ export function LandingPage() {
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary-600/5 via-transparent to-transparent dark:from-primary-500/10" />
-          <div className="max-w-5xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-600/5 via-transparent to-transparent dark:from-primary-500/10 pointer-events-none" />
+          <div className="relative z-10 max-w-5xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
             <img
-              src="/logo-light.png"
+              src="/logo-icon-alpha.png"
               alt="Gymlos"
-              className="h-14 md:h-16 mx-auto mb-8 dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Gymlos"
-              className="h-14 md:h-16 mx-auto mb-8 hidden dark:block"
+              className="w-24 h-24 md:w-28 md:h-28 mx-auto mb-8 object-contain"
             />
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] max-w-3xl mx-auto">
               Prowadź siłownię&nbsp;— nie arkusz kalkulacyjny
@@ -145,13 +146,13 @@ export function LandingPage() {
               wszystko, czego potrzebujesz, żeby skupić się na klientach.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="#cennik" className={primaryButtonClassName}>
+              <button type="button" onClick={scrollToPricing} className={primaryButtonClassName}>
                 Zobacz pakiety
                 <ArrowRight className="w-5 h-5" />
-              </a>
-              <Link to="/register-gym" className={secondaryButtonClassName}>
+              </button>
+              <button type="button" onClick={() => navigate("/register-gym")} className={secondaryButtonClassName}>
                 Załóż konto
-              </Link>
+              </button>
             </div>
             <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               <Shield className="w-3.5 h-3.5" />
@@ -181,7 +182,7 @@ export function LandingPage() {
         </section>
 
         {/* Pricing */}
-        <section id="cennik" className="py-16 md:py-24">
+        <section ref={pricingRef} id="cennik" className="py-16 md:py-24 scroll-mt-20">
           <div className="max-w-5xl mx-auto px-5">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">Wybierz pakiet</h2>
