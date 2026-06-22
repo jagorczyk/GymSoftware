@@ -123,7 +123,7 @@ export function isMainAuthDomain(): boolean {
 }
 
 export const OWNER_STRIPE_CHECKOUT_KEY = "owner_stripe_checkout_pending";
-const IMPERSONATION_BACKUP_KEY = "gym_impersonation_backup";
+const IMPERSONATION_BACKUP_COOKIE = "gym_impersonation_backup";
 
 export function isImpersonationToken(token: string): boolean {
   try {
@@ -137,27 +137,15 @@ export function isImpersonationToken(token: string): boolean {
 }
 
 export function saveImpersonationBackup(auth: AuthState): void {
-  try {
-    sessionStorage.setItem(IMPERSONATION_BACKUP_KEY, JSON.stringify(auth));
-  } catch {
-    // ignore storage errors
-  }
+  writeCookie(IMPERSONATION_BACKUP_COOKIE, JSON.stringify(auth), AUTH_MAX_AGE_SECONDS);
 }
 
 export function loadImpersonationBackup(): AuthState | null {
-  try {
-    return parseAuthState(sessionStorage.getItem(IMPERSONATION_BACKUP_KEY));
-  } catch {
-    return null;
-  }
+  return parseAuthState(readCookie(IMPERSONATION_BACKUP_COOKIE));
 }
 
 export function clearImpersonationBackup(): void {
-  try {
-    sessionStorage.removeItem(IMPERSONATION_BACKUP_KEY);
-  } catch {
-    // ignore storage errors
-  }
+  clearCookie(IMPERSONATION_BACKUP_COOKIE);
 }
 
 export function isOwnerStripeCheckoutPending(): boolean {

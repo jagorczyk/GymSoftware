@@ -14,5 +14,12 @@ public record SaaSHealthDTO(
         WebhookHealthDTO stripeWebhook
 ) {
     public record JobHealthDTO(String jobName, String lastRunAt, String status, String message) {}
-    public record WebhookHealthDTO(String lastReceivedAt, String lastEventType, String status) {}
+    public record WebhookHealthDTO(
+            boolean secretConfigured,
+            String endpointUrl,
+            String lastReceivedAt,
+            String lastEventType,
+            String status,
+            String message
+    ) {}
 }

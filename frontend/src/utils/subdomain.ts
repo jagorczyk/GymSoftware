@@ -13,6 +13,20 @@ export function getDomainPreview(subdomain: string): string {
   return buildTenantUrl(subdomain).replace(/^https?:\/\//, "");
 }
 
+export function buildMainAppUrl(path = "/"): string {
+  const protocol = window.location.protocol;
+  const port = window.location.port ? `:${window.location.port}` : "";
+  const hostname = window.location.hostname;
+
+  const rootHost =
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")
+      ? `localhost${port}`
+      : "gymlos.pl";
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${protocol}//${rootHost}${normalizedPath}`;
+}
+
 export function buildTenantUrl(subdomain: string, path = "/"): string {
   const protocol = window.location.protocol;
   const port = window.location.port ? `:${window.location.port}` : "";

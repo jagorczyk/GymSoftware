@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AuthState } from "../auth";
+import { isImpersonationToken } from "../auth";
 import { getEmployeeGyms, getOwnerGyms } from "../api";
 import { buildTenantUrl, resolveGymSubdomainRedirect } from "../utils/subdomain";
 import { getSubdomain } from "../utils/tenant";
@@ -10,6 +11,10 @@ export function useGymSubdomainGuard(auth: AuthState | null, role: "OWNER" | "EM
 
   useEffect(() => {
     if (!auth || auth.role !== role) {
+      setRedirecting(false);
+      return;
+    }
+    if (isImpersonationToken(auth.token)) {
       setRedirecting(false);
       return;
     }

@@ -24,6 +24,9 @@ public class SaaSAdminHealthService {
     @Value("${spring.mail.username:}")
     private String smtpUsername;
 
+    @Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     public SaaSAdminHealthService(
             DataSource dataSource,
             ScheduledJobRunRepository scheduledJobRunRepository,
@@ -70,13 +73,43 @@ public class SaaSAdminHealthService {
                 .toList();
 
         ScheduledJobRun webhookRun = scheduledJobRunRepository.findById("stripe_webhook").orElse(null);
-        SaaSHealthDTO.WebhookHealthDTO webhookHealth = webhookRun == null
-                ? new SaaSHealthDTO.WebhookHealthDTO(null, null, "BRAK_DANYCH")
-                : new SaaSHealthDTO.WebhookHealthDTO(
-                        webhookRun.getLastRunAt() != null ? webhookRun.getLastRunAt().toString() : null,
-                        webhookRun.getLastMessage(),
-                        webhookRun.getLastStatus()
-                );
+        String webhookSecret = stripeProperties.getWebhook() != null ? stripeProperties.getWebhook().getSecret() : null;
+        boolean webhookSecretConfigured = webhookSecret != null
+                && !webhookSecret.isBlank()
+                && !webhookSecret.contains("placeholder");
+        String webhookEndpoint = buildWebhookEndpoint();
+        SaaSHealthDTO.WebhookHealthDTO webhookHealth;
+        if (!webhookSecretConfigured) {
+            webhookHealth = new SaaSHealthDTO.WebhookHealthDTO(
+                    false,
+                    webhookEndpoint,
+                    null,
+                    null,
+                    "NIE_SKONFIGUROWANY",
+                    "Ustaw STRIPE_WEBHOOK_SECRET w środowisku i zarejestruj endpoint w Stripe Dashboard"
+            );
+        } else if (webhookRun == null || webhookRun.getLastRunAt() == null) {
+            webhookHealth = new SaaSHealthDTO.WebhookHealthDTO(
+                    true,
+                    webhookEndpoint,
+                    null,
+                    null,
+                    "GOTOWY",
+                    "Endpoint skonfigurowany — brak eventów od Stripe (wykonaj testową płatność lub wyślij test webhook)"
+            );
+        } else {
+            boolean lastOk = "SUCCESS".equals(webhookRun.getLastStatus());
+            webhookHealth = new SaaSHealthDTO.WebhookHealthDTO(
+                    true,
+                    webhookEndpoint,
+                    webhookRun.getLastRunAt().toString(),
+                    webhookRun.getLastMessage(),
+                    webhookRun.getLastStatus(),
+                    lastOk
+                            ? "Ostatni webhook odebrany poprawnie"
+                            : "Ostatni webhook zakończył się błędem: " + webhookRun.getLastMessage()
+            );
+        }
 
         return new SaaSHealthDTO(
                 databaseOk,
@@ -98,5 +131,15 @@ public class SaaSAdminHealthService {
                 run.getLastStatus(),
                 run.getLastMessage()
         );
+    }
+
+    private String buildWebhookEndpoint() {
+        try {
+            java.net.URI uri = java.net.URI.create(frontendUrl.trim());
+            String origin = uri.getScheme() + "://" + uri.getAuthority();
+            return origin + "/api/stripe/webhook";
+        } catch (Exception ex) {
+            return "/api/stripe/webhook";
+        }
     }
 }

@@ -1898,7 +1898,14 @@ export type SaaSHealthView = {
   stripeReachable: boolean;
   stripeMessage: string;
   scheduledJobs: Array<{ jobName: string; lastRunAt?: string | null; status: string; message?: string | null }>;
-  stripeWebhook: { lastReceivedAt?: string | null; lastEventType?: string | null; status: string };
+  stripeWebhook: {
+    secretConfigured: boolean;
+    endpointUrl: string;
+    lastReceivedAt?: string | null;
+    lastEventType?: string | null;
+    status: string;
+    message: string;
+  };
 };
 
 export async function getSaaSHealth(auth: AuthState): Promise<SaaSHealthView> {

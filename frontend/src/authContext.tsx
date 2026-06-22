@@ -43,23 +43,18 @@ export function AuthProvider(props: { children: ReactNode }) {
     if (!role) {
       throw new Error("Nieprawidłowy token impersonacji");
     }
-    setAuth((current) => {
-      if (current && !isImpersonationToken(current.token)) {
-        saveImpersonationBackup(current);
-      }
-      const next: AuthState = {
-        token,
-        role,
-        email: decodeEmailFromJwt(token),
-      };
-      saveAuth(next);
-      return next;
-    });
-    return {
+    const current = loadAuth();
+    if (current && !isImpersonationToken(current.token)) {
+      saveImpersonationBackup(current);
+    }
+    const next: AuthState = {
       token,
       role,
       email: decodeEmailFromJwt(token),
     };
+    saveAuth(next);
+    setAuth(next);
+    return next;
   }, []);
 
   const endImpersonation = useCallback(() => {

@@ -98,13 +98,20 @@ export function SuperAdminManagementPage() {
               <p className="font-semibold text-gray-900 dark:text-white">Stripe</p>
               <p className={`mt-1 ${statusClass(health.stripeConfigured && health.stripeReachable)}`}>{health.stripeMessage}</p>
             </div>
-            <div className="rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+            <div className="rounded-xl border border-gray-100 dark:border-gray-700 p-4 md:col-span-2">
               <p className="font-semibold text-gray-900 dark:text-white">Webhook Stripe</p>
-              <p className="mt-1 text-gray-600 dark:text-gray-400">
-                {health.stripeWebhook.lastReceivedAt
-                  ? `Ostatnio: ${new Date(health.stripeWebhook.lastReceivedAt).toLocaleString("pl-PL")} (${health.stripeWebhook.lastEventType ?? health.stripeWebhook.status})`
-                  : "Brak zarejestrowanych webhooków"}
+              <p className={`mt-1 text-sm ${statusClass(health.stripeWebhook.secretConfigured)}`}>
+                {health.stripeWebhook.message}
               </p>
+              <p className="mt-2 text-xs text-gray-500 break-all">
+                Endpoint: <span className="font-mono">{health.stripeWebhook.endpointUrl}</span>
+              </p>
+              {health.stripeWebhook.lastReceivedAt && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Ostatnio: {new Date(health.stripeWebhook.lastReceivedAt).toLocaleString("pl-PL")}
+                  {health.stripeWebhook.lastEventType ? ` (${health.stripeWebhook.lastEventType})` : ""}
+                </p>
+              )}
             </div>
           </div>
           <div>
