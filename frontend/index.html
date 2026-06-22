@@ -30,13 +30,62 @@
 
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#2563eb" />
+    <!-- Po dodaniu domeny w Google Search Console wklej token weryfikacji poniżej: -->
+    <!-- <meta name="google-site-verification" content="TWOJ_TOKEN_Z_SEARCH_CONSOLE" /> -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/logo-light.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "name": "Gymlos",
+            "url": "https://gymlos.pl/",
+            "logo": "https://gymlos.pl/logo-light.png",
+            "description": "Oprogramowanie SaaS do zarządzania siłownią, klubem fitness i studiem treningowym."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Gymlos",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "url": "https://gymlos.pl/",
+            "description": "System do zarządzania karnetami, rezerwacjami zajęć, grafikami pracowników, kasą i raportami sprzedaży w siłowni.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "PLN",
+              "description": "Plany subskrypcyjne dla właścicieli siłowni"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Gymlos"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <main style="max-width: 48rem; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, sans-serif; line-height: 1.6;">
+        <h1>Gymlos — oprogramowanie do zarządzania siłownią</h1>
+        <p>
+          Gymlos to nowoczesny system dla właścicieli siłowni i klubów fitness.
+          Karnety, rezerwacje zajęć, grafiki pracowników, szafki, magazyn, analityka i CRM w jednej aplikacji.
+        </p>
+        <p>
+          <a href="/register-gym">Załóż konto właściciela</a> ·
+          <a href="/login">Zaloguj się</a> ·
+          <a href="/polityka-prywatnosci">Polityka prywatności</a>
+        </p>
+      </main>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

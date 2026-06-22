@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /register-gym
+Allow: /polityka-prywatnosci
+Disallow: /owner/
+Disallow: /employee/
+Disallow: /client/
+Disallow: /superadmin/
+Disallow: /api/
+Disallow: /mfa
+
+Sitemap: https://gymlos.pl/sitemap.xml
