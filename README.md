@@ -41,6 +41,15 @@ cd frontend && npm install && npm run dev
 docker compose up -d --build
 ```
 
+If build fails with `failed to fetch anonymous token` / `auth.docker.io ... 404`, Docker Hub is unreachable from the host (not a bad image tag). On the server run:
+
+```bash
+curl -fsS "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/maven:pull" | head
+docker pull hello-world
+```
+
+If `curl` fails, check `/etc/docker/daemon.json` for broken `registry-mirrors`, restart Docker (`sudo systemctl restart docker`), then retry. `docker login` can also help on rate-limited hosts.
+
 | Service | Port |
 |---|---|
 | Frontend | 80, 443 |
