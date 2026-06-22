@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
+import com.jagorczyk.gymManagement.api.ExtendSubscriptionRequest;
 
 @RestController
 @RequestMapping("/api/admin/saas")
@@ -84,6 +85,15 @@ public class SaaSAdminController {
         com.jagorczyk.gymManagement.domain.SubscriptionStatus status = com.jagorczyk.gymManagement.domain.SubscriptionStatus.valueOf(statusStr);
         saasAdminService.updateSubscriptionStatus(id, status);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/subscriptions/{id}/extend")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<GymSubscriptionDTO> extendSubscription(
+            @PathVariable Long id,
+            @Valid @RequestBody ExtendSubscriptionRequest request
+    ) {
+        return ResponseEntity.ok(saasAdminService.extendSubscription(id, request.days(), request.reactivate()));
     }
 
     @PostMapping("/subscriptions/{id}/plan")

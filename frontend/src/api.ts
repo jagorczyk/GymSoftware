@@ -1784,6 +1784,23 @@ export async function changeSaaSSubscriptionPlan(auth: AuthState, subscriptionId
   if (!response.ok) await parseApiError(response, "Nie udało się zmienić pakietu subskrypcji");
 }
 
+export async function extendSaaSSubscription(
+  auth: AuthState,
+  subscriptionId: number,
+  payload: { days: number; reactivate: boolean }
+): Promise<GymSubscriptionDTO> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/extend`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się przedłużyć subskrypcji");
+  return response.json();
+}
+
 export async function resetSaaSPlatformData(auth: AuthState, confirmation: string): Promise<void> {
   const response = await fetch(`${API_URL}/admin/saas/system/reset`, {
     method: "POST",

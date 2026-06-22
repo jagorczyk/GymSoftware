@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.time.LocalDateTime;
 
 @Component
 public class SubscriptionCheckInterceptor implements HandlerInterceptor {
@@ -41,9 +42,7 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
                 Long gymId = Long.valueOf(matcher.group(1));
                 GymSubscription sub = gymSubscriptionRepository.findByGymId(gymId).orElse(null);
 
-                if (sub != null && (sub.getStatus() == SubscriptionStatus.CANCELED ||
-                        sub.getStatus() == SubscriptionStatus.PAST_DUE ||
-                        sub.getStatus() == SubscriptionStatus.UNPAID)) {
+                if (sub != null && isSubscriptionAccessBlocked(sub)) {
 
                     response.setStatus(HttpStatus.PAYMENT_REQUIRED.value());
                     response.setContentType("application/json;charset=UTF-8");
@@ -56,5 +55,18 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private boolean isSubscriptionAccessBlocked(GymSubscription sub) {
+        if (sub.getStatus() == SubscriptionStatus.CANCELED
+                || sub.getStatus() == SubscriptionStatus.PAST_DUE
+                || sub.getStatus() == SubscriptionStatus.UNPAID) {
+            return true;
+        }
+        LocalDateTime periodEnd = sub.getCurrentPeriodEnd();
+        if (periodEnd != null && periodEnd.isBefore(LocalDateTime.now())) {
+            return sub.getStatus() == SubscriptionStatus.ACTIVE || sub.getStatus() == SubscriptionStatus.TRIAL;
+        }
+        return false;
     }
 }

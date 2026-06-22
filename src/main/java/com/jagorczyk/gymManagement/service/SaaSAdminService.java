@@ -123,6 +123,34 @@ public class SaaSAdminService {
     }
 
     @Transactional
+    public GymSubscriptionDTO extendSubscription(Long subscriptionId, int days, boolean reactivate) {
+        if (days < 1 || days > 365) {
+            throw new IllegalArgumentException("Liczba dni musi być od 1 do 365.");
+        }
+
+        GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono subskrypcji."));
+
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime base = sub.getCurrentPeriodEnd();
+        if (base == null || base.isBefore(now)) {
+            base = now;
+            sub.setCurrentPeriodStart(now);
+        }
+        sub.setCurrentPeriodEnd(base.plusDays(days));
+
+        if (reactivate) {
+            sub.setStatus(com.jagorczyk.gymManagement.domain.SubscriptionStatus.ACTIVE);
+        } else if (sub.getStatus() == com.jagorczyk.gymManagement.domain.SubscriptionStatus.UNPAID
+                || sub.getStatus() == com.jagorczyk.gymManagement.domain.SubscriptionStatus.CANCELED) {
+            sub.setStatus(com.jagorczyk.gymManagement.domain.SubscriptionStatus.TRIAL);
+        }
+
+        gymSubscriptionRepository.save(sub);
+        return mapToDTO(sub);
+    }
+
+    @Transactional
     public void changeSubscriptionPlan(Long subscriptionId, Long saasPlanId) {
         GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));

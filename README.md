@@ -126,6 +126,16 @@ Key paths: `/gyms`, `/gyms/{gymId}/details`, `/gyms/{gymId}/dashboard-stats`, `/
 
 `GET /gyms/{gymId}/details` returns gym + employees + passes + lockers + logs + pass types (guests are paginated via `/guests`).
 
+### Super admin — `/api/admin/saas` (`SUPER_ADMIN`)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/subscriptions` | All gym subscriptions |
+| POST | `/subscriptions/{id}/extend` | `{ days, reactivate }` — extend billing period |
+| POST | `/subscriptions/{id}/plan` | `{ saasPlanId }` |
+| POST | `/subscriptions/{id}/status` | `{ status }` |
+| POST | `/subscriptions/{id}/cancel` | Cancel subscription |
+
 ### CRM — `/api/owner/gyms/{gymId}/crm` (`OWNER`, `CRM` flag)
 
 | Method | Path | Body |

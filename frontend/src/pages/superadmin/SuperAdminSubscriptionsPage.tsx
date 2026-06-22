@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../authContext";
 import {
   getSaaSSubscriptions,
   cancelSaaSSubscription,
   changeSaaSSubscriptionPlan,
+  extendSaaSSubscription,
+  updateSaaSSubscriptionStatus,
   getSaaSStats,
   getSaaSPlans,
   GymSubscriptionDTO,
@@ -13,14 +15,36 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { RefreshCw } from "lucide-react";
+import { CalendarPlus, RefreshCw, Search } from "lucide-react";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
+const STATUS_OPTIONS = ["TRIAL", "ACTIVE", "PAST_DUE", "CANCELED", "UNPAID"] as const;
+const EXTEND_PRESETS = [7, 14, 30, 90];
 
 function statusBadgeClass(status: string) {
   if (status === "ACTIVE") return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
   if (status === "TRIAL") return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+  if (status === "PAST_DUE") return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
   return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+}
+
+function daysUntilEnd(end?: string | null) {
+  if (!end) return null;
+  const endDate = new Date(end);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+  return Math.round((endDate.getTime() - today.getTime()) / 86400000);
+}
+
+function formatPeriodEnd(end?: string | null) {
+  if (!end) return "—";
+  const days = daysUntilEnd(end);
+  const date = new Date(end).toLocaleDateString("pl-PL");
+  if (days === null) return date;
+  if (days < 0) return `${date} (wygasła ${Math.abs(days)} dni temu)`;
+  if (days === 0) return `${date} (dziś)`;
+  return `${date} (za ${days} dni)`;
 }
 
 export function SuperAdminSubscriptionsPage() {
@@ -30,6 +54,12 @@ export function SuperAdminSubscriptionsPage() {
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [extendTarget, setExtendTarget] = useState<number | null>(null);
+  const [extendDays, setExtendDays] = useState(30);
+  const [extendReactivate, setExtendReactivate] = useState(true);
+  const [extending, setExtending] = useState(false);
 
   async function loadData() {
     if (!auth) return;
@@ -54,6 +84,26 @@ export function SuperAdminSubscriptionsPage() {
   useEffect(() => {
     void loadData();
   }, [auth]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return subscriptions.filter((sub) => {
+      if (statusFilter !== "ALL" && sub.status !== statusFilter) return false;
+      if (!q) return true;
+      const haystack = [
+        sub.gymName,
+        sub.gymAddress,
+        sub.ownerEmail,
+        sub.ownerFirstName,
+        sub.ownerLastName,
+        sub.saasPlanName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [subscriptions, query, statusFilter]);
 
   const handleCancel = async (id: number) => {
     if (!auth) return;
@@ -88,6 +138,39 @@ export function SuperAdminSubscriptionsPage() {
     }
   };
 
+  const handleStatusChange = async (subscriptionId: number, currentStatus: string, newStatus: string, selectEl: HTMLSelectElement) => {
+    if (!auth || newStatus === currentStatus) return;
+    if (!confirm(`Zmienić status subskrypcji na ${newStatus}?`)) {
+      selectEl.value = currentStatus;
+      return;
+    }
+    try {
+      await updateSaaSSubscriptionStatus(auth, subscriptionId, newStatus);
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Błąd podczas zmiany statusu.");
+      selectEl.value = currentStatus;
+    }
+  };
+
+  const handleExtend = async (subscriptionId: number) => {
+    if (!auth) return;
+    if (extendDays < 1 || extendDays > 365) {
+      alert("Liczba dni musi być od 1 do 365.");
+      return;
+    }
+    setExtending(true);
+    try {
+      await extendSaaSSubscription(auth, subscriptionId, { days: extendDays, reactivate: extendReactivate });
+      setExtendTarget(null);
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Błąd podczas przedłużania subskrypcji.");
+    } finally {
+      setExtending(false);
+    }
+  };
+
   if (loading && subscriptions.length === 0) return <LoadingState message="Ładowanie subskrypcji..." />;
   if (error) return <ErrorState message={error} onRetry={loadData} />;
 
@@ -96,7 +179,7 @@ export function SuperAdminSubscriptionsPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Subskrypcje</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Właściciele siłowni i ich pakiety SaaS.
+          Zarządzaj planami klientów SaaS — przedłużaj okresy, zmieniaj statusy i pakiety.
         </p>
       </div>
 
@@ -173,21 +256,45 @@ export function SuperAdminSubscriptionsPage() {
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Wszystkie subskrypcje ({subscriptions.length})
-          </h2>
-          <button
-            onClick={() => void loadData()}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Odśwież
-          </button>
+        <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Wszystkie subskrypcje ({filtered.length}/{subscriptions.length})
+            </h2>
+            <button
+              onClick={() => void loadData()}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Odśwież
+            </button>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Szukaj siłowni, właściciela, planu..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+            >
+              <option value="ALL">Wszystkie statusy</option>
+              {STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {subscriptions.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Brak subskrypcji na platformie.</div>
+        {filtered.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Brak subskrypcji spełniających kryteria.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -197,55 +304,138 @@ export function SuperAdminSubscriptionsPage() {
                   <th className="p-4">Właściciel</th>
                   <th className="p-4">Plan</th>
                   <th className="p-4">Status</th>
-                  <th className="p-4">Wygasa</th>
+                  <th className="p-4">Okres</th>
                   <th className="p-4 text-right">Akcje</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {subscriptions.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="p-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{sub.gymName}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{sub.gymAddress}</div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {sub.ownerFirstName} {sub.ownerLastName}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{sub.ownerEmail}</div>
-                    </td>
-                    <td className="p-4">
-                      <select
-                        value={sub.saasPlanId}
-                        onChange={(e) => void handlePlanChange(sub.id, sub.saasPlanId, Number(e.target.value), e.currentTarget)}
-                        className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"
-                      >
-                        {plans.map((plan) => (
-                          <option key={plan.id} value={plan.id}>
-                            {plan.name} ({plan.price} zł)
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(sub.status)}`}>
-                        {sub.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
-                      {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString("pl-PL") : "-"}
-                    </td>
-                    <td className="p-4 text-right">
-                      {sub.status !== "CANCELED" && (
-                        <button
-                          onClick={() => void handleCancel(sub.id)}
-                          className="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30 dark:hover:bg-red-900/50"
+                {filtered.map((sub) => (
+                  <Fragment key={sub.id}>
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="p-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{sub.gymName}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{sub.gymAddress}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {sub.ownerFirstName} {sub.ownerLastName}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{sub.ownerEmail}</div>
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={sub.saasPlanId}
+                          onChange={(e) => void handlePlanChange(sub.id, sub.saasPlanId, Number(e.target.value), e.currentTarget)}
+                          className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1"
                         >
-                          Anuluj
+                          {plans.map((plan) => (
+                            <option key={plan.id} value={plan.id}>
+                              {plan.name} ({plan.price} zł)
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={sub.status}
+                          onChange={(e) => void handleStatusChange(sub.id, sub.status, e.target.value, e.currentTarget)}
+                          className={`text-xs font-medium rounded-lg px-2 py-1 border border-transparent ${statusBadgeClass(sub.status)}`}
+                        >
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                        {formatPeriodEnd(sub.currentPeriodEnd)}
+                      </td>
+                      <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExtendTarget(extendTarget === sub.id ? null : sub.id);
+                            setExtendDays(30);
+                            setExtendReactivate(sub.status !== "ACTIVE");
+                          }}
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/30"
+                        >
+                          <CalendarPlus className="w-3.5 h-3.5" />
+                          Przedłuż
                         </button>
-                      )}
-                    </td>
-                  </tr>
+                        {sub.status !== "CANCELED" && (
+                          <button
+                            onClick={() => void handleCancel(sub.id)}
+                            className="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/30"
+                          >
+                            Anuluj
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                    {extendTarget === sub.id && (
+                      <tr key={`extend-${sub.id}`} className="bg-emerald-50/50 dark:bg-emerald-950/20">
+                        <td colSpan={6} className="p-4">
+                          <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Przedłuż subskrypcję</p>
+                              <div className="flex flex-wrap gap-2">
+                                {EXTEND_PRESETS.map((days) => (
+                                  <button
+                                    key={days}
+                                    type="button"
+                                    onClick={() => setExtendDays(days)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${
+                                      extendDays === days
+                                        ? "bg-emerald-600 text-white border-emerald-600"
+                                        : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                    }`}
+                                  >
+                                    +{days} dni
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-1">Własna liczba dni</label>
+                              <input
+                                type="number"
+                                min={1}
+                                max={365}
+                                value={extendDays}
+                                onChange={(e) => setExtendDays(Number(e.target.value))}
+                                className="w-28 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+                              />
+                            </div>
+                            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                              <input
+                                type="checkbox"
+                                checked={extendReactivate}
+                                onChange={(e) => setExtendReactivate(e.target.checked)}
+                              />
+                              Przywróć dostęp (status ACTIVE)
+                            </label>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={extending}
+                                onClick={() => void handleExtend(sub.id)}
+                                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50"
+                              >
+                                {extending ? "Zapisywanie..." : "Zapisz przedłużenie"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setExtendTarget(null)}
+                                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm"
+                              >
+                                Anuluj
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
