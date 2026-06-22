@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import com.jagorczyk.gymManagement.domain.User;
 import java.time.Instant;
 import java.util.Date;
 import javax.crypto.SecretKey;
@@ -45,6 +46,20 @@ public class JwtService {
             throw new IllegalArgumentException("Nieprawidłowy token MFA");
         }
         return Long.parseLong(claims.getSubject());
+    }
+
+    public String generateImpersonationToken(User target, Long impersonatorUserId) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(target.getEmail())
+                .claim("uid", target.getId())
+                .claim("role", target.getRole().name())
+                .claim("imp", true)
+                .claim("impersonatorUid", impersonatorUserId)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(30 * 60)))
+                .signWith(key)
+                .compact();
     }
 
     public String generateToken(CustomUserPrincipal principal) {

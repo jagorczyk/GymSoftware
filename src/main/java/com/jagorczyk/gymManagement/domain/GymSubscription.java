@@ -48,6 +48,12 @@ public class GymSubscription {
     @Column(name = "current_period_end")
     private LocalDateTime currentPeriodEnd;
 
+    @Column(name = "admin_notes", columnDefinition = "TEXT")
+    private String adminNotes;
+
+    @Column(name = "feature_flag_overrides", columnDefinition = "TEXT")
+    private String featureFlagOverridesJson;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

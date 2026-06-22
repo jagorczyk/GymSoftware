@@ -123,6 +123,42 @@ export function isMainAuthDomain(): boolean {
 }
 
 export const OWNER_STRIPE_CHECKOUT_KEY = "owner_stripe_checkout_pending";
+const IMPERSONATION_BACKUP_KEY = "gym_impersonation_backup";
+
+export function isImpersonationToken(token: string): boolean {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return false;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return decoded.imp === true;
+  } catch {
+    return false;
+  }
+}
+
+export function saveImpersonationBackup(auth: AuthState): void {
+  try {
+    sessionStorage.setItem(IMPERSONATION_BACKUP_KEY, JSON.stringify(auth));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function loadImpersonationBackup(): AuthState | null {
+  try {
+    return parseAuthState(sessionStorage.getItem(IMPERSONATION_BACKUP_KEY));
+  } catch {
+    return null;
+  }
+}
+
+export function clearImpersonationBackup(): void {
+  try {
+    sessionStorage.removeItem(IMPERSONATION_BACKUP_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
 
 export function isOwnerStripeCheckoutPending(): boolean {
   try {

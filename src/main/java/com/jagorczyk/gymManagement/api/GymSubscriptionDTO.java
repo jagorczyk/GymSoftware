@@ -1,6 +1,8 @@
 package com.jagorczyk.gymManagement.api;
 
 import com.jagorczyk.gymManagement.domain.SubscriptionStatus;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -19,4 +21,7 @@ public class GymSubscriptionDTO {
     private String stripeSubscriptionId;
     private LocalDateTime currentPeriodEnd;
     private LocalDateTime createdAt;
+    private String adminNotes;
+    private Map<String, Boolean> featureFlagOverrides = new LinkedHashMap<>();
+    private java.util.List<String> effectiveFeatureFlags = java.util.List.of();
 }

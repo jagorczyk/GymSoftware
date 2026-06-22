@@ -147,7 +147,9 @@ public class OwnerService {
                         sub.getStatus().name(),
                         sub.getCurrentPeriodStart() != null ? sub.getCurrentPeriodStart().toString() : null,
                         sub.getCurrentPeriodEnd() != null ? sub.getCurrentPeriodEnd().toString() : null,
-                        sub.getSaasPlan().getFeatureFlags()
+                        com.jagorczyk.gymManagement.service.SaaSPlanFeatureFlags.resolveEffectiveNames(
+                                sub.getSaasPlan().getFeatureFlagsJson(),
+                                sub.getFeatureFlagOverridesJson())
                 ))
                 .orElse(null);
     }

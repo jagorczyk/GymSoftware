@@ -16,8 +16,9 @@ public class SaaSPlanFeatureService {
     @Transactional(readOnly = true)
     public List<SaaSPlanFeature> getGymPlanFeatures(Long gymId) {
         return gymSubscriptionRepository.findByGymId(gymId)
-                .map(GymSubscription::getSaasPlan)
-                .map(plan -> SaaSPlanFeatureFlags.parse(plan.getFeatureFlagsJson()))
+                .map(sub -> SaaSPlanFeatureFlags.resolveEffective(
+                        sub.getSaasPlan().getFeatureFlagsJson(),
+                        sub.getFeatureFlagOverridesJson()))
                 .orElse(SaaSPlanFeature.all());
     }
 

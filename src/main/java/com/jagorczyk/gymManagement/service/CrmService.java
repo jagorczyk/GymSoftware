@@ -21,16 +21,19 @@ public class CrmService {
     private final GuestRepository guestRepository;
     private final GymPassRepository gymPassRepository;
     private final EmailService emailService;
+    private final ScheduledJobTracker scheduledJobTracker;
 
     public CrmService(
             EmailCampaignRepository emailCampaignRepository,
             GuestRepository guestRepository,
             GymPassRepository gymPassRepository,
-            EmailService emailService) {
+            EmailService emailService,
+            ScheduledJobTracker scheduledJobTracker) {
         this.emailCampaignRepository = emailCampaignRepository;
         this.guestRepository = guestRepository;
         this.gymPassRepository = gymPassRepository;
         this.emailService = emailService;
+        this.scheduledJobTracker = scheduledJobTracker;
     }
 
     public List<EmailCampaignView> getCampaigns(Long gymId) {
@@ -99,16 +102,22 @@ public class CrmService {
 
     @org.springframework.scheduling.annotation.Scheduled(cron = "0 * * * * *")
     public void processScheduledCampaigns() {
-        List<EmailCampaign> scheduledCampaigns = emailCampaignRepository.findByStatusAndScheduledAtLessThanEqual("SCHEDULED", LocalDateTime.now());
-        for (EmailCampaign campaign : scheduledCampaigns) {
-            campaign.setStatus("SENDING");
-            emailCampaignRepository.save(campaign);
-            
-            sendCampaignToTargets(campaign);
-            
-            campaign.setStatus("SENT");
-            campaign.setSentAt(LocalDateTime.now());
-            emailCampaignRepository.save(campaign);
+        try {
+            List<EmailCampaign> scheduledCampaigns = emailCampaignRepository.findByStatusAndScheduledAtLessThanEqual("SCHEDULED", LocalDateTime.now());
+            for (EmailCampaign campaign : scheduledCampaigns) {
+                campaign.setStatus("SENDING");
+                emailCampaignRepository.save(campaign);
+
+                sendCampaignToTargets(campaign);
+
+                campaign.setStatus("SENT");
+                campaign.setSentAt(LocalDateTime.now());
+                emailCampaignRepository.save(campaign);
+            }
+            scheduledJobTracker.recordSuccess("crm_scheduled_campaigns", "processed=" + scheduledCampaigns.size());
+        } catch (Exception ex) {
+            scheduledJobTracker.recordFailure("crm_scheduled_campaigns", ex.getMessage());
+            throw ex;
         }
     }
 

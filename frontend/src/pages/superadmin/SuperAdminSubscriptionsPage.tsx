@@ -6,16 +6,20 @@ import {
   changeSaaSSubscriptionPlan,
   extendSaaSSubscription,
   updateSaaSSubscriptionStatus,
+  updateSaaSSubscriptionNotes,
+  updateSaaSSubscriptionFeatureOverrides,
+  downloadSaaSSubscriptionsCsv,
   getSaaSStats,
   getSaaSPlans,
   GymSubscriptionDTO,
   SaaSStatsView,
   SaaSPlan,
 } from "../../api";
+import { SAAS_PLAN_FEATURES } from "../../saasPlanFeatures";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { CalendarPlus, RefreshCw, Search } from "lucide-react";
+import { CalendarPlus, Download, FileText, Layers, RefreshCw, Search } from "lucide-react";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
 const STATUS_OPTIONS = ["TRIAL", "ACTIVE", "PAST_DUE", "CANCELED", "UNPAID"] as const;
@@ -60,6 +64,12 @@ export function SuperAdminSubscriptionsPage() {
   const [extendDays, setExtendDays] = useState(30);
   const [extendReactivate, setExtendReactivate] = useState(true);
   const [extending, setExtending] = useState(false);
+  const [notesTarget, setNotesTarget] = useState<number | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [featuresTarget, setFeaturesTarget] = useState<number | null>(null);
+  const [overridesDraft, setOverridesDraft] = useState<Record<string, boolean>>({});
+  const [savingFeatures, setSavingFeatures] = useState(false);
 
   async function loadData() {
     if (!auth) return;
@@ -150,6 +160,53 @@ export function SuperAdminSubscriptionsPage() {
     } catch (err) {
       alert(err instanceof Error ? err.message : "Błąd podczas zmiany statusu.");
       selectEl.value = currentStatus;
+    }
+  };
+
+  function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const handleExport = async () => {
+    if (!auth) return;
+    try {
+      const blob = await downloadSaaSSubscriptionsCsv(auth);
+      downloadBlob(blob, "subscriptions.csv");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się wyeksportować subskrypcji.");
+    }
+  };
+
+  const handleSaveNotes = async (subscriptionId: number) => {
+    if (!auth) return;
+    setSavingNotes(true);
+    try {
+      await updateSaaSSubscriptionNotes(auth, subscriptionId, notesDraft);
+      setNotesTarget(null);
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się zapisać notatek.");
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
+  const handleSaveFeatures = async (subscriptionId: number) => {
+    if (!auth) return;
+    setSavingFeatures(true);
+    try {
+      await updateSaaSSubscriptionFeatureOverrides(auth, subscriptionId, overridesDraft);
+      setFeaturesTarget(null);
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się zapisać nadpisań funkcji.");
+    } finally {
+      setSavingFeatures(false);
     }
   };
 
@@ -261,13 +318,22 @@ export function SuperAdminSubscriptionsPage() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Wszystkie subskrypcje ({filtered.length}/{subscriptions.length})
             </h2>
-            <button
-              onClick={() => void loadData()}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Odśwież
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => void handleExport()}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg"
+              >
+                <Download className="w-4 h-4" />
+                Eksport CSV
+              </button>
+              <button
+                onClick={() => void loadData()}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Odśwież
+              </button>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -353,9 +419,38 @@ export function SuperAdminSubscriptionsPage() {
                         <button
                           type="button"
                           onClick={() => {
+                            setNotesTarget(notesTarget === sub.id ? null : sub.id);
+                            setNotesDraft(sub.adminNotes ?? "");
+                            setExtendTarget(null);
+                            setFeaturesTarget(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700"
+                          title={sub.adminNotes ? "Edytuj notatki wewnętrzne" : "Dodaj notatki wewnętrzne"}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Notatki
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeaturesTarget(featuresTarget === sub.id ? null : sub.id);
+                            setOverridesDraft({ ...(sub.featureFlagOverrides ?? {}) });
+                            setExtendTarget(null);
+                            setNotesTarget(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800/30"
+                        >
+                          <Layers className="w-3.5 h-3.5" />
+                          Funkcje
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
                             setExtendTarget(extendTarget === sub.id ? null : sub.id);
                             setExtendDays(30);
                             setExtendReactivate(sub.status !== "ACTIVE");
+                            setNotesTarget(null);
+                            setFeaturesTarget(null);
                           }}
                           className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/30"
                         >
@@ -372,6 +467,83 @@ export function SuperAdminSubscriptionsPage() {
                         )}
                       </td>
                     </tr>
+                    {notesTarget === sub.id && (
+                      <tr key={`notes-${sub.id}`} className="bg-gray-50/80 dark:bg-gray-900/40">
+                        <td colSpan={6} className="p-4 space-y-3">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">Notatki wewnętrzne (tylko super admin)</p>
+                          <textarea
+                            value={notesDraft}
+                            onChange={(e) => setNotesDraft(e.target.value)}
+                            rows={3}
+                            placeholder="np. przedłużenie gratis do konferencji"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={savingNotes}
+                              onClick={() => void handleSaveNotes(sub.id)}
+                              className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-900 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 text-white text-sm font-bold disabled:opacity-50"
+                            >
+                              {savingNotes ? "Zapisywanie..." : "Zapisz notatki"}
+                            </button>
+                            <button type="button" onClick={() => setNotesTarget(null)} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+                              Anuluj
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {featuresTarget === sub.id && (
+                      <tr key={`features-${sub.id}`} className="bg-indigo-50/50 dark:bg-indigo-950/20">
+                        <td colSpan={6} className="p-4 space-y-4">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">Nadpisania funkcji (bez zmiany planu)</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              „Z planu” — dziedziczy z pakietu. Efektywne: {(sub.effectiveFeatureFlags ?? []).join(", ") || "wszystkie z planu"}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {SAAS_PLAN_FEATURES.map((feature) => {
+                              const override = overridesDraft[feature.id];
+                              const value = override === undefined ? "inherit" : override ? "on" : "off";
+                              return (
+                                <label key={feature.id} className="flex flex-col gap-1 text-sm">
+                                  <span className="font-medium text-gray-900 dark:text-white">{feature.label}</span>
+                                  <select
+                                    value={value}
+                                    onChange={(e) => {
+                                      const next = { ...overridesDraft };
+                                      if (e.target.value === "inherit") delete next[feature.id];
+                                      else next[feature.id] = e.target.value === "on";
+                                      setOverridesDraft(next);
+                                    }}
+                                    className="px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs"
+                                  >
+                                    <option value="inherit">Z planu</option>
+                                    <option value="on">Wymuś włączone</option>
+                                    <option value="off">Wymuś wyłączone</option>
+                                  </select>
+                                </label>
+                              );
+                            })}
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={savingFeatures}
+                              onClick={() => void handleSaveFeatures(sub.id)}
+                              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50"
+                            >
+                              {savingFeatures ? "Zapisywanie..." : "Zapisz nadpisania"}
+                            </button>
+                            <button type="button" onClick={() => setFeaturesTarget(null)} className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm">
+                              Anuluj
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {extendTarget === sub.id && (
                       <tr key={`extend-${sub.id}`} className="bg-emerald-50/50 dark:bg-emerald-950/20">
                         <td colSpan={6} className="p-4">

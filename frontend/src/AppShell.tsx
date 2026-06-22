@@ -48,7 +48,7 @@ import { usePlanFeatures } from "./planFeaturesContext";
 import type { SaasPlanFeatureId } from "./saasPlanFeatures";
 
 export function AppShell() {
-  const { auth, logout } = useAuth();
+  const { auth, logout, isImpersonating, endImpersonation } = useAuth();
   const navigate = useNavigate();
   const { permissions: employeePermissions } = useEmployeePermissions();
   const { brandName, setBrandName } = useSelectedGymBrand();
@@ -198,6 +198,12 @@ export function AppShell() {
       : auth?.role === "GUEST"
       ? clientNavItems
       : employeeNavItems;
+
+  function handleEndImpersonation() {
+    if (endImpersonation()) {
+      navigate("/superadmin/users");
+    }
+  }
 
   function handleLogout() {
     setBrandName("");
@@ -457,6 +463,20 @@ export function AppShell() {
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full">
           <div className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+            {isImpersonating && (
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                  Podgląd konta: <span className="font-bold">{auth?.email}</span> ({auth?.role})
+                </p>
+                <button
+                  type="button"
+                  onClick={handleEndImpersonation}
+                  className="shrink-0 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold"
+                >
+                  Zakończ podgląd
+                </button>
+              </div>
+            )}
             {subscriptionExpired && location.pathname !== "/owner/subscription" ? (
               <SubscriptionExpiredView 
                 role={auth?.role} 

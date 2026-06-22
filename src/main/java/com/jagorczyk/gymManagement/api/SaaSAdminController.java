@@ -1,15 +1,20 @@
 package com.jagorczyk.gymManagement.api;
 
-import com.jagorczyk.gymManagement.api.CreateSaaSPlanRequest;
-import com.jagorczyk.gymManagement.api.UpdateSaaSPlanRequest;
+import com.jagorczyk.gymManagement.api.SuperAdminSubscriptionRequests.UpdateFeatureOverridesRequest;
+import com.jagorczyk.gymManagement.api.SuperAdminSubscriptionRequests.UpdateSubscriptionNotesRequest;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
-import com.jagorczyk.gymManagement.service.SaaSPlanService;
+import com.jagorczyk.gymManagement.service.SaaSAdminHealthService;
 import com.jagorczyk.gymManagement.service.SaaSAdminService;
+import com.jagorczyk.gymManagement.service.SaaSPlanService;
+import com.jagorczyk.gymManagement.service.SuperAdminAuditService;
+import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,16 +22,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import jakarta.validation.Valid;
-import com.jagorczyk.gymManagement.api.ExtendSubscriptionRequest;
 
 @RestController
 @RequestMapping("/api/admin/saas")
-@RequiredArgsConstructor
 public class SaaSAdminController {
 
     private final SaaSPlanService saasPlanService;
     private final SaaSAdminService saasAdminService;
+    private final SuperAdminAuditService superAdminAuditService;
+    private final SaaSAdminHealthService saasAdminHealthService;
+
+    public SaaSAdminController(
+            SaaSPlanService saasPlanService,
+            SaaSAdminService saasAdminService,
+            SuperAdminAuditService superAdminAuditService,
+            SaaSAdminHealthService saasAdminHealthService
+    ) {
+        this.saasPlanService = saasPlanService;
+        this.saasAdminService = saasAdminService;
+        this.superAdminAuditService = superAdminAuditService;
+        this.saasAdminHealthService = saasAdminHealthService;
+    }
 
     @GetMapping("/subscriptions")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -34,10 +50,32 @@ public class SaaSAdminController {
         return ResponseEntity.ok(saasAdminService.getAllSubscriptions());
     }
 
+    @GetMapping("/subscriptions/export.csv")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<byte[]> exportSubscriptionsCsv() {
+        byte[] body = saasAdminService.exportSubscriptionsCsv().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"subscriptions.csv\"")
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+                .body(body);
+    }
+
     @GetMapping("/stats")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<SaaSAdminStatsDTO> getSaaSStats() {
         return ResponseEntity.ok(saasAdminService.getSaaSStats());
+    }
+
+    @GetMapping("/health")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<SaaSHealthDTO> getHealth() {
+        return ResponseEntity.ok(saasAdminHealthService.getHealth());
+    }
+
+    @GetMapping("/audit-logs")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<SuperAdminAuditLogDTO>> getAuditLogs() {
+        return ResponseEntity.ok(superAdminAuditService.recentLogs());
     }
 
     @GetMapping("/plans")
@@ -79,10 +117,11 @@ public class SaaSAdminController {
     @PostMapping("/subscriptions/{id}/status")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> updateSubscriptionStatus(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @RequestBody java.util.Map<String, String> body) {
         String statusStr = body.get("status");
-        com.jagorczyk.gymManagement.domain.SubscriptionStatus status = com.jagorczyk.gymManagement.domain.SubscriptionStatus.valueOf(statusStr);
+        com.jagorczyk.gymManagement.domain.SubscriptionStatus status =
+                com.jagorczyk.gymManagement.domain.SubscriptionStatus.valueOf(statusStr);
         saasAdminService.updateSubscriptionStatus(id, status);
         return ResponseEntity.ok().build();
     }
@@ -94,6 +133,24 @@ public class SaaSAdminController {
             @Valid @RequestBody ExtendSubscriptionRequest request
     ) {
         return ResponseEntity.ok(saasAdminService.extendSubscription(id, request.days(), request.reactivate()));
+    }
+
+    @PutMapping("/subscriptions/{id}/notes")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<GymSubscriptionDTO> updateSubscriptionNotes(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSubscriptionNotesRequest request
+    ) {
+        return ResponseEntity.ok(saasAdminService.updateSubscriptionNotes(id, request.adminNotes()));
+    }
+
+    @PutMapping("/subscriptions/{id}/feature-overrides")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<GymSubscriptionDTO> updateFeatureOverrides(
+            @PathVariable Long id,
+            @RequestBody UpdateFeatureOverridesRequest request
+    ) {
+        return ResponseEntity.ok(saasAdminService.updateFeatureOverrides(id, request.overrides()));
     }
 
     @PostMapping("/subscriptions/{id}/plan")
@@ -121,6 +178,29 @@ public class SaaSAdminController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<SaaSAdminUserDTO>> getAllUsers() {
         return ResponseEntity.ok(saasAdminService.getAllUsers());
+    }
+
+    @GetMapping("/users/export.csv")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<byte[]> exportUsersCsv() {
+        byte[] body = saasAdminService.exportUsersCsv().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"users.csv\"")
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+                .body(body);
+    }
+
+    @PostMapping("/users/{id}/impersonate")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ImpersonationResponse> impersonateUser(@PathVariable Long id) {
+        return ResponseEntity.ok(saasAdminService.impersonateUser(id));
+    }
+
+    @PostMapping("/users/{id}/resend-verification")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> resendVerification(@PathVariable Long id) {
+        saasAdminService.resendUserVerification(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/users/{id}")

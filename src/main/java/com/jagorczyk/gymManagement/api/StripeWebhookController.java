@@ -3,6 +3,7 @@ package com.jagorczyk.gymManagement.api;
 import com.jagorczyk.gymManagement.config.StripeProperties;
 import com.jagorczyk.gymManagement.service.ClientPortalService;
 import com.jagorczyk.gymManagement.service.SaaSSubscriptionService;
+import com.jagorczyk.gymManagement.service.ScheduledJobTracker;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
@@ -21,6 +22,7 @@ public class StripeWebhookController {
     private final StripeProperties stripeProperties;
     private final ClientPortalService clientPortalService;
     private final SaaSSubscriptionService saasSubscriptionService;
+    private final ScheduledJobTracker scheduledJobTracker;
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
@@ -32,11 +34,14 @@ public class StripeWebhookController {
         try {
             event = Webhook.constructEvent(payload, sigHeader, stripeProperties.getWebhook().getSecret());
         } catch (SignatureVerificationException e) {
+            scheduledJobTracker.recordFailure("stripe_webhook", "Invalid signature");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         } catch (Exception e) {
+            scheduledJobTracker.recordFailure("stripe_webhook", "Invalid payload");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid payload");
         }
 
+        scheduledJobTracker.recordSuccess("stripe_webhook", event.getType());
         if ("checkout.session.completed".equals(event.getType())) {
             Session session = null;
             try {

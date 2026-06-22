@@ -1,25 +1,29 @@
 package com.jagorczyk.gymManagement.service;
 
 import com.jagorczyk.gymManagement.api.GymSubscriptionDTO;
+import com.jagorczyk.gymManagement.api.ImpersonationResponse;
+import com.jagorczyk.gymManagement.api.SaaSAdminStatsDTO;
+import com.jagorczyk.gymManagement.api.SaaSAdminUserDTO;
 import com.jagorczyk.gymManagement.domain.GymSubscription;
 import com.jagorczyk.gymManagement.domain.Role;
 import com.jagorczyk.gymManagement.domain.SaaSPlan;
+import com.jagorczyk.gymManagement.domain.SubscriptionStatus;
 import com.jagorczyk.gymManagement.domain.User;
 import com.jagorczyk.gymManagement.repository.GymSubscriptionRepository;
 import com.jagorczyk.gymManagement.repository.SaaSPlanRepository;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.jagorczyk.gymManagement.repository.UserRepository;
+import com.jagorczyk.gymManagement.security.JwtService;
 import java.math.BigDecimal;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.jagorczyk.gymManagement.api.SaaSAdminStatsDTO;
-import com.jagorczyk.gymManagement.api.SaaSAdminUserDTO;
-import com.jagorczyk.gymManagement.repository.UserRepository;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @Service
-@RequiredArgsConstructor
 public class SaaSAdminService {
 
     private final GymSubscriptionRepository gymSubscriptionRepository;
@@ -27,6 +31,40 @@ public class SaaSAdminService {
     private final UserRepository userRepository;
     private final SaaSPlanRepository saasPlanRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final CurrentUserService currentUserService;
+    private final SuperAdminAuditService superAdminAuditService;
+    private final JwtService jwtService;
+    private final EmailService emailService;
+
+    public SaaSAdminService(
+            GymSubscriptionRepository gymSubscriptionRepository,
+            StripeService stripeService,
+            UserRepository userRepository,
+            SaaSPlanRepository saasPlanRepository,
+            JdbcTemplate jdbcTemplate,
+            CurrentUserService currentUserService,
+            SuperAdminAuditService superAdminAuditService,
+            JwtService jwtService,
+            EmailService emailService
+    ) {
+        this.gymSubscriptionRepository = gymSubscriptionRepository;
+        this.stripeService = stripeService;
+        this.userRepository = userRepository;
+        this.saasPlanRepository = saasPlanRepository;
+        this.jdbcTemplate = jdbcTemplate;
+        this.currentUserService = currentUserService;
+        this.superAdminAuditService = superAdminAuditService;
+        this.jwtService = jwtService;
+        this.emailService = emailService;
+    }
+
+    private User actor() {
+        return currentUserService.getCurrentUser();
+    }
+
+    private void audit(String action, String targetType, Long targetId, String details) {
+        superAdminAuditService.log(actor(), action, targetType, targetId, details);
+    }
 
     @Transactional(readOnly = true)
     public List<GymSubscriptionDTO> getAllSubscriptions() {
@@ -103,6 +141,11 @@ public class SaaSAdminService {
         dto.setStripeSubscriptionId(sub.getStripeSubscriptionId());
         dto.setCurrentPeriodEnd(sub.getCurrentPeriodEnd());
         dto.setCreatedAt(sub.getCreatedAt());
+        dto.setAdminNotes(sub.getAdminNotes());
+        dto.setFeatureFlagOverrides(SaaSPlanFeatureFlags.parseOverrides(sub.getFeatureFlagOverridesJson()));
+        dto.setEffectiveFeatureFlags(SaaSPlanFeatureFlags.resolveEffectiveNames(
+                sub.getSaasPlan().getFeatureFlagsJson(),
+                sub.getFeatureFlagOverridesJson()));
         return dto;
     }
 
@@ -118,8 +161,9 @@ public class SaaSAdminService {
                 throw new RuntimeException("Failed to cancel subscription in Stripe: " + e.getMessage(), e);
             }
         }
-        sub.setStatus(com.jagorczyk.gymManagement.domain.SubscriptionStatus.CANCELED);
+        sub.setStatus(SubscriptionStatus.CANCELED);
         gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_CANCELED", "SUBSCRIPTION", subscriptionId, "gymId=" + sub.getGym().getId());
     }
 
     @Transactional
@@ -140,13 +184,15 @@ public class SaaSAdminService {
         sub.setCurrentPeriodEnd(base.plusDays(days));
 
         if (reactivate) {
-            sub.setStatus(com.jagorczyk.gymManagement.domain.SubscriptionStatus.ACTIVE);
-        } else if (sub.getStatus() == com.jagorczyk.gymManagement.domain.SubscriptionStatus.UNPAID
-                || sub.getStatus() == com.jagorczyk.gymManagement.domain.SubscriptionStatus.CANCELED) {
-            sub.setStatus(com.jagorczyk.gymManagement.domain.SubscriptionStatus.TRIAL);
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+        } else if (sub.getStatus() == SubscriptionStatus.UNPAID
+                || sub.getStatus() == SubscriptionStatus.CANCELED) {
+            sub.setStatus(SubscriptionStatus.TRIAL);
         }
 
         gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_EXTENDED", "SUBSCRIPTION", subscriptionId,
+                "days=" + days + ",reactivate=" + reactivate + ",newEnd=" + sub.getCurrentPeriodEnd());
         return mapToDTO(sub);
     }
 
@@ -158,6 +204,33 @@ public class SaaSAdminService {
                 .orElseThrow(() -> new IllegalArgumentException("Plan not found"));
         sub.setSaasPlan(plan);
         gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_PLAN_CHANGED", "SUBSCRIPTION", subscriptionId, "planId=" + saasPlanId);
+    }
+
+    @Transactional
+    public GymSubscriptionDTO updateSubscriptionNotes(Long subscriptionId, String adminNotes) {
+        GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono subskrypcji."));
+        sub.setAdminNotes(adminNotes);
+        gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_NOTES_UPDATED", "SUBSCRIPTION", subscriptionId, truncate(adminNotes, 500));
+        return mapToDTO(sub);
+    }
+
+    @Transactional
+    public GymSubscriptionDTO updateFeatureOverrides(Long subscriptionId, Map<String, Boolean> overrides) {
+        GymSubscription sub = gymSubscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono subskrypcji."));
+        Map<String, Boolean> normalized = new LinkedHashMap<>();
+        if (overrides != null) {
+            for (Map.Entry<String, Boolean> entry : overrides.entrySet()) {
+                normalized.put(entry.getKey(), Boolean.TRUE.equals(entry.getValue()));
+            }
+        }
+        sub.setFeatureFlagOverridesJson(SaaSPlanFeatureFlags.serializeOverrides(normalized));
+        gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_FEATURES_OVERRIDDEN", "SUBSCRIPTION", subscriptionId, normalized.toString());
+        return mapToDTO(sub);
     }
 
     @Transactional
@@ -166,6 +239,7 @@ public class SaaSAdminService {
                 .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
         sub.setStatus(newStatus);
         gymSubscriptionRepository.save(sub);
+        audit("SUBSCRIPTION_STATUS_CHANGED", "SUBSCRIPTION", subscriptionId, "status=" + newStatus.name());
     }
 
     @Transactional(readOnly = true)
@@ -183,13 +257,106 @@ public class SaaSAdminService {
     }
 
     @Transactional
+    public ImpersonationResponse impersonateUser(Long targetUserId) {
+        User actor = actor();
+        User target = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika."));
+        if (target.getRole() == Role.SUPER_ADMIN) {
+            throw new IllegalArgumentException("Nie można podszywać się pod super admina.");
+        }
+        if (target.getRole() != Role.OWNER && target.getRole() != Role.EMPLOYEE && target.getRole() != Role.GUEST) {
+            throw new IllegalArgumentException("Nieobsługiwana rola do impersonacji.");
+        }
+        String token = jwtService.generateImpersonationToken(target, actor.getId());
+        audit("USER_IMPERSONATED", "USER", targetUserId, "role=" + target.getRole().name());
+        return new ImpersonationResponse(
+                token,
+                target.getRole().name(),
+                target.getEmail(),
+                actor.getId(),
+                actor.getEmail()
+        );
+    }
+
+    @Transactional
+    public void resendUserVerification(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika."));
+        if (user.isEmailVerified()) {
+            throw new IllegalArgumentException("E-mail użytkownika jest już zweryfikowany.");
+        }
+        if (user.getGoogleId() != null && !user.getGoogleId().isBlank()) {
+            throw new IllegalArgumentException("Konto Google nie wymaga weryfikacji e-mail.");
+        }
+        String newCode = String.format("%06d", new java.util.Random().nextInt(999999));
+        user.setVerificationCode(newCode);
+        userRepository.save(user);
+        emailService.sendVerificationEmail(user.getEmail(), newCode);
+        audit("VERIFICATION_EMAIL_RESENT", "USER", userId, user.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public String exportSubscriptionsCsv() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("id,gymId,gymName,ownerEmail,plan,status,periodEnd,adminNotes\n");
+        for (GymSubscriptionDTO sub : getAllSubscriptions()) {
+            csv.append(sub.getId()).append(',')
+                    .append(sub.getGymId()).append(',')
+                    .append(csv(sub.getGymName())).append(',')
+                    .append(csv(sub.getOwnerEmail())).append(',')
+                    .append(csv(sub.getSaasPlanName())).append(',')
+                    .append(sub.getStatus()).append(',')
+                    .append(csv(sub.getCurrentPeriodEnd() != null ? sub.getCurrentPeriodEnd().toString() : "")).append(',')
+                    .append(csv(sub.getAdminNotes()))
+                    .append('\n');
+        }
+        audit("SUBSCRIPTIONS_EXPORTED", "SYSTEM", null, "rows=" + getAllSubscriptions().size());
+        return csv.toString();
+    }
+
+    @Transactional(readOnly = true)
+    public String exportUsersCsv() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("id,email,firstName,lastName,role,emailVerified\n");
+        for (SaaSAdminUserDTO user : getAllUsers()) {
+            csv.append(user.getId()).append(',')
+                    .append(csv(user.getEmail())).append(',')
+                    .append(csv(user.getFirstName())).append(',')
+                    .append(csv(user.getLastName())).append(',')
+                    .append(csv(user.getRole())).append(',')
+                    .append(user.isEmailVerified())
+                    .append('\n');
+        }
+        audit("USERS_EXPORTED", "SYSTEM", null, "rows=" + getAllUsers().size());
+        return csv.toString();
+    }
+
+    private static String csv(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n")) {
+            return "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
+
+    private static String truncate(String value, int max) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= max ? value : value.substring(0, max);
+    }
+
+    @Transactional
     public void deleteUserCompletely(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Użytkownik o ID " + userId + " nie istnieje"));
         if (user.getRole() == Role.SUPER_ADMIN) {
             throw new IllegalArgumentException("Nie można usunąć konta super admina");
         }
-
+        audit("USER_DELETE_STARTED", "USER", userId, user.getEmail());
         // 1. Wyzeruj nullable FK referencje do użytkownika
         jdbcTemplate.update("UPDATE passes SET sold_by_user_id = NULL WHERE sold_by_user_id = ?", userId);
         jdbcTemplate.update("UPDATE guests SET user_id = NULL WHERE user_id = ?", userId);
@@ -260,6 +427,7 @@ public class SaaSAdminService {
         // 6. Usunięcie siłowni i użytkownika
         jdbcTemplate.update("DELETE FROM gyms WHERE owner_user_id = ?", userId);
         jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId);
+        audit("USER_DELETED", "USER", userId, "completed");
     }
 
     @Transactional
@@ -267,7 +435,7 @@ public class SaaSAdminService {
         if (!"WYCZYSC".equals(confirmation)) {
             throw new IllegalArgumentException("Nieprawidłowe potwierdzenie operacji");
         }
-
+        audit("PLATFORM_RESET", "SYSTEM", null, confirmation);
         jdbcTemplate.execute("""
             TRUNCATE TABLE
               product_sale_items,

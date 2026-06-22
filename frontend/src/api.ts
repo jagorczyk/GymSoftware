@@ -1690,6 +1690,9 @@ export type GymSubscriptionDTO = {
   stripeSubscriptionId: string;
   currentPeriodEnd: string;
   createdAt: string;
+  adminNotes?: string | null;
+  featureFlagOverrides?: Record<string, boolean>;
+  effectiveFeatureFlags?: string[];
 };
 
 export async function getSaaSPlans(auth: AuthState): Promise<SaaSPlan[]> {
@@ -1798,6 +1801,119 @@ export async function extendSaaSSubscription(
     body: JSON.stringify(payload),
   });
   if (!response.ok) await parseApiError(response, "Nie udało się przedłużyć subskrypcji");
+  return response.json();
+}
+
+export async function updateSaaSSubscriptionNotes(
+  auth: AuthState,
+  subscriptionId: number,
+  adminNotes: string
+): Promise<GymSubscriptionDTO> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/notes`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ adminNotes }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać notatek");
+  return response.json();
+}
+
+export async function updateSaaSSubscriptionFeatureOverrides(
+  auth: AuthState,
+  subscriptionId: number,
+  overrides: Record<string, boolean>
+): Promise<GymSubscriptionDTO> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/${subscriptionId}/feature-overrides`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ overrides }),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać nadpisań funkcji");
+  return response.json();
+}
+
+export async function downloadSaaSSubscriptionsCsv(auth: AuthState): Promise<Blob> {
+  const response = await fetch(`${API_URL}/admin/saas/subscriptions/export.csv`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wyeksportować subskrypcji");
+  return response.blob();
+}
+
+export async function downloadSaaSUsersCsv(auth: AuthState): Promise<Blob> {
+  const response = await fetch(`${API_URL}/admin/saas/users/export.csv`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wyeksportować użytkowników");
+  return response.blob();
+}
+
+export type ImpersonationResponse = {
+  token: string;
+  role: string;
+  email: string;
+  impersonatorUserId: number;
+  impersonatorEmail: string;
+};
+
+export async function impersonateSaaSUser(auth: AuthState, userId: number): Promise<ImpersonationResponse> {
+  const response = await fetch(`${API_URL}/admin/saas/users/${userId}/impersonate`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć podglądu konta");
+  return response.json();
+}
+
+export async function resendSaaSUserVerification(auth: AuthState, userId: number): Promise<void> {
+  const response = await fetch(`${API_URL}/admin/saas/users/${userId}/resend-verification`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się wysłać e-maila weryfikacyjnego");
+}
+
+export type SuperAdminAuditLog = {
+  id: number;
+  actorEmail: string;
+  action: string;
+  targetType?: string | null;
+  targetId?: number | null;
+  details?: string | null;
+  createdAt: string;
+};
+
+export type SaaSHealthView = {
+  databaseOk: boolean;
+  databaseMessage: string;
+  smtpConfigured: boolean;
+  smtpMessage: string;
+  stripeConfigured: boolean;
+  stripeReachable: boolean;
+  stripeMessage: string;
+  scheduledJobs: Array<{ jobName: string; lastRunAt?: string | null; status: string; message?: string | null }>;
+  stripeWebhook: { lastReceivedAt?: string | null; lastEventType?: string | null; status: string };
+};
+
+export async function getSaaSHealth(auth: AuthState): Promise<SaaSHealthView> {
+  const response = await fetch(`${API_URL}/admin/saas/health`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statusu systemu");
+  return response.json();
+}
+
+export async function getSuperAdminAuditLogs(auth: AuthState): Promise<SuperAdminAuditLog[]> {
+  const response = await fetch(`${API_URL}/admin/saas/audit-logs`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać logów operacji");
   return response.json();
 }
 

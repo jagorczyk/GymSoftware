@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../authContext";
-import { deleteSaaSUser, getSaaSUsers, SaaSAdminUserDTO } from "../../api";
+import {
+  deleteSaaSUser,
+  downloadSaaSUsersCsv,
+  getSaaSUsers,
+  impersonateSaaSUser,
+  resendSaaSUserVerification,
+  SaaSAdminUserDTO,
+} from "../../api";
 import { LoadingState } from "../../components/LoadingState";
 import { ErrorState } from "../../components/ErrorState";
-import { RefreshCw } from "lucide-react";
+import { Download, Eye, Mail, RefreshCw } from "lucide-react";
 
 type RoleTab = "OWNER" | "EMPLOYEE" | "GUEST";
 
@@ -20,8 +28,18 @@ function roleBadgeClass(role: string) {
   return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
 }
 
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function SuperAdminUsersPage() {
-  const { auth } = useAuth();
+  const { auth, startImpersonation } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<SaaSAdminUserDTO[]>([]);
   const [activeTab, setActiveTab] = useState<RoleTab>("OWNER");
   const [loading, setLoading] = useState(true);
@@ -72,6 +90,41 @@ export function SuperAdminUsersPage() {
     }
   };
 
+  const handleImpersonate = async (user: SaaSAdminUserDTO) => {
+    if (!auth) return;
+    if (!confirm(`Podgląd konta ${user.email} jako ${user.role}?`)) return;
+    try {
+      const result = await impersonateSaaSUser(auth, user.id);
+      startImpersonation(result.token);
+      if (user.role === "OWNER") navigate("/owner/dashboard");
+      else if (user.role === "EMPLOYEE") navigate("/employee/dashboard");
+      else navigate("/client/dashboard");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się rozpocząć podglądu konta.");
+    }
+  };
+
+  const handleResendVerification = async (userId: number) => {
+    if (!auth) return;
+    try {
+      await resendSaaSUserVerification(auth, userId);
+      alert("Wysłano ponownie e-mail weryfikacyjny.");
+      await loadData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się wysłać e-maila.");
+    }
+  };
+
+  const handleExport = async () => {
+    if (!auth) return;
+    try {
+      const blob = await downloadSaaSUsersCsv(auth);
+      downloadBlob(blob, "users.csv");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Nie udało się wyeksportować użytkowników.");
+    }
+  };
+
   if (loading && users.length === 0) return <LoadingState message="Ładowanie użytkowników..." />;
   if (error) return <ErrorState message={error} onRetry={loadData} />;
 
@@ -80,15 +133,24 @@ export function SuperAdminUsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Użytkownicy</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Wszyscy użytkownicy platformy według roli.</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Podgląd kont, weryfikacja e-mail i eksport.</p>
         </div>
-        <button
-          onClick={() => void loadData()}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Odśwież
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => void handleExport()}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-lg"
+          >
+            <Download className="w-4 h-4" />
+            Eksport CSV
+          </button>
+          <button
+            onClick={() => void loadData()}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Odśwież
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -109,9 +171,7 @@ export function SuperAdminUsersPage() {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         {filteredUsers.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            Brak użytkowników w tej kategorii.
-          </div>
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Brak użytkowników w tej kategorii.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -149,12 +209,28 @@ export function SuperAdminUsersPage() {
                         {user.emailVerified ? "Zweryfikowany" : "Oczekujący"}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                      <button
+                        onClick={() => void handleImpersonate(user)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Podgląd
+                      </button>
+                      {!user.emailVerified && (
+                        <button
+                          onClick={() => void handleResendVerification(user.id)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          Wyślij kod
+                        </button>
+                      )}
                       <button
                         onClick={() => void handleDeleteUser(user.id, user.email)}
-                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
                       >
-                        Usuń konto
+                        Usuń
                       </button>
                     </td>
                   </tr>
