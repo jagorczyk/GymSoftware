@@ -42,8 +42,7 @@ export function RequireRole(props: { role: Role }) {
 }
 
 import { useTenant } from "../tenantContext";
-import { TenantLandingPage } from "../pages/TenantLandingPage";
-import { RegisterGymPage } from "../pages/RegisterGymPage";
+import { LandingPage } from "../pages/LandingPage";
 
 export function RootRedirect() {
   const { auth } = useAuth();
@@ -56,9 +55,9 @@ export function RootRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  // If NO subdomain and NOT logged in, show SaaS landing page
+  // Główna domena bez logowania — landing marketingowy
   if (!subdomain && !auth) {
-    return <RegisterGymPage />;
+    return <LandingPage />;
   }
 
   if (auth?.role === "SUPER_ADMIN") return <Navigate to="/superadmin/subscriptions" replace />;

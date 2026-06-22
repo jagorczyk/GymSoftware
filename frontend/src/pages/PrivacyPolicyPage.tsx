@@ -4,8 +4,8 @@ export function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
       <div className="max-w-3xl mx-auto px-6 py-12">
-        <Link to="/login" className="text-primary-600 dark:text-primary-400 text-sm font-semibold hover:underline">
-          ← Wróć
+        <Link to="/" className="text-primary-600 dark:text-primary-400 text-sm font-semibold hover:underline">
+          ← Strona główna
         </Link>
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-6 mb-8">Polityka prywatności</h1>
 
