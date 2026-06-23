@@ -1,27 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BarChart3, CalendarDays, Check, Loader2, Shield, Users } from "lucide-react";
+import { ArrowRight, Check, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { getTenantSaaSPlans, type SaaSPlan } from "../api";
 import { GymLosLogo } from "../components/GymLosLogo";
 import { pickDefaultPlanId } from "../components/RegisterPlanPicker";
 import { formatSaasPlanFeatureLabels } from "../saasPlanFeatures";
 import { primaryButtonClassName, secondaryButtonClassName } from "../components/formStyles";
 
-const BENEFITS = [
+const IMAGE_FEATURES = [
   {
-    icon: Users,
-    title: "Klienci pod kontrolą",
-    description: "Karnety, check-in, panel klienta i recepcja — bez chaosu w Excelu i na kartce.",
+    title: "Recepcja i sprzedaż bez kolejek",
+    description: "Szybka obsługa karnetów, check-in i płatności w jednym panelu.",
+    imageUrl: "/landing-gym-1.png",
   },
   {
-    icon: CalendarDays,
-    title: "Zajęcia i grafiki",
-    description: "Terminarz, rezerwacje, trenerzy i zmiany pracowników w jednym kalendarzu.",
+    title: "Klient wraca, bo ma wygodę",
+    description: "Rezerwacje, podgląd członkostwa i komunikacja z klubem bez telefonów.",
+    imageUrl: "/landing-gym-2.png",
   },
   {
-    icon: BarChart3,
-    title: "Wiesz, ile zarabiasz",
-    description: "Sprzedaż, raporty i analityka — decyzje na liczbach, nie na przeczuciach.",
+    title: "Widoczny wzrost klubu",
+    description: "Codzienne raporty i analiza sprzedaży, żeby szybciej podejmować decyzje.",
+    imageUrl: "/landing-gym-3.png",
   },
 ];
 
@@ -110,15 +110,15 @@ export function LandingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] dark:bg-slate-950 text-slate-800 dark:text-slate-200">
-      <header className="sticky top-0 z-50 bg-[#f8f9fc]/80 dark:bg-slate-950/80 backdrop-blur-lg border-b border-slate-200/60 dark:border-slate-800/60">
+    <div className="min-h-screen bg-[#070d1a] text-slate-100">
+      <header className="sticky top-0 z-50 bg-[#070d1a]/80 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-display font-extrabold text-slate-900 dark:text-white">
-            <GymLosLogo className="w-8 h-8 text-primary-600" />
+          <Link to="/" className="flex items-center gap-2.5 font-display font-extrabold text-white">
+            <GymLosLogo className="w-8 h-8 text-primary-400" />
             Gymlos
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-primary-600 hidden sm:inline">
+            <Link to="/login" className="text-sm font-semibold text-slate-300 hover:text-white hidden sm:inline">
               Zaloguj się
             </Link>
             <Link to="/register-gym" className={`text-sm !py-2.5 !px-5 ${primaryButtonClassName}`}>
@@ -131,19 +131,19 @@ export function LandingPage() {
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary-600/5 via-transparent to-transparent dark:from-primary-500/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.18),transparent_45%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.14),transparent_40%)] pointer-events-none" />
           <div className="relative z-10 max-w-5xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
             <img
               src="/logo-icon-alpha.png"
               alt="Gymlos"
               className="w-24 h-24 md:w-28 md:h-28 mx-auto mb-8 object-contain"
             />
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] max-w-3xl mx-auto">
-              Prowadź siłownię&nbsp;— nie arkusz kalkulacyjny
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1] max-w-3xl mx-auto">
+              Twoja siłownia może wyglądać premium nie tylko na sali, ale i w systemie
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Gymlos to system w chmurze dla właścicieli klubów fitness. Karnety, recepcja, zajęcia i raporty —
-              wszystko, czego potrzebujesz, żeby skupić się na klientach.
+            <p className="mt-6 text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              Gymlos porządkuje codzienną pracę klubu: od recepcji i karnetów, przez grafik, aż po wyniki finansowe.
+              Mniej klikania, więcej czasu na rozwój i klientów.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <button type="button" onClick={scrollToPricing} className={primaryButtonClassName}>
@@ -154,28 +154,45 @@ export function LandingPage() {
                 Załóż konto
               </button>
             </div>
-            <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-              <Shield className="w-3.5 h-3.5" />
+            <p className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-slate-400">
+              <ShieldCheck className="w-3.5 h-3.5" />
               Bezpieczne płatności Stripe · Własna subdomena siłowni · Bez instalacji
             </p>
           </div>
         </section>
 
-        {/* Benefits */}
-        <section className="py-16 md:py-20 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900/40">
+        {/* Image Features */}
+        <section className="py-14 md:py-20 border-t border-white/10">
           <div className="max-w-5xl mx-auto px-5">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white text-center">
-              Jedna platforma zamiast pięciu narzędzi
+            <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+              System, który czuć jak Twój klub
             </h2>
-            <div className="mt-12 grid md:grid-cols-3 gap-8">
-              {BENEFITS.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="text-center md:text-left">
-                  <div className="inline-flex w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-950/50 items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+            <p className="text-center text-slate-300 mt-3 max-w-2xl mx-auto">
+              Zamiast generycznych boxów — trzy konkretne obszary, które podnoszą jakość obsługi i wynik klubu.
+            </p>
+            <div className="mt-10 grid lg:grid-cols-12 gap-5">
+              {IMAGE_FEATURES.map((item, index) => (
+                <article
+                  key={item.title}
+                  className={`relative overflow-hidden rounded-3xl border border-white/10 bg-[#0b1428] ${
+                    index === 0 ? "lg:col-span-8 lg:row-span-2 min-h-[320px]" : "lg:col-span-4 min-h-[200px]"
+                  } ${index === 2 ? "lg:col-span-4 lg:-mt-10" : ""}`}
+                  style={{
+                    backgroundImage: `linear-gradient(140deg, rgba(3, 10, 25, 0.86), rgba(9, 27, 62, 0.68)), url(${item.imageUrl})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.25),transparent_45%)] pointer-events-none" />
+                  <div className="relative z-10 h-full p-6 md:p-7 flex flex-col justify-end">
+                    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary-200 mb-2">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Feature
+                    </p>
+                    <h3 className="text-xl md:text-2xl font-extrabold text-white leading-tight">{item.title}</h3>
+                    <p className="mt-2 text-sm md:text-base text-slate-200 max-w-xl">{item.description}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
-                </div>
+                </article>
               ))}
             </div>
           </div>
@@ -185,8 +202,8 @@ export function LandingPage() {
         <section ref={pricingRef} id="cennik" className="py-16 md:py-24 scroll-mt-20">
           <div className="max-w-5xl mx-auto px-5">
             <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">Wybierz pakiet</h2>
-              <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Wybierz pakiet</h2>
+              <p className="mt-3 text-slate-300 max-w-lg mx-auto">
                 Przejrzyste plany miesięczne. Po rejestracji konfigurujesz siłownię i od razu zaczynasz pracę.
               </p>
             </div>
@@ -196,8 +213,8 @@ export function LandingPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
               </div>
             ) : sortedPlans.length === 0 ? (
-              <div className="text-center py-12 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
-                <p className="text-slate-500">Plany chwilowo niedostępne.</p>
+              <div className="text-center py-12 rounded-3xl border border-dashed border-slate-600">
+                <p className="text-slate-300">Plany chwilowo niedostępne.</p>
                 <Link to="/register-gym" className={`mt-4 inline-flex ${primaryButtonClassName}`}>
                   Skontaktuj się przez rejestrację
                 </Link>
@@ -221,10 +238,10 @@ export function LandingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-16 bg-slate-900 dark:bg-slate-900/80">
+        <section className="py-16 bg-[#0b1428] border-y border-white/10">
           <div className="max-w-2xl mx-auto px-5 text-center">
             <h2 className="text-2xl md:text-3xl font-extrabold text-white">
-              Gotowy na porządek w swoim klubie?
+              Chcesz, żeby Twój klub działał tak dobrze, jak wygląda?
             </h2>
             <p className="mt-4 text-slate-400">
               Rejestracja zajmuje kilka minut. Wybierz plan, opłać subskrypcję i skonfiguruj siłownię pod swoją marką.
@@ -240,14 +257,14 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="py-8 border-t border-slate-200 dark:border-slate-800">
-        <div className="max-w-5xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+      <footer className="py-8 border-t border-white/10">
+        <div className="max-w-5xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
           <span>© {new Date().getFullYear()} Gymlos</span>
           <div className="flex gap-6">
-            <Link to="/polityka-prywatnosci" className="hover:text-primary-600">
+            <Link to="/polityka-prywatnosci" className="hover:text-primary-300">
               Polityka prywatności
             </Link>
-            <Link to="/login" className="hover:text-primary-600">
+            <Link to="/login" className="hover:text-primary-300">
               Logowanie
             </Link>
           </div>
