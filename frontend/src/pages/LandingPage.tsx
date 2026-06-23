@@ -70,10 +70,10 @@ function PlanStrip({
             ))}
           </ul>
         </div>
-        <div className="md:text-right flex md:block items-center justify-between gap-4">
+        <div className="flex flex-col items-start md:items-end gap-3 md:text-right">
           <div>
             <p className="text-3xl md:text-4xl font-black text-white leading-none">{plan.price} zł</p>
-            <p className="text-xs text-slate-300 mt-1">miesięcznie</p>
+            <p className="text-sm text-slate-300 mt-1 leading-none">/ miesiąc</p>
           </div>
           <Link
             to="/register-gym"

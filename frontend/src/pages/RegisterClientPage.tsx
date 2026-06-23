@@ -142,6 +142,12 @@ export function RegisterClientPage() {
       title="Dołącz do nas"
       subtitle="Zarejestruj się, aby zyskać dostęp do najlepszych siłowni i zarządzać swoimi treningami."
     >
+      <div className="mb-4">
+        <Link to="/" className="text-primary-600 hover:text-primary-500 font-semibold text-sm">
+          ← Strona główna
+        </Link>
+      </div>
+
       {step === "register" ? (
         <>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">Stwórz konto</h2>

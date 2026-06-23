@@ -66,6 +66,12 @@ export function LoginPage() {
           </div>
         )}
 
+      <div className="mb-5">
+        <Link to="/" className="text-primary-600 hover:text-primary-500 font-semibold text-sm">
+          ← Strona główna
+        </Link>
+      </div>
+
       <h2 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
         Witaj ponownie
       </h2>

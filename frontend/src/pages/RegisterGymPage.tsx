@@ -190,6 +190,12 @@ export function RegisterGymPage() {
       subtitle="Zarejestruj się, wybierz plan i zacznij zarządzać swoim biznesem w chmurze."
       wide={showPlanStep}
     >
+      <div className="mb-4">
+        <Link to="/" className="text-primary-600 hover:text-primary-500 font-semibold text-sm">
+          ← Strona główna
+        </Link>
+      </div>
+
       {step === 1 && googleIdToken && !showEmailForm && (
         <div className="space-y-6">
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Wybierz plan</h2>
@@ -232,11 +238,6 @@ export function RegisterGymPage() {
 
       {step === 1 && !googleIdToken && !showEmailForm && (
         <div className="space-y-6">
-          <div className="text-sm">
-            <Link to="/" className="text-primary-600 hover:text-primary-500 font-semibold">
-              ← Strona główna
-            </Link>
-          </div>
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Szybka rejestracja</h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">
             Zarejestruj się przez Google — wybierzesz tylko plan. Nazwę siłowni ustawisz po płatności.
