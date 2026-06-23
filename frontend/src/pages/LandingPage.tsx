@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Info, Loader2, ShieldCheck, Sparkles, X } from "lucide-react";
 import { getTenantSaaSPlans, type SaaSPlan } from "../api";
 import { GymLosLogo } from "../components/GymLosLogo";
 import { pickDefaultPlanId } from "../components/RegisterPlanPicker";
@@ -37,9 +37,11 @@ function planPitch(plan: SaaSPlan): string {
 function PlanStrip({
   plan,
   highlighted,
+  onShowDetails,
 }: {
   plan: SaaSPlan;
   highlighted: boolean;
+  onShowDetails: (plan: SaaSPlan) => void;
 }) {
   const highlights = formatSaasPlanFeatureLabels(plan.featureFlags).slice(0, 4);
   return (
@@ -75,14 +77,25 @@ function PlanStrip({
             <p className="text-3xl md:text-4xl font-black text-white leading-none">{plan.price} zł</p>
             <p className="text-sm text-slate-300 mt-1 leading-none">/ miesiąc</p>
           </div>
-          <Link
-            to="/register-gym"
-            className={`inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold ${
-              highlighted ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-primary-600 text-white hover:bg-primary-500"
-            }`}
-          >
-            Wybierz
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onShowDetails(plan)}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors"
+              aria-label={`Szczegóły pakietu ${plan.name}`}
+              title={`Szczegóły pakietu ${plan.name}`}
+            >
+              <Info className="w-4 h-4" />
+            </button>
+            <Link
+              to="/register-gym"
+              className={`inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold ${
+                highlighted ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-primary-600 text-white hover:bg-primary-500"
+              }`}
+            >
+              Wybierz
+            </Link>
+          </div>
         </div>
       </div>
     </article>
@@ -94,6 +107,7 @@ export function LandingPage() {
   const pricingRef = useRef<HTMLElement>(null);
   const [plans, setPlans] = useState<SaaSPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [detailsPlan, setDetailsPlan] = useState<SaaSPlan | null>(null);
 
   function scrollToPricing() {
     pricingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -171,7 +185,7 @@ export function LandingPage() {
               System, który czuć jak Twój klub
             </h2>
             <p className="text-center text-slate-300 mt-3 max-w-2xl mx-auto">
-              Zamiast generycznych boxów — trzy konkretne obszary, które podnoszą jakość obsługi i wynik klubu.
+              Trzy momenty, które decydują czy klient wróci: pierwsza obsługa, codzienna wygoda i realny progres klubu.
             </p>
             <div className="mt-10 grid lg:grid-cols-12 gap-5">
               {IMAGE_FEATURES.map((item, index) => (
@@ -225,7 +239,12 @@ export function LandingPage() {
             ) : (
               <div className="space-y-4 max-w-4xl mx-auto">
                 {sortedPlans.map((plan) => (
-                  <PlanStrip key={plan.id} plan={plan} highlighted={plan.id === recommendedId} />
+                  <PlanStrip
+                    key={plan.id}
+                    plan={plan}
+                    highlighted={plan.id === recommendedId}
+                    onShowDetails={setDetailsPlan}
+                  />
                 ))}
               </div>
             )}
@@ -251,6 +270,52 @@ export function LandingPage() {
           </div>
         </section>
       </main>
+
+      {detailsPlan && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setDetailsPlan(null)}
+        >
+          <div
+            className="w-full max-w-2xl rounded-3xl border border-white/15 bg-[#0b1428] text-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 p-6 border-b border-white/10">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-primary-200 font-semibold">Pakiet</p>
+                <h3 className="text-2xl font-extrabold mt-1">{detailsPlan.name}</h3>
+                <p className="text-slate-300 mt-2">{planPitch(detailsPlan)}</p>
+                <p className="text-primary-200 font-bold mt-3">{detailsPlan.price} zł / miesiąc</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailsPlan(null)}
+                className="w-9 h-9 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 inline-flex items-center justify-center"
+                aria-label="Zamknij"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm font-semibold text-slate-200 mb-3">W pakiecie otrzymujesz:</p>
+              <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+                {formatSaasPlanFeatureLabels(detailsPlan.featureFlags).map((label) => (
+                  <li key={label} className="text-sm text-slate-200 inline-flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{label}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 flex justify-end">
+                <Link to="/register-gym" className={primaryButtonClassName}>
+                  Wybierz ten pakiet
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="py-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-400">
