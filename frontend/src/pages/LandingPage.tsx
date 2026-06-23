@@ -277,24 +277,24 @@ export function LandingPage() {
           onClick={() => setDetailsPlan(null)}
         >
           <div
-            className="w-full max-w-2xl rounded-3xl border border-white/15 bg-[#0b1428] text-white shadow-2xl"
+            className="relative w-full max-w-2xl rounded-3xl border border-white/15 bg-[#0b1428] text-white shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 p-6 border-b border-white/10">
+            <button
+              type="button"
+              onClick={() => setDetailsPlan(null)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 inline-flex items-center justify-center z-10"
+              aria-label="Zamknij"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="p-6 pr-16 border-b border-white/10">
               <div>
                 <p className="text-xs uppercase tracking-widest text-primary-200 font-semibold">Pakiet</p>
                 <h3 className="text-2xl font-extrabold mt-1">{detailsPlan.name}</h3>
                 <p className="text-slate-300 mt-2">{planPitch(detailsPlan)}</p>
                 <p className="text-primary-200 font-bold mt-3">{detailsPlan.price} zł / miesiąc</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setDetailsPlan(null)}
-                className="w-9 h-9 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 inline-flex items-center justify-center"
-                aria-label="Zamknij"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
             <div className="p-6">
               <p className="text-sm font-semibold text-slate-200 mb-3">W pakiecie otrzymujesz:</p>
