@@ -29,6 +29,7 @@ import {
   Package,
   Star,
   Megaphone,
+  Inbox,
   UserCircle,
   CreditCard,
   Layers,
@@ -136,6 +137,7 @@ export function AppShell() {
         { label: "Kasa (POS)", to: "/employee/pos", icon: <ShoppingCart className="w-5 h-5" /> },
         { label: "Skaner QR", to: "/employee/qr-scanner", icon: <QrCode className="w-5 h-5" /> },
         { label: "Profil Trenera", to: "/employee/trainer-profile", icon: <UserCircle className="w-5 h-5" /> },
+        { label: "Obsługa klienta", to: "/employee/support", icon: <Inbox className="w-5 h-5" /> },
       ].filter((item) => {
         if (item.to === "/employee/lockers") {
           return (
@@ -152,6 +154,7 @@ export function AppShell() {
     () => [
       { label: "Pulpit", to: "/client/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
       { label: "Zajęcia i Treningi", to: "/client/activities", icon: <CalendarDays className="w-5 h-5" /> },
+      { label: "Wiadomości", to: "/client/messages", icon: <Inbox className="w-5 h-5" /> },
       { label: "Dołącz do siłowni", to: "/client/gyms/join", icon: <Store className="w-5 h-5" /> },
     ],
     []
@@ -184,6 +187,7 @@ export function AppShell() {
       { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" />, feature: "SALES_REPORT" },
       { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" />, feature: "ANALYTICS" },
       { label: "Marketing i CRM", to: "/owner/crm", icon: <Megaphone className="w-5 h-5" />, feature: "CRM" },
+      { label: "Obsługa klienta", to: "/owner/support", icon: <Inbox className="w-5 h-5" /> },
       { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" />, feature: "CLASS_RATINGS" },
       { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" />, feature: "NOTIFICATIONS" },
       { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" />, feature: "AUDIT_LOG" },

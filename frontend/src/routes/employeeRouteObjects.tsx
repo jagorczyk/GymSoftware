@@ -21,6 +21,7 @@ import {
   EmployeeQRScannerSimulatorPage,
   EmployeePOSPage,
   EmployeeTrainerProfilePage,
+  EmployeeSupportPage,
 } from "../pages/employee/employeeRouteElements";
 import { ProfileSettingsPage } from "../pages/ProfileSettingsPage";
 
@@ -47,5 +48,6 @@ export const employeeRouteObjects: RouteObject[] = [
   { path: "qr-scanner", Component: EmployeeQRScannerSimulatorPage },
   { path: "pos", Component: EmployeePOSPage },
   { path: "trainer-profile", Component: EmployeeTrainerProfilePage },
+  { path: "support", Component: EmployeeSupportPage },
   { path: "profile", Component: ProfileSettingsPage },
 ];

@@ -17,14 +17,15 @@ public enum EmployeePermission {
     MANAGE_CLASSES,
     MANAGE_PRODUCTS,
     SELL_PRODUCTS,
-    PERSONAL_TRAINER;
+    PERSONAL_TRAINER,
+    MANAGE_SUPPORT;
 
     public static Set<EmployeePermission> defaultPermissions() {
         return EnumSet.of(VIEW_DASHBOARD, MANAGE_GUESTS, SELL_PASSES, MANAGE_LOCKERS, SELL_PRODUCTS);
     }
 
     public static Set<EmployeePermission> optionalPermissions() {
-        return EnumSet.of(MANAGE_SCHEDULE, CREATE_LOCKERS, MANAGE_PASS_TYPES, MANAGE_WORK_SCHEDULE, MANAGE_CLASSES, MANAGE_PRODUCTS, PERSONAL_TRAINER);
+        return EnumSet.of(MANAGE_SCHEDULE, CREATE_LOCKERS, MANAGE_PASS_TYPES, MANAGE_WORK_SCHEDULE, MANAGE_CLASSES, MANAGE_PRODUCTS, PERSONAL_TRAINER, MANAGE_SUPPORT);
     }
 
     public static Set<EmployeePermission> resolve(Collection<EmployeePermission> requested) {
@@ -49,6 +50,7 @@ public enum EmployeePermission {
             case MANAGE_PRODUCTS -> "Zarządzanie bazą produktów i magazynem";
             case SELL_PRODUCTS -> "Sprzedaż produktów (POS)";
             case PERSONAL_TRAINER -> "Profil trenera personalnego";
+            case MANAGE_SUPPORT -> "Obsługa klienta (skrzynka wiadomości)";
         };
     }
 }

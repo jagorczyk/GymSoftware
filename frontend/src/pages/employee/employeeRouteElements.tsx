@@ -20,6 +20,8 @@ import { EmployeeClassForm } from "./EmployeeClassForm";
 import { EmployeeClassDetail } from "./EmployeeClassDetail";
 import { EmployeeQRScannerSimulator } from "./EmployeeQRScannerSimulator";
 import { EmployeePOS } from "./EmployeePOS";
+import { EmployeeTrainerProfile } from "./EmployeeTrainerProfile";
+import { EmployeeSupport } from "./EmployeeSupport";
 
 function Guarded(props: { permissions: EmployeePermission[]; children: ReactElement }) {
   return <EmployeeRouteGuard permissions={props.permissions}>{props.children}</EmployeeRouteGuard>;
@@ -188,13 +190,21 @@ export function EmployeePOSPage() {
     </Guarded>
   );
 }
-import { EmployeeTrainerProfile } from "./EmployeeTrainerProfile";
 
 export function EmployeeTrainerProfilePage() {
   const ctx = useEmployeeDashboardContext();
   return (
     <Guarded permissions={ctx.permissions}>
       <EmployeeTrainerProfile ctx={ctx} />
+    </Guarded>
+  );
+}
+
+export function EmployeeSupportPage() {
+  const ctx = useEmployeeDashboardContext();
+  return (
+    <Guarded permissions={ctx.permissions}>
+      <EmployeeSupport />
     </Guarded>
   );
 }

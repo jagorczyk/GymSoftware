@@ -10,6 +10,7 @@ import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.RateClassRequest;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.FreezePassRequest;
 import com.jagorczyk.gymManagement.security.CustomUserPrincipal;
 import com.jagorczyk.gymManagement.service.ClientPortalService;
+import com.jagorczyk.gymManagement.service.SupportMessageService;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,13 +28,16 @@ public class ClientPortalController {
 
     private final ClientPortalService clientPortalService;
     private final com.jagorczyk.gymManagement.security.JwtService jwtService;
+    private final SupportMessageService supportMessageService;
 
     public ClientPortalController(
             ClientPortalService clientPortalService,
-            com.jagorczyk.gymManagement.security.JwtService jwtService
+            com.jagorczyk.gymManagement.security.JwtService jwtService,
+            SupportMessageService supportMessageService
     ) {
         this.clientPortalService = clientPortalService;
         this.jwtService = jwtService;
+        this.supportMessageService = supportMessageService;
     }
 
     @GetMapping("/checkin-qr-token")
@@ -212,5 +216,48 @@ public class ClientPortalController {
             @PathVariable Long trainingId
     ) {
         clientPortalService.cancelPersonalTraining(principal.getUserId(), gymId, trainingId);
+    }
+
+    @GetMapping("/support/threads")
+    public List<com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.SupportThreadSummary> listSupportThreads(
+            @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
+        return supportMessageService.listClientThreads(principal.getUserId());
+    }
+
+    @GetMapping("/gyms/{gymId}/support/threads")
+    public List<com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.SupportThreadSummary> listGymSupportThreads(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId
+    ) {
+        return supportMessageService.listClientThreadsForGym(principal.getUserId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/support/threads")
+    public com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.SupportThreadDetail createSupportThread(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @jakarta.validation.Valid @RequestBody com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.CreateSupportThreadRequest request
+    ) {
+        return supportMessageService.createThread(principal.getUserId(), gymId, request);
+    }
+
+    @GetMapping("/gyms/{gymId}/support/threads/{threadId}")
+    public com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.SupportThreadDetail getSupportThread(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long threadId
+    ) {
+        return supportMessageService.getClientThread(principal.getUserId(), gymId, threadId);
+    }
+
+    @PostMapping("/gyms/{gymId}/support/threads/{threadId}/messages")
+    public com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.SupportThreadDetail replyToSupportThread(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId,
+            @PathVariable Long threadId,
+            @jakarta.validation.Valid @RequestBody com.jagorczyk.gymManagement.api.dto.SupportMessageDtos.ReplySupportMessageRequest request
+    ) {
+        return supportMessageService.replyAsClient(principal.getUserId(), gymId, threadId, request);
     }
 }
