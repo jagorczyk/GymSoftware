@@ -23,6 +23,7 @@ export function MfaPage() {
   const state = location.state as MfaLocationState | null;
 
   const [code, setCode] = useState("");
+  const [rememberDevice, setRememberDevice] = useState(true);
   const [loading, setLoading] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
@@ -63,7 +64,7 @@ export function MfaPage() {
     try {
       const result = isSetup
         ? await confirmMfaSetup(mfaToken, code)
-        : await verifyMfaLogin(mfaToken, code);
+        : await verifyMfaLogin(mfaToken, code, rememberDevice);
       if (!result.token) {
         throw new Error("Brak tokenu po weryfikacji MFA");
       }
@@ -124,6 +125,21 @@ export function MfaPage() {
           required
           disabled={loading || (isSetup && !qrCodeDataUrl)}
         />
+
+        {!isSetup ? (
+          <label className="flex items-start gap-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 px-4 py-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberDevice}
+              onChange={(e) => setRememberDevice(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+              disabled={loading}
+            />
+            <span className="text-sm text-slate-600 dark:text-slate-300 leading-snug">
+              Zapamiętaj to urządzenie na 30 dni — przy kolejnym logowaniu nie poprosimy o kod MFA.
+            </span>
+          </label>
+        ) : null}
 
         <button
           type="submit"

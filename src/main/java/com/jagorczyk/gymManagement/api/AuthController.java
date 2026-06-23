@@ -11,6 +11,7 @@ import com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaTokenRequest;
 import com.jagorczyk.gymManagement.api.dto.AuthDtos.ResendVerificationRequest;
 import com.jagorczyk.gymManagement.service.AuthService;
 import com.jagorczyk.gymManagement.service.GoogleAuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,7 +68,12 @@ public class AuthController {
     }
 
     @PostMapping("/mfa/verify")
-    public AuthResponse verifyMfaLogin(@Valid @RequestBody MfaCodeRequest request) {
-        return authService.verifyMfaLogin(request.mfaToken(), request.code());
+    public AuthResponse verifyMfaLogin(
+            @Valid @RequestBody MfaCodeRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        boolean rememberDevice = Boolean.TRUE.equals(request.rememberDevice());
+        String userAgent = httpRequest.getHeader("User-Agent");
+        return authService.verifyMfaLogin(request.mfaToken(), request.code(), rememberDevice, userAgent);
     }
 }

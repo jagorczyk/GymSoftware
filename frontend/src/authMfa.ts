@@ -3,6 +3,7 @@ export type AuthLoginResult = {
   mfaRequired: boolean;
   mfaSetupRequired: boolean;
   mfaToken: string | null;
+  trustedDeviceToken: string | null;
 };
 
 export function normalizeAuthLoginResult(raw: Partial<AuthLoginResult> & { token?: string | null }): AuthLoginResult {
@@ -11,6 +12,7 @@ export function normalizeAuthLoginResult(raw: Partial<AuthLoginResult> & { token
     mfaRequired: Boolean(raw.mfaRequired),
     mfaSetupRequired: Boolean(raw.mfaSetupRequired),
     mfaToken: raw.mfaToken ?? null,
+    trustedDeviceToken: raw.trustedDeviceToken ?? null,
   };
 }
 

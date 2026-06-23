@@ -1,6 +1,7 @@
 import { AuthState } from "./auth";
 import type { EmployeePermission } from "./permissions";
 import { AuthLoginResult, normalizeAuthLoginResult } from "./authMfa";
+import { saveMfaTrustedDeviceToken, withTrustedDeviceToken } from "./mfaTrustedDevice";
 
 const API_URL = "/api";
 
@@ -33,7 +34,7 @@ export async function login(email: string, password: string): Promise<AuthLoginR
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(withTrustedDeviceToken({ email, password })),
   });
   if (!response.ok) await parseApiError(response, "Logowanie nie powiodło się");
   return normalizeAuthLoginResult(await response.json());
@@ -45,7 +46,7 @@ export async function loginWithGoogle(idToken: string, role?: string): Promise<A
   const response = await fetch(`${API_URL}/auth/google`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(withTrustedDeviceToken(body)),
   });
   if (!response.ok) await parseApiError(response, "Logowanie Google nie powiodło się");
   return normalizeAuthLoginResult(await response.json());
@@ -64,7 +65,7 @@ export async function verifyEmail(email: string, code: string): Promise<AuthLogi
   const response = await fetch(`${API_URL}/auth/verify-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, code }),
+    body: JSON.stringify(withTrustedDeviceToken({ email, code })),
   });
   if (!response.ok) await parseApiError(response, "Weryfikacja nie powiodła się");
   return normalizeAuthLoginResult(await response.json());
@@ -90,14 +91,22 @@ export async function confirmMfaSetup(mfaToken: string, code: string): Promise<A
   return normalizeAuthLoginResult(await response.json());
 }
 
-export async function verifyMfaLogin(mfaToken: string, code: string): Promise<AuthLoginResult> {
+export async function verifyMfaLogin(
+  mfaToken: string,
+  code: string,
+  rememberDevice = false
+): Promise<AuthLoginResult> {
   const response = await fetch(`${API_URL}/auth/mfa/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mfaToken, code }),
+    body: JSON.stringify({ mfaToken, code, rememberDevice }),
   });
   if (!response.ok) await parseApiError(response, "Nieprawidłowy kod MFA");
-  return normalizeAuthLoginResult(await response.json());
+  const result = normalizeAuthLoginResult(await response.json());
+  if (result.trustedDeviceToken) {
+    saveMfaTrustedDeviceToken(result.trustedDeviceToken);
+  }
+  return result;
 }
 
 export async function resendVerification(email: string): Promise<void> {

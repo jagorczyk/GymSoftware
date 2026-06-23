@@ -59,7 +59,7 @@ class MvpServiceIntegrationTest {
         var response = authService.register(new RegisterRequest("owner@test.com", "secret123", Role.OWNER));
         assertThat(response.token()).isNull();
         User user = userRepository.findByEmail("owner@test.com").get();
-        var verifyResponse = authService.verifyEmail(new com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest("owner@test.com", user.getVerificationCode()));
+        var verifyResponse = authService.verifyEmail(new com.jagorczyk.gymManagement.api.dto.AuthDtos.VerifyEmailRequest("owner@test.com", user.getVerificationCode(), null));
         assertThat(verifyResponse.token()).isNull();
         assertThat(verifyResponse.mfaSetupRequired()).isTrue();
         assertThat(verifyResponse.mfaToken()).isNotBlank();

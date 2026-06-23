@@ -75,7 +75,7 @@ public class AuthService {
         user.setEmailVerified(true);
         user.setVerificationCode(null);
         userRepository.save(user);
-        return mfaService.resolveAuthResponse(user);
+        return mfaService.resolveAuthResponse(user, request.trustedDeviceToken());
     }
 
     @Transactional
@@ -105,15 +105,15 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
-        return mfaService.resolveAuthResponse(principal.getUser());
+        return mfaService.resolveAuthResponse(principal.getUser(), request.trustedDeviceToken());
     }
 
     public AuthResponse completeMfaSetup(String mfaToken, String code) {
         return mfaService.confirmSetup(mfaToken, code);
     }
 
-    public AuthResponse verifyMfaLogin(String mfaToken, String code) {
-        return mfaService.verifyLogin(mfaToken, code);
+    public AuthResponse verifyMfaLogin(String mfaToken, String code, boolean rememberDevice, String userAgent) {
+        return mfaService.verifyLogin(mfaToken, code, rememberDevice, userAgent);
     }
 
     public com.jagorczyk.gymManagement.api.dto.AuthDtos.MfaSetupResponse beginMfaSetup(String mfaToken) {

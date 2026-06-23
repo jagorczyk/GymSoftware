@@ -18,13 +18,15 @@ public final class AuthDtos {
 
     public record LoginRequest(
             @Email @NotBlank String email,
-            @NotBlank String password
+            @NotBlank String password,
+            String trustedDeviceToken
     ) {
     }
 
     public record VerifyEmailRequest(
             @Email @NotBlank String email,
-            @NotBlank String code
+            @NotBlank String code,
+            String trustedDeviceToken
     ) {
     }
 
@@ -37,22 +39,27 @@ public final class AuthDtos {
             String token,
             boolean mfaRequired,
             boolean mfaSetupRequired,
-            String mfaToken
+            String mfaToken,
+            String trustedDeviceToken
     ) {
         public static AuthResponse withToken(String token) {
-            return new AuthResponse(token, false, false, null);
+            return new AuthResponse(token, false, false, null, null);
+        }
+
+        public static AuthResponse withTokenAndTrustedDevice(String token, String trustedDeviceToken) {
+            return new AuthResponse(token, false, false, null, trustedDeviceToken);
         }
 
         public static AuthResponse pendingRegistration() {
-            return new AuthResponse(null, false, false, null);
+            return new AuthResponse(null, false, false, null, null);
         }
 
         public static AuthResponse mfaChallenge(String mfaToken) {
-            return new AuthResponse(null, true, false, mfaToken);
+            return new AuthResponse(null, true, false, mfaToken, null);
         }
 
         public static AuthResponse mfaSetup(String mfaToken) {
-            return new AuthResponse(null, false, true, mfaToken);
+            return new AuthResponse(null, false, true, mfaToken, null);
         }
     }
 
@@ -63,7 +70,8 @@ public final class AuthDtos {
 
     public record MfaCodeRequest(
             @NotBlank String mfaToken,
-            @NotBlank String code
+            @NotBlank String code,
+            Boolean rememberDevice
     ) {
     }
 
@@ -76,7 +84,8 @@ public final class AuthDtos {
 
     public record GoogleAuthRequest(
             @NotBlank String idToken,
-            Role role
+            Role role,
+            String trustedDeviceToken
     ) {
     }
 }

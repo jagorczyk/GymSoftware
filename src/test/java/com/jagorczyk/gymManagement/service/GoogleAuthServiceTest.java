@@ -57,12 +57,12 @@ class GoogleAuthServiceTest {
             user.setId(10L);
             return user;
         });
-        when(mfaService.resolveAuthResponse(any(User.class))).thenAnswer(invocation -> {
+        when(mfaService.resolveAuthResponse(any(User.class), any())).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             return AuthResponse.withToken("jwt-token");
         });
 
-        AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", Role.GUEST));
+        AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", Role.GUEST, null));
 
         assertEquals("jwt-token", response.token());
         verify(userRepository).save(any(User.class));
@@ -81,12 +81,12 @@ class GoogleAuthServiceTest {
         when(userRepository.findByGoogleId("google-sub-1")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(existing));
         when(userRepository.save(existing)).thenReturn(existing);
-        when(mfaService.resolveAuthResponse(any(User.class))).thenAnswer(invocation -> {
+        when(mfaService.resolveAuthResponse(any(User.class), any())).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             return AuthResponse.withToken("jwt-token");
         });
 
-        AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null));
+        AuthResponse response = googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null, null));
 
         assertEquals("jwt-token", response.token());
         assertEquals("google-sub-1", existing.getGoogleId());
@@ -101,7 +101,7 @@ class GoogleAuthServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", Role.EMPLOYEE))
+                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", Role.EMPLOYEE, null))
         );
         verify(userRepository, never()).save(any());
     }
@@ -114,7 +114,7 @@ class GoogleAuthServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null))
+                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null, null))
         );
     }
 
@@ -133,7 +133,7 @@ class GoogleAuthServiceTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null))
+                () -> googleAuthService.loginOrRegister(new GoogleAuthRequest("token", null, null))
         );
     }
 }

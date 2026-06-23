@@ -30,7 +30,7 @@ public class GoogleAuthService {
     public AuthResponse loginOrRegister(GoogleAuthRequest request) {
         GoogleUserInfo googleUser = googleTokenVerifier.verify(request.idToken());
         User user = resolveUser(googleUser, request.role());
-        return mfaService.resolveAuthResponse(user);
+        return mfaService.resolveAuthResponse(user, request.trustedDeviceToken());
     }
 
     private User resolveUser(GoogleUserInfo googleUser, Role requestedRole) {

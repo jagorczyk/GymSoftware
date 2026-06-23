@@ -29,22 +29,31 @@ public class MfaService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final TrustedMfaDeviceService trustedMfaDeviceService;
     private final SecretGenerator secretGenerator = new DefaultSecretGenerator();
     private final QrGenerator qrGenerator = new ZxingPngQrGenerator();
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeVerifier codeVerifier = new DefaultCodeVerifier(new DefaultCodeGenerator(), timeProvider);
 
-    public MfaService(UserRepository userRepository, JwtService jwtService) {
+    public MfaService(
+            UserRepository userRepository,
+            JwtService jwtService,
+            TrustedMfaDeviceService trustedMfaDeviceService
+    ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.trustedMfaDeviceService = trustedMfaDeviceService;
     }
 
     public static boolean isMfaMandatory(User user) {
         return user.getRole() == Role.OWNER || user.getRole() == Role.SUPER_ADMIN;
     }
 
-    public AuthResponse resolveAuthResponse(User user) {
+    public AuthResponse resolveAuthResponse(User user, String trustedDeviceToken) {
         if (user.isMfaEnabled() && user.getMfaSecret() != null && !user.getMfaSecret().isBlank()) {
+            if (trustedMfaDeviceService.isTrusted(user.getId(), trustedDeviceToken)) {
+                return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
+            }
             return AuthResponse.mfaChallenge(jwtService.generateMfaToken(user.getId(), "challenge"));
         }
         if (isMfaMandatory(user)) {
@@ -82,7 +91,7 @@ public class MfaService {
     }
 
     @Transactional
-    public AuthResponse verifyLogin(String mfaToken, String code) {
+    public AuthResponse verifyLogin(String mfaToken, String code, boolean rememberDevice, String userAgent) {
         User user = loadUserForMfa(mfaToken, "challenge");
         if (!user.isMfaEnabled() || user.getMfaSecret() == null || user.getMfaSecret().isBlank()) {
             throw new IllegalArgumentException("MFA nie jest skonfigurowane");
@@ -90,7 +99,12 @@ public class MfaService {
         if (!verifyCode(user.getMfaSecret(), code)) {
             throw new IllegalArgumentException("Nieprawidłowy kod MFA");
         }
-        return AuthResponse.withToken(jwtService.generateToken(new CustomUserPrincipal(user)));
+        String token = jwtService.generateToken(new CustomUserPrincipal(user));
+        if (!rememberDevice) {
+            return AuthResponse.withToken(token);
+        }
+        String trustedDeviceToken = trustedMfaDeviceService.createTrustedDevice(user.getId(), userAgent);
+        return AuthResponse.withTokenAndTrustedDevice(token, trustedDeviceToken);
     }
 
     @Transactional
