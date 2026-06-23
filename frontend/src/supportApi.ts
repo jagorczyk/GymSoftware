@@ -213,3 +213,23 @@ export function formatSupportDate(dateStr: string) {
     minute: "2-digit",
   });
 }
+
+export async function getOwnerSupportUnreadCount(auth: AuthState, gymId: number): Promise<number> {
+  const res = await fetch(`${API_URL}/owner/gyms/${gymId}/support/unread-count`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return Number(data.count ?? 0);
+}
+
+export async function getEmployeeSupportUnreadCount(auth: AuthState, gymId: number): Promise<number> {
+  const res = await fetch(`${API_URL}/employee/gyms/${gymId}/support/unread-count`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return Number(data.count ?? 0);
+}
+
+export const SUPPORT_INBOX_UPDATED_EVENT = "support_inbox_updated";

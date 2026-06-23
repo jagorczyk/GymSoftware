@@ -48,6 +48,11 @@ import { formatGymOptionLabel } from "./utils/gymLabel";
 import { buildMainAppUrl } from "./utils/subdomain";
 import { usePlanFeatures } from "./planFeaturesContext";
 import type { SaasPlanFeatureId } from "./saasPlanFeatures";
+import {
+  getEmployeeSupportUnreadCount,
+  getOwnerSupportUnreadCount,
+  SUPPORT_INBOX_UPDATED_EVENT,
+} from "./supportApi";
 
 export function AppShell() {
   const { auth, logout, isImpersonating, endImpersonation } = useAuth();
@@ -63,6 +68,7 @@ export function AppShell() {
   const displayName = brandName.trim();
   const { hasFeature } = usePlanFeatures();
   const [subscriptionExpired, setSubscriptionExpired] = useState(false);
+  const [supportUnreadCount, setSupportUnreadCount] = useState(0);
 
   const currentGym = gymSelector.gyms.find((g) => g.id === gymSelector.selectedGymId);
   const themeColor = currentGym?.themeColor || "#2155e5";
@@ -114,6 +120,52 @@ export function AppShell() {
       setSubscriptionExpired(false);
     }
   }, [location.pathname, gymSelector.selectedGymId]);
+
+  const canViewSupportInbox =
+    auth?.role === "OWNER" ||
+    (auth?.role === "EMPLOYEE" && hasEmployeePermission(employeePermissions, "MANAGE_SUPPORT"));
+
+  useEffect(() => {
+    if (!auth || !canViewSupportInbox || gymSelector.selectedGymId === "") {
+      setSupportUnreadCount(0);
+      return;
+    }
+
+    const gymId = Number(gymSelector.selectedGymId);
+    if (Number.isNaN(gymId)) {
+      setSupportUnreadCount(0);
+      return;
+    }
+
+    const currentAuth = auth;
+    let cancelled = false;
+
+    async function loadUnreadCount() {
+      try {
+        const count =
+          currentAuth.role === "OWNER"
+            ? await getOwnerSupportUnreadCount(currentAuth, gymId)
+            : await getEmployeeSupportUnreadCount(currentAuth, gymId);
+        if (!cancelled) setSupportUnreadCount(count);
+      } catch {
+        if (!cancelled) setSupportUnreadCount(0);
+      }
+    }
+
+    loadUnreadCount();
+    const interval = window.setInterval(loadUnreadCount, 60_000);
+
+    function handleSupportInboxUpdated() {
+      loadUnreadCount();
+    }
+    window.addEventListener(SUPPORT_INBOX_UPDATED_EVENT, handleSupportInboxUpdated);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener(SUPPORT_INBOX_UPDATED_EVENT, handleSupportInboxUpdated);
+    };
+  }, [auth, canViewSupportInbox, gymSelector.selectedGymId, location.pathname]);
 
   useEffect(() => {
     if (displayName) {
@@ -283,6 +335,8 @@ export function AppShell() {
           {navItems.map((item) => {
             const isActive =
               location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+            const isSupportNav = item.to === "/owner/support" || item.to === "/employee/support";
+            const showSupportBubble = isSupportNav && supportUnreadCount > 0;
             return (
               <Link
                 key={item.to}
@@ -297,10 +351,27 @@ export function AppShell() {
                   }
                 `}
               >
-                <div className={isActive ? "text-primary-500 dark:text-primary-400" : "text-slate-400 dark:text-slate-500"}>
+                <div className={`relative shrink-0 ${isActive ? "text-primary-500 dark:text-primary-400" : "text-slate-400 dark:text-slate-500"}`}>
                   {item.icon}
+                  {showSupportBubble && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[1.1rem] h-[1.1rem] px-1 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-black leading-none ring-2 ring-white dark:ring-slate-950">
+                      {supportUnreadCount > 9 ? "9+" : supportUnreadCount}
+                    </span>
+                  )}
                 </div>
-                <span className="text-sm font-semibold tracking-wide">{item.label}</span>
+                <span className="text-sm font-semibold tracking-wide flex-1 min-w-0">{item.label}</span>
+                {showSupportBubble && (
+                  <span
+                    className="shrink-0 max-w-[9rem] text-[10px] font-bold leading-tight text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 px-2.5 py-1 rounded-2xl rounded-bl-sm shadow-sm"
+                    title={`${supportUnreadCount} nieodczytanych wiadomości od klientów`}
+                  >
+                    {supportUnreadCount === 1
+                      ? "1 nowa wiadomość"
+                      : supportUnreadCount < 5
+                      ? `${supportUnreadCount} nowe wiadomości`
+                      : `${supportUnreadCount} nieodczytanych`}
+                  </span>
+                )}
               </Link>
             );
           })}

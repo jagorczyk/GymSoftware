@@ -111,6 +111,12 @@ public class SupportMessageService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public int getStaffUnreadCount(User user, Long gymId) {
+        requireStaffAccess(user, gymId);
+        return (int) messageRepository.countUnreadForStaffByGymId(gymId, SupportMessageSenderSide.CLIENT);
+    }
+
     @Transactional
     public SupportThreadDetail getStaffThread(User user, Long gymId, Long threadId) {
         requireStaffAccess(user, gymId);

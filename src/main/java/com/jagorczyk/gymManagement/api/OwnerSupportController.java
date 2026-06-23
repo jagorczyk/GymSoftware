@@ -35,6 +35,14 @@ public class OwnerSupportController {
         return supportMessageService.listStaffThreads(principal.getUser(), gymId);
     }
 
+    @GetMapping("/unread-count")
+    public java.util.Map<String, Integer> unreadCount(
+            @AuthenticationPrincipal CustomUserPrincipal principal,
+            @PathVariable Long gymId
+    ) {
+        return java.util.Map.of("count", supportMessageService.getStaffUnreadCount(principal.getUser(), gymId));
+    }
+
     @GetMapping("/threads/{threadId}")
     public SupportThreadDetail getThread(
             @AuthenticationPrincipal CustomUserPrincipal principal,

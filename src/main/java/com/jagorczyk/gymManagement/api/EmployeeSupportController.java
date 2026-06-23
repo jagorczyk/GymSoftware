@@ -35,6 +35,14 @@ public class EmployeeSupportController {
         return supportMessageService.listStaffThreads(currentUserService.getCurrentUser(), gymId);
     }
 
+    @GetMapping("/unread-count")
+    public java.util.Map<String, Integer> unreadCount(@PathVariable Long gymId) {
+        return java.util.Map.of(
+                "count",
+                supportMessageService.getStaffUnreadCount(currentUserService.getCurrentUser(), gymId)
+        );
+    }
+
     @GetMapping("/threads/{threadId}")
     public SupportThreadDetail getThread(@PathVariable Long gymId, @PathVariable Long threadId) {
         return supportMessageService.getStaffThread(currentUserService.getCurrentUser(), gymId, threadId);

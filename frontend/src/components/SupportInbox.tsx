@@ -9,7 +9,12 @@ import {
   SupportThreadDetail,
   SupportThreadSummary,
   formatSupportDate,
+  SUPPORT_INBOX_UPDATED_EVENT,
 } from "../supportApi";
+
+function notifySupportInboxUpdated() {
+  window.dispatchEvent(new Event(SUPPORT_INBOX_UPDATED_EVENT));
+}
 
 type SupportInboxProps = {
   gymId: number;
@@ -53,6 +58,7 @@ export function SupportInbox({
         showError(err instanceof Error ? err.message : "Błąd ładowania wiadomości");
       } finally {
         setLoading(false);
+        notifySupportInboxUpdated();
       }
     }
     load();
@@ -67,6 +73,7 @@ export function SupportInbox({
       setThreads((prev) =>
         prev.map((t) => (t.id === threadId ? { ...t, unreadCount: 0 } : t))
       );
+      notifySupportInboxUpdated();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Błąd otwierania rozmowy");
     } finally {

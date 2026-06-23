@@ -22,4 +22,16 @@ public interface SupportMessageRepository extends JpaRepository<SupportMessage, 
             @Param("senderSide") SupportMessageSenderSide senderSide,
             @Param("since") LocalDateTime since
     );
+
+    @Query("""
+            SELECT COUNT(m) FROM SupportMessage m
+            JOIN m.thread t
+            WHERE t.gym.id = :gymId
+            AND m.senderSide = :senderSide
+            AND (t.staffLastReadAt IS NULL OR m.createdAt > t.staffLastReadAt)
+            """)
+    long countUnreadForStaffByGymId(
+            @Param("gymId") Long gymId,
+            @Param("senderSide") SupportMessageSenderSide senderSide
+    );
 }
