@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Check, Info, Loader2, ShieldCheck, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Info, Loader2, ShieldCheck, X } from "lucide-react";
 import { getTenantSaaSPlans, type SaaSPlan } from "../api";
 import { pickDefaultPlanId } from "../components/RegisterPlanPicker";
 import { formatSaasPlanFeatureLabels } from "../saasPlanFeatures";
@@ -201,10 +201,6 @@ export function LandingPage() {
                 >
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.25),transparent_45%)] pointer-events-none" />
                   <div className="relative z-10 h-full p-6 md:p-7 flex flex-col justify-end">
-                    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary-200 mb-2">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Feature
-                    </p>
                     <h3 className="text-xl md:text-2xl font-extrabold text-white leading-tight">{item.title}</h3>
                     <p className="mt-2 text-sm md:text-base text-slate-200 max-w-xl">{item.description}</p>
                   </div>
