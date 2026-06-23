@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Info, Loader2, ShieldCheck, Sparkles, X } from "lucide-react";
 import { getTenantSaaSPlans, type SaaSPlan } from "../api";
-import { GymLosLogo } from "../components/GymLosLogo";
 import { pickDefaultPlanId } from "../components/RegisterPlanPicker";
 import { formatSaasPlanFeatureLabels } from "../saasPlanFeatures";
 import { primaryButtonClassName, secondaryButtonClassName } from "../components/formStyles";
@@ -131,7 +130,7 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 bg-[#070d1a]/80 backdrop-blur-lg border-b border-white/10">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 font-display font-extrabold text-white">
-            <GymLosLogo className="w-8 h-8 text-primary-400" />
+            <img src="/logo-icon-alpha.png" alt="" className="w-8 h-8 object-contain" aria-hidden />
             Gymlos
           </Link>
           <div className="flex items-center gap-3">
