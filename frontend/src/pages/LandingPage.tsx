@@ -34,54 +34,57 @@ function planPitch(plan: SaaSPlan): string {
   return "Pakiet dopasowany do wielkości Twojej siłowni.";
 }
 
-function PlanCard({
+function PlanStrip({
   plan,
   highlighted,
 }: {
   plan: SaaSPlan;
   highlighted: boolean;
 }) {
-  const highlights = formatSaasPlanFeatureLabels(plan.featureFlags).slice(0, 5);
-
+  const highlights = formatSaasPlanFeatureLabels(plan.featureFlags).slice(0, 4);
   return (
     <article
-      className={`relative flex flex-col rounded-3xl p-8 transition-all ${
+      className={`rounded-3xl border p-5 md:p-6 transition-all ${
         highlighted
-          ? "bg-slate-900 text-white shadow-2xl shadow-primary-500/20 scale-[1.02] ring-2 ring-primary-500"
-          : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+          ? "border-primary-400/60 bg-[linear-gradient(120deg,rgba(30,64,175,0.35),rgba(15,23,42,0.95))] shadow-[0_10px_40px_rgba(37,99,235,0.2)]"
+          : "border-white/15 bg-[linear-gradient(120deg,rgba(15,23,42,0.95),rgba(15,23,42,0.8))]"
       }`}
     >
-      {highlighted && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary-500 text-white text-xs font-bold uppercase tracking-wide">
-          Najczęściej wybierany
-        </span>
-      )}
-      <h3 className="text-xl font-bold">{plan.name}</h3>
-      <p className={`mt-2 text-sm leading-relaxed ${highlighted ? "text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>
-        {planPitch(plan)}
-      </p>
-      <div className="mt-6 flex items-baseline gap-1">
-        <span className="text-4xl font-extrabold tracking-tight">{plan.price}</span>
-        <span className={`text-sm font-medium ${highlighted ? "text-slate-400" : "text-slate-500"}`}>zł / mies.</span>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-extrabold text-white">{plan.name}</h3>
+            {highlighted ? (
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary-300/20 text-primary-100 border border-primary-300/30">
+                Najczęściej wybierany
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-1 text-sm text-slate-300 max-w-2xl">{planPitch(plan)}</p>
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+            {highlights.map((label) => (
+              <li key={label} className="text-xs text-slate-200 inline-flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="md:text-right flex md:block items-center justify-between gap-4">
+          <div>
+            <p className="text-3xl md:text-4xl font-black text-white leading-none">{plan.price} zł</p>
+            <p className="text-xs text-slate-300 mt-1">miesięcznie</p>
+          </div>
+          <Link
+            to="/register-gym"
+            className={`inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold ${
+              highlighted ? "bg-white text-slate-900 hover:bg-slate-100" : "bg-primary-600 text-white hover:bg-primary-500"
+            }`}
+          >
+            Wybierz
+          </Link>
+        </div>
       </div>
-      <ul className="mt-8 space-y-3 flex-1">
-        {highlights.map((label) => (
-          <li key={label} className="flex items-start gap-2.5 text-sm">
-            <Check className={`w-4 h-4 shrink-0 mt-0.5 ${highlighted ? "text-primary-400" : "text-emerald-500"}`} />
-            <span className={highlighted ? "text-slate-200" : "text-slate-600 dark:text-slate-300"}>{label}</span>
-          </li>
-        ))}
-      </ul>
-      <Link
-        to="/register-gym"
-        className={`mt-8 w-full text-center text-sm font-bold py-3.5 rounded-2xl transition-colors ${
-          highlighted
-            ? "bg-white text-slate-900 hover:bg-slate-100"
-            : "bg-primary-600 hover:bg-primary-700 text-white"
-        }`}
-      >
-        Wybierz {plan.name}
-      </Link>
     </article>
   );
 }
@@ -220,17 +223,9 @@ export function LandingPage() {
                 </Link>
               </div>
             ) : (
-              <div
-                className={`grid gap-6 ${
-                  sortedPlans.length === 1
-                    ? "max-w-sm mx-auto"
-                    : sortedPlans.length === 2
-                    ? "md:grid-cols-2 max-w-3xl mx-auto"
-                    : "md:grid-cols-3"
-                }`}
-              >
+              <div className="space-y-4 max-w-4xl mx-auto">
                 {sortedPlans.map((plan) => (
-                  <PlanCard key={plan.id} plan={plan} highlighted={plan.id === recommendedId} />
+                  <PlanStrip key={plan.id} plan={plan} highlighted={plan.id === recommendedId} />
                 ))}
               </div>
             )}
