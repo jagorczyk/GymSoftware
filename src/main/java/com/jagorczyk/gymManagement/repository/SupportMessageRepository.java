@@ -12,12 +12,24 @@ public interface SupportMessageRepository extends JpaRepository<SupportMessage, 
     List<SupportMessage> findByThreadIdOrderByCreatedAtAsc(Long threadId);
 
     @Query("""
+            SELECT m FROM SupportMessage m
+            JOIN FETCH m.senderUser
+            JOIN FETCH m.thread t
+            JOIN FETCH t.guest
+            WHERE t.id = :threadId
+            ORDER BY m.createdAt ASC
+            """)
+    List<SupportMessage> findThreadMessagesWithDetails(@Param("threadId") Long threadId);
+
+    long countByThreadIdAndSenderSide(Long threadId, SupportMessageSenderSide senderSide);
+
+    @Query("""
             SELECT COUNT(m) FROM SupportMessage m
             WHERE m.thread.id = :threadId
             AND m.senderSide = :senderSide
-            AND (:since IS NULL OR m.createdAt > :since)
+            AND m.createdAt > :since
             """)
-    long countUnread(
+    long countUnreadSince(
             @Param("threadId") Long threadId,
             @Param("senderSide") SupportMessageSenderSide senderSide,
             @Param("since") LocalDateTime since

@@ -106,7 +106,7 @@ public class SupportMessageService {
     @Transactional(readOnly = true)
     public List<SupportThreadSummary> listStaffThreads(User user, Long gymId) {
         requireStaffAccess(user, gymId);
-        return threadRepository.findByGymIdOrderByUpdatedAtDesc(gymId).stream()
+        return threadRepository.findStaffThreadsByGymId(gymId).stream()
                 .map(thread -> toSummary(thread, SupportMessageSenderSide.STAFF))
                 .toList();
     }
@@ -223,7 +223,7 @@ public class SupportMessageService {
         SupportMessageSenderSide unreadFrom = viewerSide == SupportMessageSenderSide.STAFF
                 ? SupportMessageSenderSide.CLIENT
                 : SupportMessageSenderSide.STAFF;
-        int unread = (int) messageRepository.countUnread(thread.getId(), unreadFrom, lastRead);
+        int unread = countUnreadForViewer(thread.getId(), unreadFrom, lastRead);
 
         Guest guest = thread.getGuest();
         return new SupportThreadSummary(
@@ -242,9 +242,9 @@ public class SupportMessageService {
     }
 
     private SupportThreadDetail toDetail(SupportMessageThread thread) {
-        List<SupportMessageView> messages = messageRepository.findByThreadIdOrderByCreatedAtAsc(thread.getId())
+        List<SupportMessageView> messages = messageRepository.findThreadMessagesWithDetails(thread.getId())
                 .stream()
-                .map(this::toMessageView)
+                .map(msg -> toMessageView(msg, thread.getGuest()))
                 .toList();
         Guest guest = thread.getGuest();
         return new SupportThreadDetail(
@@ -262,12 +262,22 @@ public class SupportMessageService {
         );
     }
 
-    private SupportMessageView toMessageView(SupportMessage message) {
+    private int countUnreadForViewer(
+            Long threadId,
+            SupportMessageSenderSide unreadFrom,
+            LocalDateTime lastRead
+    ) {
+        if (lastRead == null) {
+            return (int) messageRepository.countByThreadIdAndSenderSide(threadId, unreadFrom);
+        }
+        return (int) messageRepository.countUnreadSince(threadId, unreadFrom, lastRead);
+    }
+
+    private SupportMessageView toMessageView(SupportMessage message, Guest threadGuest) {
         User sender = message.getSenderUser();
         String senderName = sender.getEmail();
         if (message.getSenderSide() == SupportMessageSenderSide.CLIENT) {
-            Guest guest = message.getThread().getGuest();
-            senderName = guest.getFirstName() + " " + guest.getLastName();
+            senderName = threadGuest.getFirstName() + " " + threadGuest.getLastName();
         }
         return new SupportMessageView(
                 message.getId(),

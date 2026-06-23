@@ -4,6 +4,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -43,6 +44,20 @@ public class RestExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Nieprawidłowe dane formularza.");
         return Map.of("error", "Błąd walidacji: " + details + ".");
+    }
+
+    @ExceptionHandler(InvalidDataAccessResourceUsageException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleInvalidDataAccess(InvalidDataAccessResourceUsageException ex) {
+        String message = ex.getMostSpecificCause().getMessage();
+        if (message != null && message.toLowerCase().contains("support_message")) {
+            return Map.of(
+                    "error",
+                    "Brak tabel wiadomości w bazie danych. Zrestartuj backend, aby uruchomić migrację V46."
+            );
+        }
+        log.error("Błąd dostępu do bazy danych", ex);
+        return Map.of("error", "Błąd zapytania do bazy danych. Sprawdź logi backendu.");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
