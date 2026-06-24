@@ -90,7 +90,11 @@ public class TenantRegistrationService {
 
         Gym gym = new Gym();
         gym.setName(gymName);
-        gym.setSubdomain(subdomainService.generateUniqueSubdomain(gymName));
+        gym.setSubdomain(
+                SubdomainService.isPlaceholderGymName(gymName)
+                        ? subdomainService.generateUniquePlaceholderSubdomain()
+                        : subdomainService.generateUniqueSubdomain(gymName)
+        );
         gym.setAddress(gymAddress);
         gym.setCity(gymCity);
         gym.setPostalCode(gymPostalCode);

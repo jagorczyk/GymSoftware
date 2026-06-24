@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { useSelectedGymBrand } from "../selectedGymBrandContext";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { OwnerDashboardProvider } from "../ownerDashboardContext";
@@ -9,14 +8,15 @@ import type { OwnerDashboardStats, OwnerGymDetails } from "../api";
 import type { AuthState } from "../auth";
 import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
+import { GymOnboardingModal } from "../components/GymOnboardingModal";
 import { useToast } from "../components/Toast";
 import { usePlanFeatures } from "../planFeaturesContext";
-import { resolveOwnerOnboardingRedirect } from "../hooks/usePostAuthRedirect";
+import { redirectOwnerToPaymentIfNeeded } from "../hooks/usePostAuthRedirect";
+import { findGymNeedingOnboarding } from "../utils/gymOnboarding";
 import type { OwnerContext } from "./owner/types";
 
 export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) {
   const { auth, children } = props;
-  const navigate = useNavigate();
   const { setBrandName } = useSelectedGymBrand();
   const { setSelectorState } = useAppGymSelector();
   const { setFeatureFlags } = usePlanFeatures();
@@ -26,21 +26,20 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
   const [details, setDetails] = useState<OwnerGymDetails | null>(null);
   const [dashboardStats, setDashboardStats] = useState<OwnerDashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [onboardingGymId, setOnboardingGymId] = useState<number | null>(null);
 
   async function loadGymsAndDetails() {
     setLoading(true);
     try {
       const gymsResponse = await getOwnerGyms(auth);
-      const onboarding = await resolveOwnerOnboardingRedirect(auth, gymsResponse);
-      if (onboarding.type === "stripe") {
-        return;
-      }
-      if (onboarding.type === "setup") {
-        navigate(`/admin/subscription-success?gymId=${onboarding.gymId}`, { replace: true });
+      const redirectedToPayment = await redirectOwnerToPaymentIfNeeded(auth, gymsResponse);
+      if (redirectedToPayment) {
         return;
       }
 
       setGyms(gymsResponse);
+      const gymNeedingSetup = findGymNeedingOnboarding(gymsResponse);
+      setOnboardingGymId(gymNeedingSetup?.id ?? null);
 
       const gymIdToLoad = (selectedGymId || gymsResponse[0]?.id) as number | undefined;
       if (!gymIdToLoad) {
@@ -149,6 +148,15 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
 
   return (
     <OwnerDashboardProvider value={ctx}>
+      {onboardingGymId != null && (
+        <GymOnboardingModal
+          gymId={onboardingGymId}
+          onCompleted={() => {
+            setOnboardingGymId(null);
+            void loadGymsAndDetails();
+          }}
+        />
+      )}
       <div className="space-y-6">
         <PageHeader
           title="Panel właściciela"

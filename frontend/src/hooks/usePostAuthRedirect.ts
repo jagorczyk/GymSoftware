@@ -9,29 +9,25 @@ import { buildTenantUrl, resolveGymSubdomainRedirect } from "../utils/subdomain"
 import { findGymNeedingOnboarding } from "../utils/gymOnboarding";
 import type { AuthState } from "../auth";
 
-export type OwnerOnboardingRedirect =
-  | { type: "none" }
-  | { type: "setup"; gymId: number }
-  | { type: "stripe" };
-
-export async function resolveOwnerOnboardingRedirect(
+/** Przekierowuje do Stripe tylko gdy siłownia wymaga konfiguracji i subskrypcja jest nieopłacona. */
+export async function redirectOwnerToPaymentIfNeeded(
   auth: AuthState,
   gyms?: Array<{ id: number; name: string; address: string }>
-): Promise<OwnerOnboardingRedirect> {
+): Promise<boolean> {
   const gymList = gyms ?? (await getOwnerGyms(auth));
   const gym = findGymNeedingOnboarding(gymList);
   if (!gym) {
-    return { type: "none" };
+    return false;
   }
 
   const subscription = await getOwnerGymSubscription(auth, gym.id).catch(() => null);
   if (!subscription || subscription.status === "UNPAID") {
     const { checkoutUrl } = await getCheckoutUrl(auth, gym.id);
     window.location.replace(checkoutUrl);
-    return { type: "stripe" };
+    return true;
   }
 
-  return { type: "setup", gymId: gym.id };
+  return false;
 }
 
 async function redirectToRoleHomeOnOwnSubdomain(
@@ -85,14 +81,10 @@ export function usePostAuthRedirect() {
 
       if (next.role === "OWNER") {
         try {
-          const onboarding = await resolveOwnerOnboardingRedirect(next);
-          if (onboarding.type === "stripe") return next;
-          if (onboarding.type === "setup") {
-            navigate(`/admin/subscription-success?gymId=${onboarding.gymId}`, { replace: true });
-            return next;
-          }
+          const redirectedToPayment = await redirectOwnerToPaymentIfNeeded(next);
+          if (redirectedToPayment) return next;
         } catch (e) {
-          console.error("Failed to resolve owner onboarding redirect", e);
+          console.error("Failed to resolve owner payment redirect", e);
         }
       }
 
