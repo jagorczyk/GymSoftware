@@ -230,7 +230,7 @@ export async function createOwnerSaaSCheckoutSession(auth: AuthState, gymId: num
   return response.json();
 }
 
-export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string; subdomain: string }>> {
+export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string; subdomain?: string }>> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });

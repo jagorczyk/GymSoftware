@@ -389,10 +389,7 @@ public class OwnerService {
 
         boolean initialSetup = SubdomainService.isPlaceholderGymName(gym.getName()) || "-".equals(gym.getAddress());
         if (initialSetup) {
-            String subdomain = subdomainService.toSubdomainSlug(request.name());
-            if (!subdomainService.isSubdomainAvailable(subdomain, gym.getId())) {
-                throw new IllegalArgumentException("Adres " + subdomain + ".gymlos.pl jest już zajęty. Wybierz inną nazwę siłowni.");
-            }
+            String subdomain = subdomainService.generateUniqueSubdomain(request.name());
             gym.setName(request.name());
             gym.setSubdomain(subdomain);
         }

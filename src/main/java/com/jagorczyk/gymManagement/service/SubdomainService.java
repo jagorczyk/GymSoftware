@@ -55,17 +55,6 @@ public class SubdomainService {
         throw new IllegalArgumentException("Subdomena " + base + " jest już zajęta. Wybierz inną nazwę siłowni.");
     }
 
-    public String generateUniquePlaceholderSubdomain() {
-        for (int attempt = 0; attempt < 30; attempt++) {
-            String suffix = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 8);
-            String candidate = "klub-" + suffix;
-            if (!gymRepository.existsBySubdomain(candidate)) {
-                return candidate;
-            }
-        }
-        throw new IllegalStateException("Nie udało się wygenerować unikalnej subdomeny tymczasowej.");
-    }
-
     public static boolean isPlaceholderGymName(String gymName) {
         return PLACEHOLDER_GYM_NAME.equals(gymName);
     }
