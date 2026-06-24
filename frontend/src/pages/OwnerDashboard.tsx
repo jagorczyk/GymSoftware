@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelectedGymBrand } from "../selectedGymBrandContext";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { OwnerDashboardProvider } from "../ownerDashboardContext";
@@ -10,10 +11,12 @@ import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
 import { useToast } from "../components/Toast";
 import { usePlanFeatures } from "../planFeaturesContext";
+import { resolveOwnerOnboardingRedirect } from "../hooks/usePostAuthRedirect";
 import type { OwnerContext } from "./owner/types";
 
 export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) {
   const { auth, children } = props;
+  const navigate = useNavigate();
   const { setBrandName } = useSelectedGymBrand();
   const { setSelectorState } = useAppGymSelector();
   const { setFeatureFlags } = usePlanFeatures();
@@ -28,6 +31,15 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
     setLoading(true);
     try {
       const gymsResponse = await getOwnerGyms(auth);
+      const onboarding = await resolveOwnerOnboardingRedirect(auth, gymsResponse);
+      if (onboarding.type === "stripe") {
+        return;
+      }
+      if (onboarding.type === "setup") {
+        navigate(`/admin/subscription-success?gymId=${onboarding.gymId}`, { replace: true });
+        return;
+      }
+
       setGyms(gymsResponse);
 
       const gymIdToLoad = (selectedGymId || gymsResponse[0]?.id) as number | undefined;

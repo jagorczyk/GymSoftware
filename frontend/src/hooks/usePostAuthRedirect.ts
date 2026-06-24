@@ -1,12 +1,38 @@
 import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getCheckoutUrl, getEmployeeGyms, getOwnerGyms } from "../api";
+import { getCheckoutUrl, getEmployeeGyms, getOwnerGymSubscription, getOwnerGyms } from "../api";
 import { setOwnerStripeCheckoutPending } from "../auth";
 import { useAuth } from "../authContext";
 import { useTenant } from "../tenantContext";
 import { isSafeReturnTo } from "../auth";
 import { buildTenantUrl, resolveGymSubdomainRedirect } from "../utils/subdomain";
+import { findGymNeedingOnboarding } from "../utils/gymOnboarding";
 import type { AuthState } from "../auth";
+
+export type OwnerOnboardingRedirect =
+  | { type: "none" }
+  | { type: "setup"; gymId: number }
+  | { type: "stripe" };
+
+export async function resolveOwnerOnboardingRedirect(
+  auth: AuthState,
+  gyms?: Array<{ id: number; name: string; address: string }>
+): Promise<OwnerOnboardingRedirect> {
+  const gymList = gyms ?? (await getOwnerGyms(auth));
+  const gym = findGymNeedingOnboarding(gymList);
+  if (!gym) {
+    return { type: "none" };
+  }
+
+  const subscription = await getOwnerGymSubscription(auth, gym.id).catch(() => null);
+  if (!subscription || subscription.status === "UNPAID") {
+    const { checkoutUrl } = await getCheckoutUrl(auth, gym.id);
+    window.location.replace(checkoutUrl);
+    return { type: "stripe" };
+  }
+
+  return { type: "setup", gymId: gym.id };
+}
 
 async function redirectToRoleHomeOnOwnSubdomain(
   auth: AuthState,
@@ -55,6 +81,19 @@ export function usePostAuthRedirect() {
       if (returnTo && isSafeReturnTo(returnTo)) {
         window.location.href = returnTo;
         return next;
+      }
+
+      if (next.role === "OWNER") {
+        try {
+          const onboarding = await resolveOwnerOnboardingRedirect(next);
+          if (onboarding.type === "stripe") return next;
+          if (onboarding.type === "setup") {
+            navigate(`/admin/subscription-success?gymId=${onboarding.gymId}`, { replace: true });
+            return next;
+          }
+        } catch (e) {
+          console.error("Failed to resolve owner onboarding redirect", e);
+        }
       }
 
       if (next.role === "OWNER" || next.role === "EMPLOYEE") {

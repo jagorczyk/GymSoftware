@@ -14,6 +14,7 @@ import {
   validateAddress,
   validatePostalCode,
 } from "../../utils/subdomain";
+import { needsGymOnboarding } from "../../utils/gymOnboarding";
 
 export function SubscriptionSuccessPage() {
   const { auth } = useAuth();
@@ -59,7 +60,7 @@ export function SubscriptionSuccessPage() {
 
         if (!gymId) setGymId(targetGym.id);
 
-        if (targetGym.name === "Twoja Siłownia (Tymczasowa)" || targetGym.address === "-") {
+        if (needsGymOnboarding(targetGym)) {
           setNeedsSetup(true);
         } else {
           showSuccess("Subskrypcja aktywna!");
@@ -137,7 +138,7 @@ export function SubscriptionSuccessPage() {
   return (
     <AuthLayout
       title="Skonfiguruj siłownię"
-      subtitle="Sukces! Płatność przebiegła pomyślnie. Teraz podaj docelowe dane swojej siłowni."
+      subtitle="Uzupełnij dane swojej siłowni, aby dokończyć konfigurację konta i korzystać z panelu."
     >
       <form onSubmit={(e) => void handleSetup(e)} className="space-y-6">
         <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Dane siłowni</h2>

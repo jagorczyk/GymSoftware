@@ -14,8 +14,9 @@ import { redirectOwnerToStripeCheckout } from "../hooks/usePostAuthRedirect";
 import { isMfaPending } from "../authMfa";
 import { decodeGoogleIdToken } from "../utils/googleJwt";
 import { RegisterPlanPicker, pickDefaultPlanId } from "../components/RegisterPlanPicker";
+import { PLACEHOLDER_GYM_NAME } from "../utils/gymOnboarding";
 
-const PLACEHOLDER_GYM_NAME = "Twoja Siłownia (Tymczasowa)";
+const PLACEHOLDER_GYM_NAME_REGISTRATION = PLACEHOLDER_GYM_NAME;
 
 export function RegisterGymPage() {
   const { showError, showSuccess } = useToast();
@@ -70,7 +71,7 @@ export function RegisterGymPage() {
         ownerEmail: email,
         googleIdToken: idToken,
         saasPlanId: selectedPlanId,
-        gymName: PLACEHOLDER_GYM_NAME,
+        gymName: PLACEHOLDER_GYM_NAME_REGISTRATION,
         gymCity: "-",
         gymAddress: "-",
         gymPostalCode: "00-000",

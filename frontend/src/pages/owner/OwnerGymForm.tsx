@@ -10,6 +10,7 @@ import {
 } from "../../components/OwnerFormLayout";
 import { dangerButtonClassName, primaryButtonClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
+import { needsGymOnboarding } from "../../utils/gymOnboarding";
 
 export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" | "edit" }) {
   const { auth, gyms, loadGymsAndDetails, setError, setInfo } = ctx;
@@ -17,7 +18,8 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
   const navigate = useNavigate();
   const gym = mode === "edit" ? gyms.find((g) => g.id === Number(gymId)) : null;
 
-  const isNameFixed = mode === "edit" || gyms.length > 0;
+  const onboardingIncomplete = gym ? needsGymOnboarding(gym) : false;
+  const isNameFixed = (mode === "edit" || gyms.length > 0) && !onboardingIncomplete;
   const fixedName = gym?.name ?? (gyms.length > 0 ? gyms[0].name : "");
 
   const [name, setName] = useState(isNameFixed ? fixedName : "");
@@ -99,11 +101,15 @@ export function OwnerGymForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" 
             required
             disabled={isNameFixed}
           />
-          {isNameFixed && (
+          {isNameFixed ? (
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Nazwa siłowni jest wspólna dla całej Twojej sieci i nie można jej zmienić.
             </p>
-          )}
+          ) : onboardingIncomplete ? (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              Uzupełnij docelową nazwę siłowni — zostanie też przypisana subdomena panelu.
+            </p>
+          ) : null}
         </div>
         <div>
           <label className={ownerFormLabelClassName}>Miasto</label>
