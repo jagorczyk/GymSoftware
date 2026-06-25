@@ -67,6 +67,21 @@ public final class GymDtos {
 
     public record ExpiringPassItem(Long guestId, String firstName, String lastName, LocalDate endDate, long daysRemaining) {}
 
+    public record DashboardChartPoint(String label, java.math.BigDecimal value) {}
+
+    public record OwnerDashboardEmployeeView(
+            Long id,
+            String firstName,
+            String lastName,
+            String email,
+            String avatarUrl,
+            String rankName,
+            boolean onDutyNow,
+            String availabilityLabel
+    ) {}
+
+    public record OwnerDashboardPassTypeSlice(String passTypeName, long count) {}
+
     public record OwnerDashboardStats(
             int presentNow,
             int freeLockers,
@@ -74,7 +89,13 @@ public final class GymDtos {
             int expiringPassesCount,
             int activePassesCount,
             BigDecimal salesLast7Days,
-            List<ExpiringPassItem> expiringPasses
+            List<ExpiringPassItem> expiringPasses,
+            List<OwnerDashboardEmployeeView> employees,
+            List<DashboardChartPoint> checkInsLast7Days,
+            List<DashboardChartPoint> salesTrendLast7Days,
+            List<DashboardChartPoint> newGuestsLast7Days,
+            List<DashboardChartPoint> productSalesLast7Days,
+            List<OwnerDashboardPassTypeSlice> passTypeSalesLast7Days
     ) {}
 
     public record SellPassRequest(

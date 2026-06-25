@@ -11,6 +11,9 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.GuestView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GymSummary;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.LockerView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.ExpiringPassItem;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.DashboardChartPoint;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerDashboardEmployeeView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerDashboardPassTypeSlice;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerDashboardStats;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerGymDetails;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.PageResponse;
@@ -32,6 +35,8 @@ import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.domain.PassType;
 import com.jagorczyk.gymManagement.domain.Role;
 import com.jagorczyk.gymManagement.domain.User;
+import com.jagorczyk.gymManagement.domain.WorkScheduleEntry;
+import com.jagorczyk.gymManagement.domain.WorkScheduleEntryType;
 import com.jagorczyk.gymManagement.repository.AuditLogRepository;
 import com.jagorczyk.gymManagement.repository.EmployeeRepository;
 import com.jagorczyk.gymManagement.repository.GuestRepository;
@@ -41,10 +46,14 @@ import com.jagorczyk.gymManagement.repository.LockerAssignmentRepository;
 import com.jagorczyk.gymManagement.repository.LockerRepository;
 import com.jagorczyk.gymManagement.repository.PassTypeRepository;
 import com.jagorczyk.gymManagement.repository.UserRepository;
+import com.jagorczyk.gymManagement.repository.WorkScheduleEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +89,11 @@ public class OwnerService {
     private final StripeService stripeService;
     private final SubdomainService subdomainService;
     private final OwnerSettingsService ownerSettingsService;
+    private final WorkScheduleEntryRepository workScheduleEntryRepository;
+    private final com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository;
+
+    private static final DateTimeFormatter AVAILABILITY_DATE = DateTimeFormatter.ofPattern("d.MM.yyyy HH:mm");
+    private static final DateTimeFormatter AVAILABILITY_TIME = DateTimeFormatter.ofPattern("HH:mm");
 
     public OwnerService(
             GymRepository gymRepository,
@@ -101,7 +115,9 @@ public class OwnerService {
             com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository,
             StripeService stripeService,
             SubdomainService subdomainService,
-            OwnerSettingsService ownerSettingsService
+            OwnerSettingsService ownerSettingsService,
+            WorkScheduleEntryRepository workScheduleEntryRepository,
+            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -123,6 +139,8 @@ public class OwnerService {
         this.stripeService = stripeService;
         this.subdomainService = subdomainService;
         this.ownerSettingsService = ownerSettingsService;
+        this.workScheduleEntryRepository = workScheduleEntryRepository;
+        this.productSaleRepository = productSaleRepository;
     }
 
     @Transactional
@@ -238,18 +256,22 @@ public class OwnerService {
     public OwnerDashboardStats dashboardStats(Long ownerUserId, Long gymId) {
         requireOwnerGym(ownerUserId, gymId);
 
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+        LocalDate weekAgo = today.minusDays(6);
+        LocalDateTime weekAgoStart = weekAgo.atStartOfDay();
+        LocalDate expiringUntil = today.plusDays(7);
+
         int presentNow = guestPresenceService.activeCheckInGuestIds(gymId).size();
         List<Locker> lockers = lockerRepository.findByGymId(gymId);
         int freeLockers = (int) lockers.stream().filter(l -> l.getStatus() == LockerStatus.AVAILABLE).count();
         int occupiedLockers = (int) lockers.stream().filter(l -> l.getStatus() == LockerStatus.OCCUPIED).count();
 
-        LocalDate today = LocalDate.now();
-        LocalDate weekAgo = today.minusDays(7);
-        LocalDate expiringUntil = today.plusDays(7);
         List<GymPass> gymPasses = gymPassRepository.findByGymId(gymId);
         int activePassesCount = (int) gymPasses.stream().filter(p -> p.getStatus() == PassStatus.ACTIVE).count();
         BigDecimal salesLast7Days = gymPasses.stream()
-                .filter(p -> !p.getStartDate().isBefore(weekAgo))
+                .filter(p -> p.getStatus() != PassStatus.CANCELLED)
+                .filter(p -> !p.getCreatedAt().isBefore(weekAgoStart))
                 .map(GymPass::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -266,6 +288,46 @@ public class OwnerService {
                 .sorted(Comparator.comparing(ExpiringPassItem::endDate))
                 .toList();
 
+        List<Employee> employees = employeeRepository.findByGymId(gymId);
+        List<OwnerDashboardEmployeeView> employeeViews = buildDashboardEmployees(gymId, employees, now);
+
+        var checkInsLast7Days = guestCheckInRepository.findByGymIdAndCheckedInAtBetween(gymId, weekAgoStart, now);
+        Map<LocalDate, Long> checkInsByDay = checkInsLast7Days.stream()
+                .collect(Collectors.groupingBy(c -> c.getCheckedInAt().toLocalDate(), Collectors.counting()));
+
+        Map<LocalDate, BigDecimal> salesByDay = gymPasses.stream()
+                .filter(p -> p.getStatus() != PassStatus.CANCELLED)
+                .filter(p -> !p.getCreatedAt().isBefore(weekAgoStart))
+                .collect(Collectors.groupingBy(
+                        p -> p.getCreatedAt().toLocalDate(),
+                        Collectors.reducing(BigDecimal.ZERO, GymPass::getPrice, BigDecimal::add)
+                ));
+
+        Map<LocalDate, Long> newGuestsByDay = guestRepository.findByGymId(gymId).stream()
+                .filter(g -> !g.getCreatedAt().isBefore(weekAgoStart))
+                .collect(Collectors.groupingBy(g -> g.getCreatedAt().toLocalDate(), Collectors.counting()));
+
+        Map<LocalDate, BigDecimal> productSalesByDay = productSaleRepository.findByGymIdOrderByCreatedAtDesc(gymId).stream()
+                .filter(ps -> !ps.getCreatedAt().isBefore(weekAgoStart))
+                .collect(Collectors.groupingBy(
+                        ps -> ps.getCreatedAt().toLocalDate(),
+                        Collectors.reducing(BigDecimal.ZERO, com.jagorczyk.gymManagement.domain.ProductSale::getTotalAmount, BigDecimal::add)
+                ));
+
+        List<DashboardChartPoint> checkInsChart = chartSeries(weekAgo, today, checkInsByDay);
+        List<DashboardChartPoint> salesChart = chartSeriesDecimal(weekAgo, today, salesByDay);
+        List<DashboardChartPoint> newGuestsChart = chartSeries(weekAgo, today, newGuestsByDay);
+        List<DashboardChartPoint> productSalesChart = chartSeriesDecimal(weekAgo, today, productSalesByDay);
+
+        List<OwnerDashboardPassTypeSlice> passTypeSales = gymPasses.stream()
+                .filter(p -> p.getStatus() != PassStatus.CANCELLED)
+                .filter(p -> !p.getCreatedAt().isBefore(weekAgoStart))
+                .collect(Collectors.groupingBy(GymPass::getPassType, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> new OwnerDashboardPassTypeSlice(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparingLong(OwnerDashboardPassTypeSlice::count).reversed())
+                .toList();
+
         return new OwnerDashboardStats(
                 presentNow,
                 freeLockers,
@@ -273,8 +335,104 @@ public class OwnerService {
                 expiringPasses.size(),
                 activePassesCount,
                 salesLast7Days,
-                expiringPasses
+                expiringPasses,
+                employeeViews,
+                checkInsChart,
+                salesChart,
+                newGuestsChart,
+                productSalesChart,
+                passTypeSales
         );
+    }
+
+    private List<DashboardChartPoint> chartSeries(LocalDate from, LocalDate to, Map<LocalDate, Long> values) {
+        List<DashboardChartPoint> points = new ArrayList<>();
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            points.add(new DashboardChartPoint(date.toString(), BigDecimal.valueOf(values.getOrDefault(date, 0L))));
+        }
+        return points;
+    }
+
+    private List<DashboardChartPoint> chartSeriesDecimal(LocalDate from, LocalDate to, Map<LocalDate, BigDecimal> values) {
+        List<DashboardChartPoint> points = new ArrayList<>();
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            points.add(new DashboardChartPoint(date.toString(), values.getOrDefault(date, BigDecimal.ZERO)));
+        }
+        return points;
+    }
+
+    private List<OwnerDashboardEmployeeView> buildDashboardEmployees(Long gymId, List<Employee> employees, LocalDateTime now) {
+        LocalDateTime from = now.minusDays(14);
+        LocalDateTime to = now.plusDays(21);
+        List<WorkScheduleEntry> scheduleEntries = workScheduleEntryRepository.findByGymIdAndStartAtBeforeAndEndAtAfter(
+                gymId, to, from
+        );
+        Map<Long, List<WorkScheduleEntry>> entriesByEmployee = scheduleEntries.stream()
+                .collect(Collectors.groupingBy(e -> e.getEmployee().getId()));
+
+        return employees.stream()
+                .map(employee -> toDashboardEmployeeView(employee, entriesByEmployee.getOrDefault(employee.getId(), List.of()), now))
+                .sorted(Comparator
+                        .comparing(OwnerDashboardEmployeeView::onDutyNow).reversed()
+                        .thenComparing(e -> e.firstName() != null ? e.firstName() : "")
+                        .thenComparing(e -> e.lastName() != null ? e.lastName() : ""))
+                .toList();
+    }
+
+    private OwnerDashboardEmployeeView toDashboardEmployeeView(
+            Employee employee,
+            List<WorkScheduleEntry> entries,
+            LocalDateTime now
+    ) {
+        List<WorkScheduleEntry> shifts = entries.stream()
+                .filter(e -> e.getEntryType() == WorkScheduleEntryType.SHIFT)
+                .toList();
+
+        WorkScheduleEntry currentShift = shifts.stream()
+                .filter(e -> !now.isBefore(e.getStartAt()) && now.isBefore(e.getEndAt()))
+                .findFirst()
+                .orElse(null);
+
+        WorkScheduleEntry nextShift = shifts.stream()
+                .filter(e -> e.getStartAt().isAfter(now))
+                .min(Comparator.comparing(WorkScheduleEntry::getStartAt))
+                .orElse(null);
+
+        WorkScheduleEntry lastShift = shifts.stream()
+                .filter(e -> !e.getEndAt().isAfter(now))
+                .max(Comparator.comparing(WorkScheduleEntry::getEndAt))
+                .orElse(null);
+
+        String availabilityLabel = resolveAvailabilityLabel(currentShift, nextShift, lastShift);
+        User user = employee.getUser();
+
+        return new OwnerDashboardEmployeeView(
+                employee.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getAvatarUrl(),
+                employee.getRank() != null ? employee.getRank().getName() : null,
+                currentShift != null,
+                availabilityLabel
+        );
+    }
+
+    private String resolveAvailabilityLabel(
+            WorkScheduleEntry currentShift,
+            WorkScheduleEntry nextShift,
+            WorkScheduleEntry lastShift
+    ) {
+        if (currentShift != null) {
+            return "Na zmianie do " + currentShift.getEndAt().toLocalTime().format(AVAILABILITY_TIME);
+        }
+        if (nextShift != null) {
+            return "Następna zmiana: " + nextShift.getStartAt().format(AVAILABILITY_DATE);
+        }
+        if (lastShift != null) {
+            return "Ostatnia zmiana: " + lastShift.getEndAt().format(AVAILABILITY_DATE);
+        }
+        return "Brak wpisów w grafiku";
     }
 
     private LockerView toLockerView(Locker locker, LockerAssignment assignment) {

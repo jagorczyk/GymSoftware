@@ -411,6 +411,21 @@ export type OwnerDashboardStats = {
   activePassesCount: number;
   salesLast7Days: number;
   expiringPasses: Array<{ guestId: number; firstName: string; lastName: string; endDate: string; daysRemaining: number }>;
+  employees: Array<{
+    id: number;
+    firstName?: string | null;
+    lastName?: string | null;
+    email: string;
+    avatarUrl?: string | null;
+    rankName?: string | null;
+    onDutyNow: boolean;
+    availabilityLabel: string;
+  }>;
+  checkInsLast7Days: Array<{ label: string; value: number }>;
+  salesTrendLast7Days: Array<{ label: string; value: number }>;
+  newGuestsLast7Days: Array<{ label: string; value: number }>;
+  productSalesLast7Days: Array<{ label: string; value: number }>;
+  passTypeSalesLast7Days: Array<{ passTypeName: string; count: number }>;
 };
 
 export type PagedResponse<T> = {
