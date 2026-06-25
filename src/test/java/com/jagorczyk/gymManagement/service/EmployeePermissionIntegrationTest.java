@@ -122,7 +122,8 @@ class EmployeePermissionIntegrationTest {
                 new com.jagorczyk.gymManagement.api.dto.GymDtos.CreatePassTypeRequest(
                         "OPEN 30",
                         java.math.BigDecimal.valueOf(199),
-                        30
+                        30,
+                        null
                 )
         );
         assertThat(passType.name()).isEqualTo("OPEN 30");
