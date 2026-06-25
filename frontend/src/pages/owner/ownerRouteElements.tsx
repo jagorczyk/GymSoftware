@@ -29,6 +29,7 @@ import { OwnerSupport } from "./OwnerSupport";
 import { OwnerTrainersList } from "./OwnerTrainersList";
 import { OwnerTrainerForm } from "./OwnerTrainerForm";
 import { OwnerSubscription } from "./OwnerSubscription";
+import { OwnerOrganizationSettings } from "./OwnerOrganizationSettings";
 
 export function OwnerStatsPage() {
   return <OwnerStats ctx={useOwnerDashboardContext()} />;
@@ -134,4 +135,8 @@ export function OwnerTrainerEditPage() {
 
 export function OwnerSubscriptionPage() {
   return <OwnerSubscription />;
+}
+
+export function OwnerOrganizationSettingsPage() {
+  return <OwnerOrganizationSettings ctx={useOwnerDashboardContext()} />;
 }

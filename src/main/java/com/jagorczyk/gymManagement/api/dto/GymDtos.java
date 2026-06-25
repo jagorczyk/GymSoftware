@@ -3,6 +3,7 @@ package com.jagorczyk.gymManagement.api.dto;
 import com.jagorczyk.gymManagement.domain.LockerStatus;
 import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.domain.EmployeePermission;
+import com.jagorczyk.gymManagement.domain.PassDeductTiming;
 import com.jagorczyk.gymManagement.domain.WorkScheduleEntryType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.DecimalMin;
@@ -445,5 +446,25 @@ public final class GymDtos {
             String currentPeriodStart,
             String currentPeriodEnd,
             java.util.List<String> featureFlags
+    ) {}
+
+    public record OwnerOrganizationSettingsView(
+            PassDeductTiming passDeductTiming,
+            List<String> defaultEmployeePermissions
+    ) {}
+
+    public record UpdateOwnerOrganizationSettingsRequest(
+            @NotNull PassDeductTiming passDeductTiming,
+            Set<EmployeePermission> defaultEmployeePermissions
+    ) {}
+
+    public record ImportEmployeesRequest(
+            @NotBlank String csv
+    ) {}
+
+    public record ImportEmployeesResult(
+            int created,
+            int skipped,
+            List<String> errors
     ) {}
 }

@@ -207,6 +207,7 @@ public class ClientPortalService {
         gymPass.setGuest(guest);
         gymPass.setGym(passType.getGym());
         gymPass.setPassType(passType.getName());
+        gymPass.setPassTypeRef(passType);
         gymPass.setStatus(PassStatus.ACTIVE);
         gymPass.setStartDate(LocalDate.now());
         gymPass.setEndDate(LocalDate.now().plusDays(passType.getDurationDays()));

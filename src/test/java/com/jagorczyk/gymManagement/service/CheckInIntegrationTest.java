@@ -7,6 +7,9 @@ import com.jagorczyk.gymManagement.domain.Gym;
 import com.jagorczyk.gymManagement.domain.GymPass;
 import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.domain.PassType;
+import com.jagorczyk.gymManagement.domain.OwnerSettings;
+import com.jagorczyk.gymManagement.domain.PassDeductTiming;
+import com.jagorczyk.gymManagement.repository.OwnerSettingsRepository;
 import com.jagorczyk.gymManagement.repository.PassTypeRepository;
 import com.jagorczyk.gymManagement.domain.Role;
 import com.jagorczyk.gymManagement.domain.User;
@@ -36,6 +39,7 @@ class CheckInIntegrationTest {
     @Autowired GuestCheckInRepository guestCheckInRepository;
     @Autowired GymPassRepository gymPassRepository;
     @Autowired PassTypeRepository passTypeRepository;
+    @Autowired OwnerSettingsRepository ownerSettingsRepository;
     @Autowired PasswordEncoder passwordEncoder;
 
     @Test
@@ -128,6 +132,64 @@ class CheckInIntegrationTest {
         assertThat(passBefore.getRemainingEntries()).isEqualTo(1);
 
         employeeService.checkIn(employeeUser, gym.getId(), guest.getId());
+
+        GymPass passAfter = gymPassRepository.findById(passBefore.getId()).orElseThrow();
+        assertThat(passAfter.getRemainingEntries()).isZero();
+        assertThat(passAfter.getStatus()).isEqualTo(PassStatus.EXPIRED);
+    }
+
+    @Test
+    void checkOutConsumesEntryLimitedPassWhenConfigured() {
+        User owner = user("owner-co@test.com", Role.OWNER);
+        owner = userRepository.save(owner);
+        User employeeUser = user("emp-co@test.com", Role.EMPLOYEE);
+        employeeUser = userRepository.save(employeeUser);
+
+        Gym gym = new Gym();
+        gym.setName("Gym Checkout");
+        gym.setOwnerUser(owner);
+        gym = gymRepository.save(gym);
+
+        OwnerSettings settings = new OwnerSettings();
+        settings.setOwnerUser(owner);
+        settings.setPassDeductTiming(PassDeductTiming.CHECK_OUT);
+        ownerSettingsRepository.save(settings);
+
+        Employee employee = new Employee();
+        employee.setGym(gym);
+        employee.setUser(employeeUser);
+        employeeRepository.save(employee);
+
+        Guest guest = new Guest();
+        guest.setGym(gym);
+        guest.setFirstName("Ewa");
+        guest.setLastName("Wyjscie");
+        guest = guestRepository.save(guest);
+
+        var passType = new PassType();
+        passType.setGym(gym);
+        passType.setName("Jedno wejscie CO");
+        passType.setPrice(BigDecimal.valueOf(25));
+        passType.setDurationDays(30);
+        passType.setMaxEntries(1);
+        passType = passTypeRepository.save(passType);
+
+        employeeService.sellPass(
+                employeeUser,
+                gym.getId(),
+                new SellPassRequest(
+                        guest.getId(),
+                        passType.getName(),
+                        passType.getId(),
+                        LocalDate.now(),
+                        LocalDate.now().plusDays(30),
+                        BigDecimal.valueOf(25)));
+
+        GymPass passBefore = gymPassRepository.findByGuestId(guest.getId()).getFirst();
+        employeeService.checkIn(employeeUser, gym.getId(), guest.getId());
+        assertThat(gymPassRepository.findById(passBefore.getId()).orElseThrow().getRemainingEntries()).isEqualTo(1);
+
+        employeeService.checkOut(employeeUser, gym.getId(), guest.getId());
 
         GymPass passAfter = gymPassRepository.findById(passBefore.getId()).orElseThrow();
         assertThat(passAfter.getRemainingEntries()).isZero();

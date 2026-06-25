@@ -79,6 +79,7 @@ public class OwnerService {
     private final com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository;
     private final StripeService stripeService;
     private final SubdomainService subdomainService;
+    private final OwnerSettingsService ownerSettingsService;
 
     public OwnerService(
             GymRepository gymRepository,
@@ -99,7 +100,8 @@ public class OwnerService {
             com.jagorczyk.gymManagement.repository.PersonalTrainerProfileRepository personalTrainerProfileRepository,
             com.jagorczyk.gymManagement.repository.GymSubscriptionRepository gymSubscriptionRepository,
             StripeService stripeService,
-            SubdomainService subdomainService
+            SubdomainService subdomainService,
+            OwnerSettingsService ownerSettingsService
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -120,6 +122,7 @@ public class OwnerService {
         this.gymSubscriptionRepository = gymSubscriptionRepository;
         this.stripeService = stripeService;
         this.subdomainService = subdomainService;
+        this.ownerSettingsService = ownerSettingsService;
     }
 
     @Transactional
@@ -351,7 +354,11 @@ public class OwnerService {
                     .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono rangi."));
             employee.setRank(rank);
         } else {
-            employee.setPermissions(EmployeePermission.resolve(request.permissions()));
+            Set<EmployeePermission> requested = request.permissions();
+            if (requested == null || requested.isEmpty()) {
+                requested = ownerSettingsService.getDefaultOptionalPermissions(ownerUserId);
+            }
+            employee.setPermissions(EmployeePermission.resolve(requested));
         }
         employee = employeeRepository.save(employee);
 

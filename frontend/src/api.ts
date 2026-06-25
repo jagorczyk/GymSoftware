@@ -238,6 +238,53 @@ export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number;
   return response.json();
 }
 
+export type PassDeductTiming = "CHECK_IN" | "CHECK_OUT";
+
+export type OwnerOrganizationSettings = {
+  passDeductTiming: PassDeductTiming;
+  defaultEmployeePermissions: string[];
+};
+
+export async function getOwnerOrganizationSettings(auth: AuthState): Promise<OwnerOrganizationSettings> {
+  const response = await fetch(`${API_URL}/owner/settings`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać ustawień");
+  return response.json();
+}
+
+export async function updateOwnerOrganizationSettings(
+  auth: AuthState,
+  payload: { passDeductTiming: PassDeductTiming; defaultEmployeePermissions: string[] }
+): Promise<OwnerOrganizationSettings> {
+  const response = await fetch(`${API_URL}/owner/settings`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zapisać ustawień");
+  return response.json();
+}
+
+export async function importOwnerEmployees(
+  auth: AuthState,
+  payload: { csv: string }
+): Promise<{ created: number; skipped: number; errors: string[] }> {
+  const response = await fetch(`${API_URL}/owner/settings/employees/import`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się zaimportować pracowników");
+  return response.json();
+}
+
 export async function createOwnerGym(
   auth: AuthState,
   payload: { name: string; address?: string; city?: string; postalCode?: string; nip?: string; themeColor?: string }

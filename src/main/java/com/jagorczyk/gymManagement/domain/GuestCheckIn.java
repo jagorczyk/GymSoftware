@@ -43,4 +43,11 @@ public class GuestCheckIn {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "checked_out_by_user_id")
     private User checkedOutByUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gym_pass_id")
+    private GymPass gymPass;
+
+    @Column(name = "entry_consumed", nullable = false)
+    private boolean entryConsumed = false;
 }

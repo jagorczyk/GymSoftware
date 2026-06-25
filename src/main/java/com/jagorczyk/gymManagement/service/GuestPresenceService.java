@@ -8,9 +8,11 @@ import com.jagorczyk.gymManagement.domain.GuestCheckIn;
 import com.jagorczyk.gymManagement.domain.GymPass;
 import com.jagorczyk.gymManagement.domain.LockerAssignment;
 import com.jagorczyk.gymManagement.domain.PassStatus;
+import com.jagorczyk.gymManagement.domain.PassType;
 import com.jagorczyk.gymManagement.repository.GuestCheckInRepository;
 import com.jagorczyk.gymManagement.repository.GymPassRepository;
 import com.jagorczyk.gymManagement.repository.LockerAssignmentRepository;
+import com.jagorczyk.gymManagement.repository.PassTypeRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -23,15 +25,18 @@ public class GuestPresenceService {
     private final GuestCheckInRepository guestCheckInRepository;
     private final LockerAssignmentRepository lockerAssignmentRepository;
     private final GymPassRepository gymPassRepository;
+    private final PassTypeRepository passTypeRepository;
 
     public GuestPresenceService(
             GuestCheckInRepository guestCheckInRepository,
             LockerAssignmentRepository lockerAssignmentRepository,
-            GymPassRepository gymPassRepository
+            GymPassRepository gymPassRepository,
+            PassTypeRepository passTypeRepository
     ) {
         this.guestCheckInRepository = guestCheckInRepository;
         this.lockerAssignmentRepository = lockerAssignmentRepository;
         this.gymPassRepository = gymPassRepository;
+        this.passTypeRepository = passTypeRepository;
     }
 
     public Set<Long> activeCheckInGuestIds(Long gymId) {
@@ -71,9 +76,7 @@ public class GuestPresenceService {
             Set<Long> checkedInGuestIds,
             Set<Long> lockerGuestIds
     ) {
-        Optional<GymPass> activePass = gymPasses.stream()
-                .filter(p -> p.getGuest().getId().equals(guest.getId()) && isPassUsable(p))
-                .findFirst();
+        Optional<GymPass> activePass = findActivePass(gymPasses, guest.getId());
         boolean isPresent = checkedInGuestIds.contains(guest.getId());
         boolean hasLocker = lockerGuestIds.contains(guest.getId());
         return new GuestView(
@@ -139,6 +142,32 @@ public class GuestPresenceService {
     public void applyEntryLimits(GymPass pass, Integer maxEntries) {
         pass.setMaxEntries(maxEntries);
         pass.setRemainingEntries(maxEntries);
+    }
+
+    public GymPass ensureEntryLimits(GymPass pass, Long gymId) {
+        if (pass.getMaxEntries() != null) {
+            return pass;
+        }
+        PassType passType = resolvePassType(pass, gymId).orElse(null);
+        if (passType != null && passType.getMaxEntries() != null) {
+            pass.setPassTypeRef(passType);
+            applyEntryLimits(pass, passType.getMaxEntries());
+            return gymPassRepository.save(pass);
+        }
+        return pass;
+    }
+
+    private Optional<PassType> resolvePassType(GymPass pass, Long gymId) {
+        if (pass.getPassTypeRef() != null) {
+            return Optional.of(pass.getPassTypeRef());
+        }
+        return passTypeRepository.findByGymId(gymId).stream()
+                .filter(pt -> pt.getName().equalsIgnoreCase(pass.getPassType()))
+                .findFirst();
+    }
+
+    public boolean isEntryLimited(GymPass pass) {
+        return pass.getMaxEntries() != null;
     }
 
     public Optional<GymPass> findActivePass(List<GymPass> passes, Long guestId) {

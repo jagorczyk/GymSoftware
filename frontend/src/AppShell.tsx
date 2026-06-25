@@ -243,6 +243,7 @@ export function AppShell() {
       { label: "Oceny zajęć", to: "/owner/class-ratings", icon: <Star className="w-5 h-5" />, feature: "CLASS_RATINGS" },
       { label: "Powiadomienia", to: "/owner/notifications", icon: <Bell className="w-5 h-5" />, feature: "NOTIFICATIONS" },
       { label: "Historia", to: "/owner/history", icon: <History className="w-5 h-5" />, feature: "AUDIT_LOG" },
+      { label: "Ustawienia", to: "/owner/settings", icon: <Settings className="w-5 h-5" /> },
     ];
     return items.filter((item) => !item.feature || hasFeature(item.feature));
   }, [hasFeature]);

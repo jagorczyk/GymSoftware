@@ -11,6 +11,10 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.AuditLogView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GuestDetailView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GuestView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.GymSummary;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ImportEmployeesRequest;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.ImportEmployeesResult;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.OwnerOrganizationSettingsView;
+import com.jagorczyk.gymManagement.api.dto.GymDtos.UpdateOwnerOrganizationSettingsRequest;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.LockerView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.NotificationSettingsView;
 import com.jagorczyk.gymManagement.api.dto.GymDtos.NotificationView;
@@ -45,6 +49,7 @@ import com.jagorczyk.gymManagement.api.dto.GymDtos.WorkScheduleEntryView;
 import com.jagorczyk.gymManagement.service.CalendarService;
 import com.jagorczyk.gymManagement.service.CurrentUserService;
 import com.jagorczyk.gymManagement.service.OwnerService;
+import com.jagorczyk.gymManagement.service.OwnerSettingsService;
 import com.jagorczyk.gymManagement.service.WorkScheduleService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
@@ -76,6 +81,7 @@ public class OwnerController {
     private final NotificationService notificationService;
     private final PosService posService;
     private final com.jagorczyk.gymManagement.service.GroupClassService groupClassService;
+    private final OwnerSettingsService ownerSettingsService;
 
     public OwnerController(
             OwnerService ownerService,
@@ -86,7 +92,8 @@ public class OwnerController {
             SalesReportService salesReportService,
             NotificationService notificationService,
             PosService posService,
-            com.jagorczyk.gymManagement.service.GroupClassService groupClassService
+            com.jagorczyk.gymManagement.service.GroupClassService groupClassService,
+            OwnerSettingsService ownerSettingsService
     ) {
         this.ownerService = ownerService;
         this.calendarService = calendarService;
@@ -97,6 +104,7 @@ public class OwnerController {
         this.notificationService = notificationService;
         this.posService = posService;
         this.groupClassService = groupClassService;
+        this.ownerSettingsService = ownerSettingsService;
     }
 
     @GetMapping("/gyms")
@@ -484,5 +492,22 @@ public class OwnerController {
     ) {
         ownerService.deleteTrainer(currentUserService.getCurrentUser().getId(), gymId, trainerId);
         return Map.of("status", "deleted");
+    }
+
+    @GetMapping("/settings")
+    public OwnerOrganizationSettingsView getOrganizationSettings() {
+        return ownerSettingsService.getSettings(currentUserService.getCurrentUser().getId());
+    }
+
+    @PutMapping("/settings")
+    public OwnerOrganizationSettingsView updateOrganizationSettings(
+            @Valid @RequestBody UpdateOwnerOrganizationSettingsRequest request
+    ) {
+        return ownerSettingsService.updateSettings(currentUserService.getCurrentUser().getId(), request);
+    }
+
+    @PostMapping("/settings/employees/import")
+    public ImportEmployeesResult importEmployees(@Valid @RequestBody ImportEmployeesRequest request) {
+        return ownerSettingsService.importEmployees(currentUserService.getCurrentUser().getId(), request);
     }
 }

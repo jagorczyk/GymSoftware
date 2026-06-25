@@ -19,10 +19,12 @@ import com.jagorczyk.gymManagement.domain.Employee;
 import com.jagorczyk.gymManagement.domain.EmployeePermission;
 import com.jagorczyk.gymManagement.domain.Guest;
 import com.jagorczyk.gymManagement.domain.GuestCheckIn;
+import com.jagorczyk.gymManagement.domain.Gym;
 import com.jagorczyk.gymManagement.domain.GymPass;
 import com.jagorczyk.gymManagement.domain.Locker;
 import com.jagorczyk.gymManagement.domain.LockerAssignment;
 import com.jagorczyk.gymManagement.domain.LockerStatus;
+import com.jagorczyk.gymManagement.domain.PassDeductTiming;
 import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.domain.PassType;
 import com.jagorczyk.gymManagement.domain.User;
@@ -55,6 +57,7 @@ public class EmployeeService {
     private final GuestPresenceService guestPresenceService;
     private final com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository;
     private final com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository;
+    private final OwnerSettingsService ownerSettingsService;
 
     public EmployeeService(
             EmployeeRepository employeeRepository,
@@ -68,7 +71,8 @@ public class EmployeeService {
             GuestCheckInRepository guestCheckInRepository,
             GuestPresenceService guestPresenceService,
             com.jagorczyk.gymManagement.repository.PassFreezeRepository passFreezeRepository,
-            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository
+            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository,
+            OwnerSettingsService ownerSettingsService
     ) {
         this.employeeRepository = employeeRepository;
         this.employeePermissionService = employeePermissionService;
@@ -82,6 +86,7 @@ public class EmployeeService {
         this.guestPresenceService = guestPresenceService;
         this.passFreezeRepository = passFreezeRepository;
         this.productSaleRepository = productSaleRepository;
+        this.ownerSettingsService = ownerSettingsService;
     }
 
     @Transactional
@@ -104,6 +109,7 @@ public class EmployeeService {
         resolvePassType(gymId, request.passTypeId(), request.passType())
                 .ifPresent(pt -> {
                     pass.setPassType(pt.getName());
+                    pass.setPassTypeRef(pt);
                     guestPresenceService.applyEntryLimits(pass, pt.getMaxEntries());
                 });
         GymPass saved = gymPassRepository.save(pass);
@@ -167,22 +173,23 @@ public class EmployeeService {
             throw new IllegalArgumentException("Klient jest już zapisany na sali.");
         }
         GymPass activePass = guestPresenceService.findActivePass(gymPassRepository.findByGymId(gymId), guestId)
+                .map(pass -> guestPresenceService.ensureEntryLimits(pass, gymId))
                 .orElseThrow(() -> new IllegalArgumentException("Wejście wymaga aktywnego karnetu."));
 
         GuestCheckIn checkIn = new GuestCheckIn();
         checkIn.setGym(employee.getGym());
         checkIn.setGuest(guest);
         checkIn.setCheckedInByUser(currentUser);
-        guestCheckInRepository.save(checkIn);
-        GymPass updatedPass = guestPresenceService.consumeEntry(activePass.getId());
-        if (updatedPass.getMaxEntries() != null) {
-            auditLogService.log(
-                    employee.getGym(),
-                    currentUser,
-                    "PASS_ENTRY_USED",
-                    "passId=" + updatedPass.getId() + ",remaining=" + updatedPass.getRemainingEntries()
-            );
+        checkIn.setGymPass(activePass);
+
+        PassDeductTiming timing = ownerSettingsService.getPassDeductTiming(employee.getGym().getOwnerUser().getId());
+        if (timing == PassDeductTiming.CHECK_IN && guestPresenceService.isEntryLimited(activePass)) {
+            GymPass updatedPass = guestPresenceService.consumeEntry(activePass.getId());
+            checkIn.setEntryConsumed(true);
+            logPassEntryUsed(employee.getGym(), currentUser, updatedPass);
         }
+
+        guestCheckInRepository.save(checkIn);
         auditLogService.log(employee.getGym(), currentUser, "GUEST_CHECK_IN", "guestId=" + guestId);
     }
 
@@ -207,10 +214,31 @@ public class EmployeeService {
 
         GuestCheckIn checkIn = guestCheckInRepository.findByGuestIdAndCheckedOutAtIsNull(guestId)
                 .orElseThrow(() -> new IllegalArgumentException("Klient nie jest obecny na sali."));
+
+        if (!checkIn.isEntryConsumed() && checkIn.getGymPass() != null) {
+            GymPass pass = guestPresenceService.ensureEntryLimits(checkIn.getGymPass(), gymId);
+            if (guestPresenceService.isEntryLimited(pass)) {
+                GymPass updatedPass = guestPresenceService.consumeEntry(pass.getId());
+                checkIn.setEntryConsumed(true);
+                logPassEntryUsed(employee.getGym(), currentUser, updatedPass);
+            }
+        }
+
         checkIn.setCheckedOutAt(LocalDateTime.now());
         checkIn.setCheckedOutByUser(currentUser);
         guestCheckInRepository.save(checkIn);
         auditLogService.log(employee.getGym(), currentUser, "GUEST_CHECK_OUT", "guestId=" + guestId);
+    }
+
+    private void logPassEntryUsed(Gym gym, User currentUser, GymPass updatedPass) {
+        if (updatedPass.getMaxEntries() != null) {
+            auditLogService.log(
+                    gym,
+                    currentUser,
+                    "PASS_ENTRY_USED",
+                    "passId=" + updatedPass.getId() + ",remaining=" + updatedPass.getRemainingEntries()
+            );
+        }
     }
 
     @Transactional

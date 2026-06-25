@@ -37,6 +37,10 @@ public class GymPass {
     @Column(name = "pass_type", nullable = false)
     private String passType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pass_type_id")
+    private PassType passTypeRef;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PassStatus status;
