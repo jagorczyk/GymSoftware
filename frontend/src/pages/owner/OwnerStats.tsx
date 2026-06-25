@@ -28,6 +28,10 @@ function formatMoney(value: number) {
   return new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(value);
 }
 
+function formatTooltipMoney(value: unknown) {
+  return formatMoney(Number(value ?? 0));
+}
+
 function formatChartDate(label: string) {
   const date = new Date(label);
   if (Number.isNaN(date.getTime())) return label;
@@ -195,7 +199,7 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748b" }} />
               <YAxis tick={{ fontSize: 11, fill: "#64748b" }} width={48} />
               <Tooltip
-                formatter={(value: number) => formatMoney(value)}
+                formatter={formatTooltipMoney}
                 contentStyle={{ borderRadius: "0.75rem", border: "none", backgroundColor: tooltipBg, color: tooltipColor }}
               />
               <Bar dataKey="value" fill="#2155e5" radius={[6, 6, 0, 0]} />
@@ -222,7 +226,7 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748b" }} />
               <YAxis tick={{ fontSize: 11, fill: "#64748b" }} width={48} />
               <Tooltip
-                formatter={(value: number) => formatMoney(value)}
+                formatter={formatTooltipMoney}
                 contentStyle={{ borderRadius: "0.75rem", border: "none", backgroundColor: tooltipBg, color: tooltipColor }}
               />
               <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={3} dot={{ r: 3 }} />
