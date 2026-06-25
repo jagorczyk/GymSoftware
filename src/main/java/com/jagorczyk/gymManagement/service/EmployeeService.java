@@ -101,10 +101,11 @@ public class EmployeeService {
         pass.setPrice(request.price());
         pass.setSoldByUser(currentUser);
         pass.setStatus(PassStatus.ACTIVE);
-        passTypeRepository.findByGymId(gymId).stream()
-                .filter(pt -> pt.getName().equalsIgnoreCase(request.passType()))
-                .findFirst()
-                .ifPresent(pt -> guestPresenceService.applyEntryLimits(pass, pt.getMaxEntries()));
+        resolvePassType(gymId, request.passTypeId(), request.passType())
+                .ifPresent(pt -> {
+                    pass.setPassType(pt.getName());
+                    guestPresenceService.applyEntryLimits(pass, pt.getMaxEntries());
+                });
         GymPass saved = gymPassRepository.save(pass);
 
         auditLogService.log(employee.getGym(), currentUser, "PASS_SOLD", "passId=" + saved.getId() + ",guestId=" + guest.getId());
@@ -173,8 +174,29 @@ public class EmployeeService {
         checkIn.setGuest(guest);
         checkIn.setCheckedInByUser(currentUser);
         guestCheckInRepository.save(checkIn);
-        guestPresenceService.consumeEntry(activePass);
+        GymPass updatedPass = guestPresenceService.consumeEntry(activePass.getId());
+        if (updatedPass.getMaxEntries() != null) {
+            auditLogService.log(
+                    employee.getGym(),
+                    currentUser,
+                    "PASS_ENTRY_USED",
+                    "passId=" + updatedPass.getId() + ",remaining=" + updatedPass.getRemainingEntries()
+            );
+        }
         auditLogService.log(employee.getGym(), currentUser, "GUEST_CHECK_IN", "guestId=" + guestId);
+    }
+
+    private java.util.Optional<PassType> resolvePassType(Long gymId, Long passTypeId, String passTypeName) {
+        if (passTypeId != null) {
+            java.util.Optional<PassType> byId = passTypeRepository.findById(passTypeId)
+                    .filter(pt -> pt.getGym().getId().equals(gymId));
+            if (byId.isPresent()) {
+                return byId;
+            }
+        }
+        return passTypeRepository.findByGymId(gymId).stream()
+                .filter(pt -> pt.getName().equalsIgnoreCase(passTypeName))
+                .findFirst();
     }
 
     @Transactional

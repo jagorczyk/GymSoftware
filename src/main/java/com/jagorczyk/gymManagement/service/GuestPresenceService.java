@@ -122,16 +122,18 @@ public class GuestPresenceService {
         return pass.getRemainingEntries() == null || pass.getRemainingEntries() > 0;
     }
 
-    public void consumeEntry(GymPass pass) {
+    public GymPass consumeEntry(Long passId) {
+        GymPass pass = gymPassRepository.findById(passId)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karnetu"));
         if (pass.getRemainingEntries() == null) {
-            return;
+            return pass;
         }
         int remaining = pass.getRemainingEntries() - 1;
         pass.setRemainingEntries(remaining);
         if (remaining <= 0) {
             pass.setStatus(PassStatus.EXPIRED);
         }
-        gymPassRepository.save(pass);
+        return gymPassRepository.save(pass);
     }
 
     public void applyEntryLimits(GymPass pass, Integer maxEntries) {
@@ -140,14 +142,16 @@ public class GuestPresenceService {
     }
 
     public Optional<GymPass> findActivePass(List<GymPass> passes, Long guestId) {
-        return passes.stream()
-                .filter(p -> p.getGuest().getId().equals(guestId) && isPassUsable(p))
-                .findFirst();
+        return findActivePass(passes, guestId, LocalDate.now());
     }
 
     public Optional<GymPass> findActivePass(List<GymPass> passes, Long guestId, LocalDate today) {
         return passes.stream()
                 .filter(p -> p.getGuest().getId().equals(guestId) && isPassUsable(p, today))
+                .sorted(java.util.Comparator
+                        .comparing((GymPass p) -> p.getRemainingEntries() == null)
+                        .thenComparing(p -> p.getRemainingEntries() == null ? Integer.MAX_VALUE : p.getRemainingEntries())
+                        .thenComparing(GymPass::getEndDate))
                 .findFirst();
     }
 

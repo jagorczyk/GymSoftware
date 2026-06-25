@@ -102,6 +102,7 @@ class MvpServiceIntegrationTest {
                 new SellPassRequest(
                         guest.getId(),
                         "MONTHLY",
+                        null,
                         LocalDate.now(),
                         LocalDate.now().plusMonths(1),
                         BigDecimal.valueOf(199.99)

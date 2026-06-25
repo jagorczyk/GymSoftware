@@ -97,11 +97,13 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
     if (!selectedGymId || !guest) return;
     const form = new FormData(event.currentTarget);
     const passType = String(form.get("passType"));
+    const passTypeId = Number(form.get("passTypeId"));
     const guestName = `${guest.firstName} ${guest.lastName}`;
     try {
       await sellPass(auth, Number(selectedGymId), {
         guestId: guest.id,
         passType,
+        passTypeId: Number.isFinite(passTypeId) && passTypeId > 0 ? passTypeId : null,
         startDate: String(form.get("startDate")),
         endDate: String(form.get("endDate")),
         price: Number(form.get("price")),

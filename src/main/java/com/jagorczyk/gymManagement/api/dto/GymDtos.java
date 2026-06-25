@@ -79,6 +79,7 @@ public final class GymDtos {
     public record SellPassRequest(
             @NotNull Long guestId,
             @NotBlank String passType,
+            Long passTypeId,
             @NotNull @FutureOrPresent LocalDate startDate,
             @NotNull @FutureOrPresent LocalDate endDate,
             @NotNull @DecimalMin("0.00") BigDecimal price
