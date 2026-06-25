@@ -101,6 +101,10 @@ public class EmployeeService {
         pass.setPrice(request.price());
         pass.setSoldByUser(currentUser);
         pass.setStatus(PassStatus.ACTIVE);
+        passTypeRepository.findByGymId(gymId).stream()
+                .filter(pt -> pt.getName().equalsIgnoreCase(request.passType()))
+                .findFirst()
+                .ifPresent(pt -> guestPresenceService.applyEntryLimits(pass, pt.getMaxEntries()));
         GymPass saved = gymPassRepository.save(pass);
 
         auditLogService.log(employee.getGym(), currentUser, "PASS_SOLD", "passId=" + saved.getId() + ",guestId=" + guest.getId());
@@ -113,7 +117,9 @@ public class EmployeeService {
                 saved.getEndDate(),
                 saved.getPrice(),
                 guest.getFirstName(),
-                guest.getLastName()
+                guest.getLastName(),
+                saved.getMaxEntries(),
+                saved.getRemainingEntries()
         );
     }
 
@@ -159,15 +165,15 @@ public class EmployeeService {
         if (guestCheckInRepository.existsByGuestIdAndCheckedOutAtIsNull(guestId)) {
             throw new IllegalArgumentException("Klient jest już zapisany na sali.");
         }
-        if (guestPresenceService.findActivePass(gymPassRepository.findByGymId(gymId), guestId).isEmpty()) {
-            throw new IllegalArgumentException("Wejście wymaga aktywnego karnetu.");
-        }
+        GymPass activePass = guestPresenceService.findActivePass(gymPassRepository.findByGymId(gymId), guestId)
+                .orElseThrow(() -> new IllegalArgumentException("Wejście wymaga aktywnego karnetu."));
 
         GuestCheckIn checkIn = new GuestCheckIn();
         checkIn.setGym(employee.getGym());
         checkIn.setGuest(guest);
         checkIn.setCheckedInByUser(currentUser);
         guestCheckInRepository.save(checkIn);
+        guestPresenceService.consumeEntry(activePass);
         auditLogService.log(employee.getGym(), currentUser, "GUEST_CHECK_IN", "guestId=" + guestId);
     }
 
@@ -295,7 +301,7 @@ public class EmployeeService {
                 .toList();
 
         List<PassTypeView> passTypes = passTypeRepository.findByGymId(gymId).stream()
-                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
+                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays(), pt.getMaxEntries()))
                 .toList();
 
         LocalDate today = LocalDate.now();
@@ -453,7 +459,7 @@ public class EmployeeService {
     public List<PassTypeView> listPassTypes(User currentUser, Long gymId) {
         employeePermissionService.requirePermission(currentUser, gymId, EmployeePermission.MANAGE_PASS_TYPES);
         return passTypeRepository.findByGymId(gymId).stream()
-                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
+                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays(), pt.getMaxEntries()))
                 .toList();
     }
 
@@ -473,10 +479,11 @@ public class EmployeeService {
         passType.setName(request.name());
         passType.setPrice(request.price());
         passType.setDurationDays(request.durationDays());
+        passType.setMaxEntries(request.maxEntries());
         passType = passTypeRepository.save(passType);
 
         auditLogService.log(employee.getGym(), currentUser, "PASS_TYPE_CREATED", "name=" + passType.getName());
-        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays());
+        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays(), passType.getMaxEntries());
     }
 
     @Transactional

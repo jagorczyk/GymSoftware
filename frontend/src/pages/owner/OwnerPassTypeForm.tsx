@@ -10,6 +10,7 @@ import {
   ownerFormLabelClassName,
 } from "../../components/OwnerFormLayout";
 import { dangerButtonClassName, primaryButtonClassName } from "../../components/formStyles";
+import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import type { OwnerContext } from "./types";
 
 export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "create" | "edit" }) {
@@ -24,6 +25,12 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
   const [name, setName] = useState(passType?.name ?? "");
   const [price, setPrice] = useState(passType ? String(passType.price) : "");
   const [durationDays, setDurationDays] = useState(passType ? String(passType.durationDays) : "30");
+  const [billingMode, setBillingMode] = useState<"duration" | "entries">(
+    passType?.maxEntries != null ? "entries" : "duration"
+  );
+  const [maxEntries, setMaxEntries] = useState(
+    passType?.maxEntries != null ? String(passType.maxEntries) : "1"
+  );
   const [saving, setSaving] = useState(false);
 
   if (!details) return <SelectGymPrompt />;
@@ -43,19 +50,17 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
     if (!selectedGymId) return;
     setSaving(true);
     try {
+      const payload = {
+        name,
+        price: Number(price),
+        durationDays: Number(durationDays),
+        maxEntries: billingMode === "entries" ? Number(maxEntries) : null,
+      };
       if (mode === "create") {
-        await createPassType(auth, Number(selectedGymId), {
-          name,
-          price: Number(price),
-          durationDays: Number(durationDays),
-        });
-        setInfo(`Dodano typ karnetu „${name}” (${price} zł, ${durationDays} dni)`);
+        await createPassType(auth, Number(selectedGymId), payload);
+        setInfo(`Dodano typ karnetu „${name}”`);
       } else if (passType) {
-        await updatePassType(auth, Number(selectedGymId), passType.id, {
-          name,
-          price: Number(price),
-          durationDays: Number(durationDays),
-        });
+        await updatePassType(auth, Number(selectedGymId), passType.id, payload);
         setInfo(`Zaktualizowano typ karnetu „${name}”`);
       }
       await loadGymsAndDetails();
@@ -121,9 +126,12 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
             />
           </div>
           <div>
-            <label className={ownerFormLabelClassName}>Czas trwania (dni)</label>
+            <label className={ownerFormLabelClassName}>
+              {billingMode === "entries" ? "Ważność od zakupu (dni)" : "Czas trwania (dni)"}
+            </label>
             <input
               type="number"
+              min={1}
               value={durationDays}
               onChange={(e) => setDurationDays(e.target.value)}
               className={ownerFormInputClassName}
@@ -131,6 +139,61 @@ export function OwnerPassTypeForm({ ctx, mode }: { ctx: OwnerContext; mode: "cre
             />
           </div>
         </div>
+
+        <div className="space-y-3">
+          <label className={ownerFormLabelClassName}>Model karnetu</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setBillingMode("duration")}
+              className={`rounded-2xl border-2 p-4 text-left transition-colors ${
+                billingMode === "duration"
+                  ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20"
+                  : "border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <p className="font-bold text-slate-900 dark:text-white">Czasowy</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Np. karnet miesięczny lub jednodniowy z nielimitowanymi wejściami.
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingMode("entries")}
+              className={`rounded-2xl border-2 p-4 text-left transition-colors ${
+                billingMode === "entries"
+                  ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20"
+                  : "border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              <p className="font-bold text-slate-900 dark:text-white">Na wejścia</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Np. jedno wejście ważne 90 dni — inne niż karnet jednodniowy.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        {billingMode === "entries" && (
+          <div>
+            <label className={ownerFormLabelClassName}>Liczba wejść</label>
+            <input
+              type="number"
+              min={1}
+              value={maxEntries}
+              onChange={(e) => setMaxEntries(e.target.value)}
+              className={ownerFormInputClassName}
+              required
+            />
+          </div>
+        )}
+
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Podgląd: {formatPassTypeValidity({
+            durationDays: Number(durationDays) || 0,
+            maxEntries: billingMode === "entries" ? Number(maxEntries) || 1 : null,
+          })}
+        </p>
         <div className="pt-4 flex justify-end">
           <button type="submit" disabled={saving} className={primaryButtonClassName}>
             <Save className="w-5 h-5" />

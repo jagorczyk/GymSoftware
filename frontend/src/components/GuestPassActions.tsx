@@ -4,6 +4,7 @@ import { cancelPass, renewPass, freezePassEmployee, unfreezePassEmployee, type P
 import { FormSection } from "./FormSection";
 import { inputClassName, labelClassName, primaryButtonClassName, dangerButtonClassName } from "./formStyles";
 import { StatusChip } from "./StatusChip";
+import { formatPassRemaining } from "../utils/passTypeLabels";
 
 export function GuestPassActions(props: {
   auth: AuthState;
@@ -89,6 +90,7 @@ export function GuestPassActions(props: {
       </div>
       <p className="text-sm text-slate-500">
         {pass.startDate} — {pass.endDate} • {pass.price} zł
+        {formatPassRemaining(pass) ? ` • ${formatPassRemaining(pass)}` : ""}
       </p>
       {(pass.status === "ACTIVE" || pass.status === "EXPIRED") && (
         <form onSubmit={onRenew} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
@@ -106,7 +108,7 @@ export function GuestPassActions(props: {
         </form>
       )}
 
-      {pass.status === "ACTIVE" && !isFreezing && (
+      {pass.status === "ACTIVE" && pass.maxEntries == null && !isFreezing && (
         <div className="flex gap-2">
           <button type="button" onClick={() => setIsFreezing(true)} className="flex-1 bg-slate-100 text-slate-700 py-2 rounded font-medium text-sm hover:bg-slate-200 transition-colors">
             Zamroź
@@ -117,7 +119,13 @@ export function GuestPassActions(props: {
         </div>
       )}
 
-      {pass.status === "ACTIVE" && isFreezing && (
+      {pass.status === "ACTIVE" && pass.maxEntries != null && (
+        <button type="button" onClick={onCancel} className="w-full bg-red-50 text-red-600 py-2 rounded font-medium text-sm hover:bg-red-100 transition-colors">
+          Anuluj
+        </button>
+      )}
+
+      {pass.status === "ACTIVE" && pass.maxEntries == null && isFreezing && (
         <form onSubmit={onFreeze} className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
           <div>
             <label className={labelClassName}>Od</label>

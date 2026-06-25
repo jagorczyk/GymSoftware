@@ -6,6 +6,7 @@ import { EntityList } from "../../components/EntityList";
 import { ListToolbar } from "../../components/ListToolbar";
 import { LoadingState } from "../../components/LoadingState";
 import { SelectGymDashboardPrompt } from "./EmployeeHome";
+import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import type { EmployeeContext } from "./types";
 
 export function EmployeePassTypesList({ ctx }: { ctx: EmployeeContext }) {
@@ -47,7 +48,7 @@ export function EmployeePassTypesList({ ctx }: { ctx: EmployeeContext }) {
           <EntityListCard
             key={pt.id}
             title={pt.name}
-            subtitle={`${pt.price} zł • ${pt.durationDays} dni`}
+            subtitle={`${pt.price} zł • ${formatPassTypeValidity(pt)}`}
             onClick={() => navigate(`/employee/pass-types/${pt.id}`)}
           />
         ))}

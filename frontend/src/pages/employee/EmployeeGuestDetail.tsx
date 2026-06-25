@@ -16,6 +16,7 @@ import { DetailPageLayout } from "../../components/DetailPageLayout";
 import { EntityList } from "../../components/EntityList";
 import { EntityListCard } from "../../components/EntityListCard";
 import { FormSection } from "../../components/FormSection";
+import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import { ListToolbar } from "../../components/ListToolbar";
 import { LoadingState } from "../../components/LoadingState";
 import { EmptyState } from "../../components/EmptyState";
@@ -410,7 +411,7 @@ export function EmployeeGuestDetail({ ctx }: { ctx: EmployeeContext }) {
                 <option value="">-- Wybierz typ karnetu --</option>
                 {overview?.passTypes?.map((pt: any) => (
                   <option key={pt.id} value={pt.id}>
-                    {pt.name} ({pt.price} zł / {pt.durationDays} dni)
+                    {pt.name} ({pt.price} zł / {formatPassTypeValidity(pt)})
                   </option>
                 ))}
               </select>

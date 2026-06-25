@@ -6,6 +6,7 @@ import { PageHeader } from "../../components/PageHeader";
 import { EmptyState } from "../../components/EmptyState";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import { primaryButtonClassName, secondaryButtonClassName } from "../../components/formStyles";
+import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import type { OwnerContext } from "./types";
 
 export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
@@ -83,7 +84,7 @@ export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
                   <div>
                     <h3 className="font-bold text-slate-900 dark:text-white text-lg">{pt.name}</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {pt.price} zł • {pt.durationDays} dni
+                      {pt.price} zł • {formatPassTypeValidity(pt)}
                     </p>
                   </div>
                 </div>

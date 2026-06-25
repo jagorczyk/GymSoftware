@@ -203,7 +203,7 @@ public class OwnerService {
                 ))
                 .toList();
         List<PassTypeView> passTypes = passTypeRepository.findByGymId(gymId).stream()
-                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
+                .map(pt -> new PassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays(), pt.getMaxEntries()))
                 .toList();
         return new OwnerGymDetails(
                 new GymSummary(gym.getId(), gym.getName(), gym.getAddress(), gym.getCity(), gym.getPostalCode(), gym.getNip(), gym.getThemeColor(), gym.getSubdomain()),
@@ -528,10 +528,11 @@ public class OwnerService {
         passType.setName(request.name());
         passType.setPrice(request.price());
         passType.setDurationDays(request.durationDays());
+        passType.setMaxEntries(request.maxEntries());
         passType = passTypeRepository.save(passType);
 
         auditLogService.log(gym, gym.getOwnerUser(), "PASS_TYPE_CREATED", "name=" + passType.getName());
-        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays());
+        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays(), passType.getMaxEntries());
     }
 
     @Transactional
@@ -565,9 +566,10 @@ public class OwnerService {
         passType.setName(request.name());
         passType.setPrice(request.price());
         passType.setDurationDays(request.durationDays());
+        passType.setMaxEntries(request.maxEntries());
         passType = passTypeRepository.save(passType);
         auditLogService.log(gym, gym.getOwnerUser(), "PASS_TYPE_UPDATED", "passTypeId=" + passTypeId);
-        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays());
+        return new PassTypeView(passType.getId(), passType.getName(), passType.getPrice(), passType.getDurationDays(), passType.getMaxEntries());
     }
 
     @Transactional(readOnly = true)

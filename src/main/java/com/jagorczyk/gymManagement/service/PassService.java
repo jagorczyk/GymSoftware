@@ -71,6 +71,9 @@ public class PassService {
         if (pass.getStatus() != PassStatus.ACTIVE) {
             throw new IllegalArgumentException("Karnet musi być aktywny aby go zamrozić.");
         }
+        if (pass.getMaxEntries() != null) {
+            throw new IllegalArgumentException("Karnety z limitem wejść nie można zamrozić.");
+        }
         com.jagorczyk.gymManagement.domain.PassFreeze freeze = new com.jagorczyk.gymManagement.domain.PassFreeze();
         freeze.setGymPass(pass);
         freeze.setStartDate(request.startDate());

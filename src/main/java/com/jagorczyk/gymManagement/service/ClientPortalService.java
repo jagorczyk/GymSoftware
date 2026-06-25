@@ -154,7 +154,9 @@ public class ClientPortalService {
                         p.getStatus().name(),
                         p.getStartDate(),
                         p.getEndDate(),
-                        p.getPrice()
+                        p.getPrice(),
+                        p.getMaxEntries(),
+                        p.getRemainingEntries()
                 ))
                 .toList();
         return new ClientDashboardView(activePasses);
@@ -163,7 +165,7 @@ public class ClientPortalService {
     @Transactional(readOnly = true)
     public List<ClientPassTypeView> getPassTypes(Long gymId) {
         return passTypeRepository.findByGymId(gymId).stream()
-                .map(pt -> new ClientPassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays()))
+                .map(pt -> new ClientPassTypeView(pt.getId(), pt.getName(), pt.getPrice(), pt.getDurationDays(), pt.getMaxEntries()))
                 .toList();
     }
 
@@ -209,6 +211,8 @@ public class ClientPortalService {
         gymPass.setStartDate(LocalDate.now());
         gymPass.setEndDate(LocalDate.now().plusDays(passType.getDurationDays()));
         gymPass.setPrice(passType.getPrice());
+        gymPass.setMaxEntries(passType.getMaxEntries());
+        gymPass.setRemainingEntries(passType.getMaxEntries());
         
         gymPass.setSoldByUser(null); 
         
@@ -298,6 +302,9 @@ public class ClientPortalService {
 
         if (pass.getStatus() != PassStatus.ACTIVE) {
             throw new IllegalArgumentException("Można zamrozić tylko aktywny karnet");
+        }
+        if (pass.getMaxEntries() != null) {
+            throw new IllegalArgumentException("Karnety z limitem wejść nie można zamrozić");
         }
 
         java.time.LocalDate today = java.time.LocalDate.now();

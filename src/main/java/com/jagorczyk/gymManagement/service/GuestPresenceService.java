@@ -9,6 +9,7 @@ import com.jagorczyk.gymManagement.domain.GymPass;
 import com.jagorczyk.gymManagement.domain.LockerAssignment;
 import com.jagorczyk.gymManagement.domain.PassStatus;
 import com.jagorczyk.gymManagement.repository.GuestCheckInRepository;
+import com.jagorczyk.gymManagement.repository.GymPassRepository;
 import com.jagorczyk.gymManagement.repository.LockerAssignmentRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,13 +22,16 @@ import org.springframework.stereotype.Service;
 public class GuestPresenceService {
     private final GuestCheckInRepository guestCheckInRepository;
     private final LockerAssignmentRepository lockerAssignmentRepository;
+    private final GymPassRepository gymPassRepository;
 
     public GuestPresenceService(
             GuestCheckInRepository guestCheckInRepository,
-            LockerAssignmentRepository lockerAssignmentRepository
+            LockerAssignmentRepository lockerAssignmentRepository,
+            GymPassRepository gymPassRepository
     ) {
         this.guestCheckInRepository = guestCheckInRepository;
         this.lockerAssignmentRepository = lockerAssignmentRepository;
+        this.gymPassRepository = gymPassRepository;
     }
 
     public Set<Long> activeCheckInGuestIds(Long gymId) {
@@ -68,7 +72,7 @@ public class GuestPresenceService {
             Set<Long> lockerGuestIds
     ) {
         Optional<GymPass> activePass = gymPasses.stream()
-                .filter(p -> p.getGuest().getId().equals(guest.getId()) && p.getStatus() == PassStatus.ACTIVE)
+                .filter(p -> p.getGuest().getId().equals(guest.getId()) && isPassUsable(p))
                 .findFirst();
         boolean isPresent = checkedInGuestIds.contains(guest.getId());
         boolean hasLocker = lockerGuestIds.contains(guest.getId());
@@ -98,13 +102,52 @@ public class GuestPresenceService {
                 pass.getEndDate(),
                 pass.getPrice(),
                 guest.getFirstName(),
-                guest.getLastName()
+                guest.getLastName(),
+                pass.getMaxEntries(),
+                pass.getRemainingEntries()
         );
+    }
+
+    public boolean isPassUsable(GymPass pass) {
+        return isPassUsable(pass, LocalDate.now());
+    }
+
+    public boolean isPassUsable(GymPass pass, LocalDate today) {
+        if (pass.getStatus() != PassStatus.ACTIVE) {
+            return false;
+        }
+        if (today.isBefore(pass.getStartDate()) || today.isAfter(pass.getEndDate())) {
+            return false;
+        }
+        return pass.getRemainingEntries() == null || pass.getRemainingEntries() > 0;
+    }
+
+    public void consumeEntry(GymPass pass) {
+        if (pass.getRemainingEntries() == null) {
+            return;
+        }
+        int remaining = pass.getRemainingEntries() - 1;
+        pass.setRemainingEntries(remaining);
+        if (remaining <= 0) {
+            pass.setStatus(PassStatus.EXPIRED);
+        }
+        gymPassRepository.save(pass);
+    }
+
+    public void applyEntryLimits(GymPass pass, Integer maxEntries) {
+        pass.setMaxEntries(maxEntries);
+        pass.setRemainingEntries(maxEntries);
     }
 
     public Optional<GymPass> findActivePass(List<GymPass> passes, Long guestId) {
         return passes.stream()
-                .filter(p -> p.getGuest().getId().equals(guestId) && p.getStatus() == PassStatus.ACTIVE)
+                .filter(p -> p.getGuest().getId().equals(guestId) && isPassUsable(p))
+                .findFirst();
+    }
+
+    public Optional<GymPass> findActivePass(List<GymPass> passes, Long guestId, LocalDate today) {
+        return passes.stream()
+                .filter(p -> p.getGuest().getId().equals(guestId) && isPassUsable(p, today))
                 .findFirst();
     }
 

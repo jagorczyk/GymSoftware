@@ -8,6 +8,7 @@ import { PageHeader } from "../components/PageHeader";
 import { EmptyState } from "../components/EmptyState";
 import { LoadingState } from "../components/LoadingState";
 import { inputClassName, labelClassName, primaryButtonClassName, secondaryButtonClassName } from "../components/formStyles";
+import { formatPassRemaining } from "../utils/passTypeLabels";
 
 export function ClientGymPassesPage() {
   const { gymId } = useParams();
@@ -150,6 +151,11 @@ export function ClientGymPassesPage() {
 
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">{p.passType}</h3>
+                {formatPassRemaining(p) && (
+                  <p className="text-sm font-medium text-primary-600 dark:text-primary-400 mt-1">
+                    {formatPassRemaining(p)}
+                  </p>
+                )}
               </div>
 
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/30 p-4 space-y-3">
@@ -171,7 +177,7 @@ export function ClientGymPassesPage() {
               </div>
 
               <div className="flex flex-col gap-2 pt-1">
-                {p.status === "ACTIVE" ? (
+                {p.status === "ACTIVE" && p.maxEntries == null ? (
                   <button
                     onClick={() => openFreezeModal(p.id, p.endDate)}
                     className={secondaryButtonClassName}

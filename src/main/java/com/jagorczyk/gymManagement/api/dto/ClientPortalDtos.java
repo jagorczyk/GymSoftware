@@ -41,7 +41,8 @@ public final class ClientPortalDtos {
             Long id,
             String name,
             BigDecimal price,
-            Integer durationDays
+            Integer durationDays,
+            Integer maxEntries
     ) {}
 
     public record ClientPassView(
@@ -50,7 +51,9 @@ public final class ClientPortalDtos {
             String status,
             LocalDate startDate,
             LocalDate endDate,
-            BigDecimal price
+            BigDecimal price,
+            Integer maxEntries,
+            Integer remainingEntries
     ) {}
 
     public record PurchasePassRequest(

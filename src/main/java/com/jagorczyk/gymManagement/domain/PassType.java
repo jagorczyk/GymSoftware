@@ -30,6 +30,10 @@ public class PassType {
     @Column(name = "duration_days", nullable = false)
     private Integer durationDays;
 
+    /** Null = unlimited entries during validity period. */
+    @Column(name = "max_entries")
+    private Integer maxEntries;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

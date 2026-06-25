@@ -16,6 +16,7 @@ import {
   primaryButtonClassName,
 } from "../../components/formStyles";
 import { SelectGymDashboardPrompt } from "./EmployeeHome";
+import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import type { EmployeeContext } from "./types";
 
 export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode: "create" | "edit" }) {
@@ -27,6 +28,8 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [durationDays, setDurationDays] = useState("30");
+  const [billingMode, setBillingMode] = useState<"duration" | "entries">("duration");
+  const [maxEntries, setMaxEntries] = useState("1");
 
   useEffect(() => {
     if (mode !== "edit" || !selectedGymId || !passTypeId) return;
@@ -64,8 +67,9 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
         name,
         price: Number(price),
         durationDays: Number(durationDays),
+        maxEntries: billingMode === "entries" ? Number(maxEntries) : null,
       });
-      setMessage(`Dodano typ karnetu „${name}” (${price} zł, ${durationDays} dni)`);
+      setMessage(`Dodano typ karnetu „${name}”`);
       navigate("/employee/pass-types");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nie udało się dodać typu karnetu");
@@ -89,7 +93,7 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
         backTo="/employee/pass-types"
         breadcrumb="Oferta"
         title={passType.name}
-        subtitle={`${passType.price} zł • ${passType.durationDays} dni`}
+        subtitle={formatPassTypeValidity(passType)}
         headerExtra={
           <button type="button" onClick={onDelete} className={dangerButtonClassName}>
             <Trash2 className="w-4 h-4" />
@@ -111,8 +115,8 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
               <dd className="font-medium text-slate-900 mt-1">{passType.price} zł</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Ważność</dt>
-              <dd className="font-medium text-slate-900 mt-1">{passType.durationDays} dni</dd>
+              <dt className="text-slate-500">Warunki</dt>
+              <dd className="font-medium text-slate-900 mt-1">{formatPassTypeValidity(passType)}</dd>
             </div>
           </dl>
         </FormSection>
@@ -146,9 +150,12 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
               <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={inputClassName} required />
             </div>
             <div>
-              <label className={labelClassName}>Czas trwania (dni)</label>
+              <label className={labelClassName}>
+                {billingMode === "entries" ? "Ważność od zakupu (dni)" : "Czas trwania (dni)"}
+              </label>
               <input
                 type="number"
+                min={1}
                 value={durationDays}
                 onChange={(e) => setDurationDays(e.target.value)}
                 className={inputClassName}
@@ -156,6 +163,41 @@ export function EmployeePassTypeForm({ ctx, mode }: { ctx: EmployeeContext; mode
               />
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setBillingMode("duration")}
+              className={`rounded-2xl border-2 p-4 text-left ${
+                billingMode === "duration" ? "border-primary-500 bg-primary-50" : "border-slate-200"
+              }`}
+            >
+              <p className="font-bold">Czasowy</p>
+              <p className="text-sm text-slate-500 mt-1">Nielimitowane wejścia w okresie ważności.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingMode("entries")}
+              className={`rounded-2xl border-2 p-4 text-left ${
+                billingMode === "entries" ? "border-primary-500 bg-primary-50" : "border-slate-200"
+              }`}
+            >
+              <p className="font-bold">Na wejścia</p>
+              <p className="text-sm text-slate-500 mt-1">Np. jedno wejście ważne 90 dni.</p>
+            </button>
+          </div>
+          {billingMode === "entries" && (
+            <div>
+              <label className={labelClassName}>Liczba wejść</label>
+              <input
+                type="number"
+                min={1}
+                value={maxEntries}
+                onChange={(e) => setMaxEntries(e.target.value)}
+                className={inputClassName}
+                required
+              />
+            </div>
+          )}
           <button type="submit" className={primaryButtonClassName}>
             Dodaj typ karnetu
           </button>

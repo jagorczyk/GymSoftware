@@ -353,7 +353,7 @@ export type OwnerGymDetails = {
   passes: Array<{ id: number; guestId: number; passType: string; status: string; startDate: string; endDate: string; price: number; guestFirstName?: string; guestLastName?: string }>;
   lockers: Array<{ id: number; lockerNumber: string; status: string; guestId?: number | null; guestFirstName?: string; guestLastName?: string }>;
   logs: Array<{ id: number; action: string; payload: string; createdAt: string; actorEmail?: string }>;
-  passTypes: Array<{ id: number; name: string; price: number; durationDays: number }>;
+  passTypes: Array<{ id: number; name: string; price: number; durationDays: number; maxEntries?: number | null }>;
 };
 
 export type OwnerDashboardStats = {
@@ -459,7 +459,7 @@ export async function deleteOwnerEmployee(auth: AuthState, gymId: number, employ
 export async function createPassType(
   auth: AuthState,
   gymId: number,
-  payload: { name: string; price: number; durationDays: number }
+  payload: { name: string; price: number; durationDays: number; maxEntries?: number | null }
 ): Promise<any> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/pass-types`, {
     method: "POST",
@@ -511,7 +511,7 @@ export async function getEmployeeLiveOverview(
   activeKeys: Array<{ lockerId: number; lockerNumber: string; guestId: number; guestName: string; assignedAt: string }>;
   presentGuests: Array<{ guestId: number; firstName: string; lastName: string; email: string }>;
   allLockers: Array<{ id: number; lockerNumber: string; status: string; guestId: number | null }>;
-  passTypes: Array<{ id: number; name: string; price: number; durationDays: number }>;
+  passTypes: Array<{ id: number; name: string; price: number; durationDays: number; maxEntries?: number | null }>;
   expiringPasses: Array<{
     guestId: number;
     firstName: string;
@@ -593,7 +593,7 @@ export async function createEmployeeLocker(
 export async function getEmployeePassTypes(
   auth: AuthState,
   gymId: number
-): Promise<Array<{ id: number; name: string; price: number; durationDays: number }>> {
+): Promise<Array<{ id: number; name: string; price: number; durationDays: number; maxEntries?: number | null }>> {
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/pass-types`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });
@@ -604,7 +604,7 @@ export async function getEmployeePassTypes(
 export async function createEmployeePassType(
   auth: AuthState,
   gymId: number,
-  payload: { name: string; price: number; durationDays: number }
+  payload: { name: string; price: number; durationDays: number; maxEntries?: number | null }
 ): Promise<any> {
   const response = await fetch(`${API_URL}/employee/gyms/${gymId}/pass-types`, {
     method: "POST",
@@ -668,6 +668,8 @@ export type PassView = {
   startDate: string;
   endDate: string;
   price: number;
+  maxEntries?: number | null;
+  remainingEntries?: number | null;
   freezeStartDate?: string;
   freezeEndDate?: string;
 };
@@ -794,8 +796,8 @@ export async function updatePassType(
   auth: AuthState,
   gymId: number,
   passTypeId: number,
-  payload: { name: string; price: number; durationDays: number }
-): Promise<{ id: number; name: string; price: number; durationDays: number }> {
+  payload: { name: string; price: number; durationDays: number; maxEntries?: number | null }
+): Promise<{ id: number; name: string; price: number; durationDays: number; maxEntries?: number | null }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/pass-types/${passTypeId}`, {
     method: "PUT",
     headers: {

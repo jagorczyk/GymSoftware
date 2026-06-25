@@ -36,6 +36,8 @@ export type ClientPassView = {
   startDate: string;
   endDate: string;
   price: number;
+  maxEntries?: number | null;
+  remainingEntries?: number | null;
 };
 
 export type ClientDashboardView = {
@@ -98,7 +100,7 @@ export async function getClientDashboard(auth: AuthState, gymId: number): Promis
 export async function getClientPassTypes(
   auth: AuthState,
   gymId: number
-): Promise<Array<{ id: number; name: string; price: number; durationDays: number }>> {
+): Promise<Array<{ id: number; name: string; price: number; durationDays: number; maxEntries?: number | null }>> {
   const response = await fetch(`${API_URL}/client/gyms/${gymId}/pass-types`, {
     headers: { Authorization: `Bearer ${auth.token}` },
   });

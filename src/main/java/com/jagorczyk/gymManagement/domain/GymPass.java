@@ -47,6 +47,12 @@ public class GymPass {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @Column(name = "max_entries")
+    private Integer maxEntries;
+
+    @Column(name = "remaining_entries")
+    private Integer remainingEntries;
+
     @Column(nullable = false)
     private BigDecimal price;
 

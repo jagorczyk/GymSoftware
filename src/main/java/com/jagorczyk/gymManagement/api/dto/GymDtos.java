@@ -45,11 +45,13 @@ public final class GymDtos {
             LocalDate endDate,
             BigDecimal price,
             String guestFirstName,
-            String guestLastName
+            String guestLastName,
+            Integer maxEntries,
+            Integer remainingEntries
     ) {}
     public record LockerView(Long id, String lockerNumber, LockerStatus status, Long guestId, String guestFirstName, String guestLastName) {}
     public record AuditLogView(Long id, String action, String payload, LocalDateTime createdAt, String actorEmail) {}
-    public record PassTypeView(Long id, String name, BigDecimal price, Integer durationDays) {}
+    public record PassTypeView(Long id, String name, BigDecimal price, Integer durationDays, Integer maxEntries) {}
 
     public record OwnerGymDetails(
             GymSummary gym,
@@ -85,7 +87,8 @@ public final class GymDtos {
     public record CreatePassTypeRequest(
             @NotBlank String name,
             @NotNull @DecimalMin("0.01") BigDecimal price,
-            @NotNull Integer durationDays
+            @NotNull Integer durationDays,
+            @jakarta.validation.constraints.Min(1) Integer maxEntries
     ) {}
 
     public record AssignLockerRequest(
@@ -205,7 +208,8 @@ public final class GymDtos {
     public record UpdatePassTypeRequest(
             @NotBlank String name,
             @NotNull @DecimalMin("0.01") BigDecimal price,
-            @NotNull Integer durationDays
+            @NotNull Integer durationDays,
+            @jakarta.validation.constraints.Min(1) Integer maxEntries
     ) {}
 
     public record SalesReportDay(LocalDate date, BigDecimal total, int count) {}

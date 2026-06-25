@@ -4,6 +4,7 @@ import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { getClientPassTypes, purchasePassOnline } from "../clientApi";
 import { ArrowLeft, ShieldCheck, CheckCircle2, ShoppingCart, Loader2 } from "lucide-react";
+import { formatPassTypeValidity } from "../utils/passTypeLabels";
 
 export function ClientBuyPassPage() {
   const { gymId } = useParams();
@@ -82,7 +83,7 @@ export function ClientBuyPassPage() {
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Ważny przez {pt.durationDays} dni
+                  {formatPassTypeValidity(pt)}
                 </li>
                 <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
