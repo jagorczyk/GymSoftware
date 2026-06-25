@@ -24,6 +24,19 @@ public final class ClientPortalDtos {
             List<ClientPassView> activePasses
     ) {}
 
+    public record ClientTodaySummaryView(
+            UpcomingBookingView nextBooking,
+            Integer expiringPassesIn7Days,
+            Integer activePasses
+    ) {}
+
+    public record UpcomingBookingView(
+            String bookingType,
+            String title,
+            String gymName,
+            java.time.LocalDateTime startsAt
+    ) {}
+
     public record ClientPassTypeView(
             Long id,
             String name,

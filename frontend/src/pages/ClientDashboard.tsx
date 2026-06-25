@@ -6,7 +6,9 @@ import {
   getClientGyms,
   getClientDashboard,
   getGlobalClientStats,
+  getClientTodaySummary,
   getUpcomingTrainings,
+  ClientTodaySummaryView,
   ClientGymView,
   ClientPassView,
   PersonalTrainingView,
@@ -52,6 +54,7 @@ export function ClientDashboard() {
   const [activePasses, setActivePasses] = useState<PassWithGym[]>([]);
   const [upcomingTrainings, setUpcomingTrainings] = useState<PersonalTrainingView[]>([]);
   const [stats, setStats] = useState({ activePasses: 0, workoutsThisMonth: 0 });
+  const [todaySummary, setTodaySummary] = useState<ClientTodaySummaryView | null>(null);
   const [loading, setLoading] = useState(true);
 
   const displayName = useMemo(() => {
@@ -66,14 +69,16 @@ export function ClientDashboard() {
     async function load() {
       setLoading(true);
       try {
-        const [gymData, statsData, trainingsData] = await Promise.all([
+        const [gymData, statsData, trainingsData, todaySummaryData] = await Promise.all([
           getClientGyms(currentAuth),
           getGlobalClientStats(currentAuth),
           getUpcomingTrainings(currentAuth),
+          getClientTodaySummary(currentAuth),
         ]);
 
         setGyms(gymData);
         setStats(statsData);
+        setTodaySummary(todaySummaryData);
 
         const now = new Date();
         setUpcomingTrainings(
@@ -153,6 +158,29 @@ export function ClientDashboard() {
           <p className="text-4xl font-display font-black text-slate-900 dark:text-white">{upcomingTrainings.length}</p>
         </div>
       </div>
+
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
+        <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+          Dzisiaj
+        </h2>
+        {todaySummary?.nextBooking ? (
+          <div className="rounded-xl border border-primary-200 dark:border-primary-900/50 bg-primary-50/60 dark:bg-primary-950/20 p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary-700 dark:text-primary-300">
+              Najbliższa rezerwacja
+            </p>
+            <p className="font-bold text-slate-900 dark:text-white mt-1">{todaySummary.nextBooking.title}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              {todaySummary.nextBooking.gymName} · {formatDateTime(todaySummary.nextBooking.startsAt)}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-400">Brak zaplanowanych rezerwacji.</p>
+        )}
+        <p className="text-sm text-slate-600 dark:text-slate-300">
+          Karnety kończące się w 7 dni:{" "}
+          <span className="font-bold text-slate-900 dark:text-white">{todaySummary?.expiringPassesIn7Days ?? 0}</span>
+        </p>
+      </section>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">

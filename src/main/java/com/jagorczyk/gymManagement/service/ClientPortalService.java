@@ -6,6 +6,7 @@ import com.jagorczyk.gymManagement.repository.*;
 import com.jagorczyk.gymManagement.config.StripeProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -365,6 +366,74 @@ public class ClientPortalService {
         }
         
         return java.util.Map.of("activePasses", activePassesCount, "workoutsThisMonth", 0);
+    }
+
+    @Transactional(readOnly = true)
+    public ClientTodaySummaryView getTodaySummary(Long userId) {
+        List<Guest> guests = guestRepository.findByUserId(userId);
+        if (guests.isEmpty()) {
+            return new ClientTodaySummaryView(null, 0, 0);
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusDays(7);
+        LocalDateTime now = LocalDateTime.now();
+
+        int activePasses = 0;
+        int expiringPasses = 0;
+        UpcomingBookingView nextBooking = null;
+
+        for (Guest guest : guests) {
+            List<GymPass> guestPasses = gymPassRepository.findByGuestId(guest.getId());
+            activePasses += (int) guestPasses.stream()
+                    .filter(pass -> pass.getStatus() == PassStatus.ACTIVE)
+                    .count();
+            expiringPasses += (int) guestPasses.stream()
+                    .filter(pass -> pass.getStatus() == PassStatus.ACTIVE)
+                    .filter(pass -> !pass.getEndDate().isBefore(today) && !pass.getEndDate().isAfter(endDate))
+                    .count();
+
+            for (ClassReservation reservation : classReservationRepository.findByGuestId(guest.getId())) {
+                if (reservation.getStatus() == ClassReservationStatus.CANCELLED) {
+                    continue;
+                }
+                GroupClass groupClass = reservation.getGroupClass();
+                if (groupClass.getStartTime().isBefore(now)) {
+                    continue;
+                }
+                UpcomingBookingView candidate = new UpcomingBookingView(
+                        "GROUP_CLASS",
+                        groupClass.getName(),
+                        groupClass.getGym().getName(),
+                        groupClass.getStartTime()
+                );
+                if (nextBooking == null || candidate.startsAt().isBefore(nextBooking.startsAt())) {
+                    nextBooking = candidate;
+                }
+            }
+
+            for (PersonalTraining training : personalTrainingRepository.findByClientId(guest.getId())) {
+                if ("CANCELLED".equals(training.getStatus()) || training.getScheduledAt().isBefore(now)) {
+                    continue;
+                }
+                String title = String.format(
+                        "Trening z %s %s",
+                        training.getTrainer().getUser().getFirstName(),
+                        training.getTrainer().getUser().getLastName()
+                );
+                UpcomingBookingView candidate = new UpcomingBookingView(
+                        "PERSONAL_TRAINING",
+                        title,
+                        training.getGym().getName(),
+                        training.getScheduledAt()
+                );
+                if (nextBooking == null || candidate.startsAt().isBefore(nextBooking.startsAt())) {
+                    nextBooking = candidate;
+                }
+            }
+        }
+
+        return new ClientTodaySummaryView(nextBooking, expiringPasses, activePasses);
     }
 
     @Transactional(readOnly = true)

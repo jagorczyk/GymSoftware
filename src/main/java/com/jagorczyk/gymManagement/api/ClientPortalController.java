@@ -4,6 +4,7 @@ import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientDashboardView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientGymView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientPassView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientPassTypeView;
+import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.ClientTodaySummaryView;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.JoinGymRequest;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.PurchasePassRequest;
 import com.jagorczyk.gymManagement.api.dto.ClientPortalDtos.RateClassRequest;
@@ -166,6 +167,11 @@ public class ClientPortalController {
     @GetMapping("/dashboard/global-stats")
     public java.util.Map<String, Integer> getGlobalStats(@AuthenticationPrincipal CustomUserPrincipal principal) {
         return clientPortalService.getGlobalStats(principal.getUserId());
+    }
+
+    @GetMapping("/dashboard/today-summary")
+    public ClientTodaySummaryView getTodaySummary(@AuthenticationPrincipal CustomUserPrincipal principal) {
+        return clientPortalService.getTodaySummary(principal.getUserId());
     }
 
     @GetMapping("/gyms/{gymId}/trainers")

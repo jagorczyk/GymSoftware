@@ -42,6 +42,19 @@ export type ClientDashboardView = {
   activePasses: ClientPassView[];
 };
 
+export type UpcomingBookingView = {
+  bookingType: "GROUP_CLASS" | "PERSONAL_TRAINING";
+  title: string;
+  gymName: string;
+  startsAt: string;
+};
+
+export type ClientTodaySummaryView = {
+  nextBooking: UpcomingBookingView | null;
+  expiringPassesIn7Days: number;
+  activePasses: number;
+};
+
 export async function getClientGyms(auth: AuthState): Promise<ClientGymView[]> {
   const response = await fetch(`${API_URL}/client/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
@@ -177,6 +190,14 @@ export async function getGlobalClientStats(auth: AuthState): Promise<{ activePas
     headers: { Authorization: `Bearer ${auth.token}` },
   });
   if (!response.ok) await parseApiError(response, "Nie udało się pobrać statystyk");
+  return response.json();
+}
+
+export async function getClientTodaySummary(auth: AuthState): Promise<ClientTodaySummaryView> {
+  const response = await fetch(`${API_URL}/client/dashboard/today-summary`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać podsumowania dnia");
   return response.json();
 }
 

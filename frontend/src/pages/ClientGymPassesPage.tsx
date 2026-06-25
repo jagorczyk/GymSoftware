@@ -4,6 +4,10 @@ import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { getClientDashboard, ClientDashboardView, freezePass, downloadInvoicePdf } from "../clientApi";
 import { ArrowLeft, Ticket, CalendarDays, Zap, ShieldCheck, Download, Loader2 } from "lucide-react";
+import { PageHeader } from "../components/PageHeader";
+import { EmptyState } from "../components/EmptyState";
+import { LoadingState } from "../components/LoadingState";
+import { inputClassName, labelClassName, primaryButtonClassName, secondaryButtonClassName } from "../components/formStyles";
 
 export function ClientGymPassesPage() {
   const { gymId } = useParams();
@@ -85,192 +89,164 @@ export function ClientGymPassesPage() {
       .finally(() => setLoading(false));
   }, [auth, gymId, showError]);
 
-  if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Wczytywanie karnetów...</div>;
+  if (loading) return <LoadingState message="Wczytywanie karnetów..." />;
   if (!dashboard) return null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500">
-      <div className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-200">
-        <div className="flex items-center gap-4">
-          <Link to="/client/dashboard" className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Moje Karnety</h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Cyfrowy portfel Twoich wejściówek</p>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <PageHeader
+        title="Moje karnety"
+        subtitle="Cyfrowy portfel Twoich wejściówek"
+        action={
+          <div className="flex items-center gap-3">
+            <Link to="/client/dashboard" className={secondaryButtonClassName}>
+              <ArrowLeft className="w-4 h-4" />
+              Wróć
+            </Link>
+            {dashboard.activePasses.length > 0 && (
+              <Link to={`/client/gyms/${gymId}/buy`} className={primaryButtonClassName}>
+                <Zap className="w-4 h-4" />
+                Dokup karnet
+              </Link>
+            )}
           </div>
-        </div>
-        
-        {dashboard.activePasses.length > 0 && (
-          <Link
-            to={`/client/gyms/${gymId}/buy`}
-            className="hidden md:flex bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-2xl transition-all shadow-md items-center gap-2"
-          >
-            <Zap className="w-4 h-4 text-yellow-400" />
-            Dokup karnet
-          </Link>
-        )}
-      </div>
+        }
+      />
 
       {dashboard.activePasses.length === 0 ? (
-        <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center flex flex-col items-center shadow-lg shadow-slate-200/50">
-          <div className="absolute -top-32 -right-32 w-80 h-80 bg-slate-100 dark:bg-slate-800 rounded-full blur-3xl opacity-50"></div>
-          
-          <div className="relative z-10 w-24 h-24 bg-slate-50 dark:bg-slate-950/40 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-100 dark:border-slate-800">
-            <Ticket className="w-12 h-12 text-slate-300 dark:text-slate-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Brak aktywnych karnetów</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-md">Wygląda na to, że nie masz jeszcze żadnego ważnego karnetu w tym klubie. Zmień to już teraz!</p>
-          <Link
-            to={`/client/gyms/${gymId}/buy`}
-            className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary-500 text-white rounded-2xl font-bold transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary-500/30 overflow-hidden"
-          >
-            <span className="relative z-10">Kup swój pierwszy karnet</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          </Link>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+          <EmptyState
+            icon={<Ticket className="w-12 h-12 text-slate-400" />}
+            title="Brak aktywnych karnetów"
+            description="Nie masz jeszcze ważnego karnetu w tym klubie."
+            action={
+              <Link to={`/client/gyms/${gymId}/buy`} className={primaryButtonClassName}>
+                Kup swój pierwszy karnet
+              </Link>
+            }
+          />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {dashboard.activePasses.map((p, i) => (
-            <div 
-              key={p.id} 
-              className="group relative rounded-3xl p-[2px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/20"
-              style={{ animationDelay: `${i * 100}ms` }}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 justify-items-center sm:justify-items-stretch">
+          {dashboard.activePasses.map((p) => (
+            <div
+              key={p.id}
+              className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5"
             >
-              <div className={`absolute inset-0 bg-gradient-to-br opacity-80 group-hover:opacity-100 transition-opacity ${
-                p.status === "ACTIVE" 
-                  ? "from-violet-500 via-primary-500 to-blue-500"
-                  : "from-blue-600 via-slate-700 to-slate-800"
-              }`}></div>
-              
-              <div className="relative h-full bg-slate-900 rounded-[22px] p-8 overflow-hidden flex flex-col justify-between">
-                {/* Ozdobniki tła */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-bl-full"></div>
-                <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-primary-500/20 blur-2xl rounded-full"></div>
-                
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
-                      <ShieldCheck className={`w-6 h-6 ${p.status === "ACTIVE" ? "text-emerald-400" : "text-blue-400"}`} />
-                    </div>
-                    <div className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg backdrop-blur-sm ${
-                      p.status === "ACTIVE" 
-                        ? "bg-emerald-400/10 border border-emerald-400/20 text-emerald-400"
-                        : "bg-blue-400/10 border border-blue-400/20 text-blue-400"
-                    }`}>
-                      {p.status === "ACTIVE" ? "Aktywny" : "Zamrożony"}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-3xl font-extrabold text-white mb-2">{p.passType}</h3>
-                  <div className="h-1 w-12 bg-gradient-to-r from-primary-400 to-violet-400 rounded-full mb-8"></div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/40 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                
-                <div className="relative z-10 space-y-4 bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <CalendarDays className="w-5 h-5 text-primary-400" />
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-0.5">Start</p>
-                      <p className="font-medium text-white">{p.startDate}</p>
-                    </div>
-                  </div>
-                  <div className="h-px bg-white/10 w-full"></div>
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <CalendarDays className="w-5 h-5 text-violet-400" />
-                    <div>
-                      <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-0.5">Koniec</p>
-                      <p className="font-medium text-white">{p.endDate}</p>
-                    </div>
+                <span
+                  className={`px-3 py-1 text-xs font-bold uppercase tracking-wide rounded-full ${
+                    p.status === "ACTIVE"
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                      : "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                  }`}
+                >
+                  {p.status === "ACTIVE" ? "Aktywny" : "Zamrożony"}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{p.passType}</h3>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/30 p-4 space-y-3">
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                  <CalendarDays className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400 font-semibold">Start</p>
+                    <p className="font-medium">{p.startDate}</p>
                   </div>
                 </div>
+                <div className="h-px bg-slate-200 dark:bg-slate-800" />
+                <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                  <CalendarDays className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400 font-semibold">Koniec</p>
+                    <p className="font-medium">{p.endDate}</p>
+                  </div>
+                </div>
+              </div>
 
-                <div className="mt-6 relative z-10 flex flex-col gap-2">
-                  {p.status === "ACTIVE" ? (
-                    <button
-                      onClick={() => openFreezeModal(p.id, p.endDate)}
-                      className="w-full py-2.5 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2"
-                    >
-                      Zamroź karnet
-                    </button>
-                  ) : (
-                    <div className="w-full text-center py-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-300 font-bold rounded-xl text-sm">
-                      Karnet Zamrożony
-                    </div>
-                  )}
-
+              <div className="flex flex-col gap-2 pt-1">
+                {p.status === "ACTIVE" ? (
                   <button
-                    onClick={() => handleDownloadInvoice(p.id)}
-                    disabled={downloadingPassId === p.id}
-                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                    onClick={() => openFreezeModal(p.id, p.endDate)}
+                    className={secondaryButtonClassName}
                   >
-                    {downloadingPassId === p.id ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Pobieranie...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4" />
-                        Pobierz rachunek PDF
-                      </>
-                    )}
+                    Zamroź karnet
                   </button>
-                </div>
+                ) : (
+                  <div className="w-full text-center py-3 border-2 border-blue-100 dark:border-blue-900/40 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/20 font-bold rounded-2xl text-sm">
+                    Karnet zamrożony
+                  </div>
+                )}
+
+                <button
+                  onClick={() => handleDownloadInvoice(p.id)}
+                  disabled={downloadingPassId === p.id}
+                  className={primaryButtonClassName}
+                >
+                  {downloadingPassId === p.id ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Pobieranie...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Pobierz rachunek PDF
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* MODAL ZAMRAŻANIA */}
       {freezeModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full shadow-xl border border-slate-200 dark:border-slate-800 space-y-5">
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Zamroź swój karnet</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Określ przedział czasowy zawieszenia członkostwa (maksymalnie 30 dni).</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Zamroź karnet</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Ustaw okres zamrożenia (maksymalnie 30 dni).</p>
             </div>
 
             <form onSubmit={handleFreezeSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Data rozpoczęcia</label>
+              <div>
+                <label className={labelClassName}>Data rozpoczęcia</label>
                 <input
                   type="date"
                   value={startDate}
                   min={new Date().toISOString().split("T")[0]}
                   max={maxEndDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-700 dark:text-white"
+                  className={inputClassName}
                   required
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Data zakończenia</label>
+              <div>
+                <label className={labelClassName}>Data zakończenia</label>
                 <input
                   type="date"
                   value={endDate}
                   min={startDate}
                   max={maxEndDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-700 dark:text-white"
+                  className={inputClassName}
                   required
                 />
               </div>
 
-              <div className="pt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFreezeModalOpen(false)}
-                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-all"
-                >
+              <div className="pt-2 flex gap-3">
+                <button type="button" onClick={() => setFreezeModalOpen(false)} className={`${secondaryButtonClassName} flex-1`}>
                   Anuluj
                 </button>
-                <button
-                  type="submit"
-                  disabled={submittingFreeze}
-                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
-                >
+                <button type="submit" disabled={submittingFreeze} className={`${primaryButtonClassName} flex-1`}>
                   {submittingFreeze ? "Zamrażanie..." : "Potwierdź"}
                 </button>
               </div>
