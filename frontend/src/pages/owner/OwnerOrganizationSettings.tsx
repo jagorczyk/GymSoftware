@@ -24,8 +24,40 @@ import {
 } from "../../permissions";
 import type { OwnerContext } from "./types";
 
-const IMPORT_TEMPLATE = `email,password,firstName,lastName,gymName,permissions
-jan.kowalski@example.com,Haslo123!,Jan,Kowalski,Moja Siłownia,MANAGE_SCHEDULE|MANAGE_PASS_TYPES`;
+const CSV_HEADER = "email,password,firstName,lastName,gymName,permissions";
+
+function escapeCsvField(value: string): string {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function buildEmployeeImportCsv(gymNames: string[]): string {
+  if (gymNames.length === 0) {
+    return `${CSV_HEADER}
+jan.kowalski@example.com,Haslo123!,Jan,Kowalski,Nazwa Siłowni,MANAGE_SCHEDULE|MANAGE_PASS_TYPES`;
+  }
+
+  const uniqueNames = [...new Set(gymNames)];
+  const rows = uniqueNames.map((gymName, index) => {
+    const n = index + 1;
+    const permissions = "MANAGE_SCHEDULE|MANAGE_PASS_TYPES";
+    return `pracownik${n}@example.com,Haslo123!,Jan,Kowalski,${escapeCsvField(gymName)},${permissions}`;
+  });
+
+  return [CSV_HEADER, ...rows].join("\n");
+}
+
+function downloadCsvFile(content: string, filename = "import-pracownikow-szablon.csv") {
+  const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
   const { auth, setError, setInfo } = ctx;
@@ -34,7 +66,7 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
   const [importing, setImporting] = useState(false);
   const [passDeductTiming, setPassDeductTiming] = useState<PassDeductTiming>("CHECK_IN");
   const [optionalPermissions, setOptionalPermissions] = useState<EmployeePermission[]>([]);
-  const [csv, setCsv] = useState(IMPORT_TEMPLATE);
+  const [csv, setCsv] = useState("");
   const [gymNames, setGymNames] = useState<string[]>([]);
   const [importResult, setImportResult] = useState<{ created: number; skipped: number; errors: string[] } | null>(null);
 
@@ -52,7 +84,9 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
             OPTIONAL_EMPLOYEE_PERMISSIONS.includes(p as EmployeePermission)
           )
         );
-        setGymNames(gyms.map((g) => g.name));
+        const names = gyms.map((g) => g.name);
+        setGymNames(names);
+        setCsv(buildEmployeeImportCsv(names));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Nie udało się pobrać ustawień");
       } finally {
@@ -83,6 +117,12 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
     } finally {
       setSaving(false);
     }
+  }
+
+  function onDownloadTemplate() {
+    const template = buildEmployeeImportCsv(gymNames);
+    setCsv(template);
+    downloadCsvFile(template);
   }
 
   async function onImport() {
@@ -180,8 +220,8 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
             <Upload className="w-4 h-4" />
             {importing ? "Importowanie..." : "Importuj pracowników"}
           </button>
-          <button type="button" onClick={() => setCsv(IMPORT_TEMPLATE)} className={secondaryButtonClassName}>
-            Przykładowy szablon
+          <button type="button" onClick={onDownloadTemplate} className={secondaryButtonClassName}>
+            Pobierz przykładowy szablon CSV
           </button>
         </div>
         {importResult && (
