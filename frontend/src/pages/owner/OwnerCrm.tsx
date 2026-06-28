@@ -1,11 +1,19 @@
 import { FormEvent, useEffect, useState } from "react";
 import { OwnerContext } from "./types";
 import { createEmailCampaign, EmailCampaignView, getEmailCampaigns } from "../../api";
-import { Megaphone, Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2, Info } from "lucide-react";
+import { Users, Mail, Plus, X, CalendarClock, Target, Send, CheckCircle2, Info } from "lucide-react";
 import { useAuth } from "../../authContext";
 import { useToast } from "../../components/Toast";
 import { CampaignImageUpload } from "../../components/CampaignImageUpload";
-import { primaryButtonClassName } from "../../components/formStyles";
+import { PageHeader } from "../../components/PageHeader";
+import {
+  focusRingClassName,
+  inputClassName,
+  labelClassName,
+  panelSurfaceClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from "../../components/formStyles";
 
 export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
   const { selectedGymId } = ctx;
@@ -77,7 +85,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
 
   if (!selectedGymId) {
     return (
-      <div className="flex justify-center items-center h-64 text-slate-500">
+      <div className={`flex justify-center items-center h-64 text-slate-600 dark:text-slate-400 ${panelSurfaceClassName}`}>
         Wybierz siłownię, aby zarządzać marketingiem.
       </div>
     );
@@ -85,21 +93,18 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-3">
-            <Megaphone className="w-8 h-8 text-primary-500" />
-            Marketing i CRM
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Zarządzaj kampaniami mailowymi i docieraj do klientów</p>
-        </div>
-        <button onClick={() => setIsModalOpen(true)} className={primaryButtonClassName}>
-          <Plus className="w-5 h-5" />
-          Nowa Kampania
-        </button>
-      </div>
+      <PageHeader
+        title="Marketing i CRM"
+        subtitle="Zarządzaj kampaniami mailowymi i docieraj do klientów."
+        action={
+          <button type="button" onClick={() => setIsModalOpen(true)} className={primaryButtonClassName}>
+            <Plus className="w-5 h-5" />
+            Nowa kampania
+          </button>
+        }
+      />
 
-      <div className="bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/30 rounded-3xl p-6 flex flex-col sm:flex-row gap-4 items-start">
+      <div className={`p-6 flex flex-col sm:flex-row gap-4 items-start bg-primary-50/80 dark:bg-primary-950/20 border border-primary-100 dark:border-primary-900/30 rounded-2xl`}>
         <div className="bg-primary-100 dark:bg-primary-800/30 p-3 rounded-2xl text-primary-600 dark:text-primary-400 shrink-0">
           <Info className="w-6 h-6" />
         </div>
@@ -128,18 +133,18 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+      <div className={`overflow-hidden ${panelSurfaceClassName}`}>
         <div className="p-6 border-b border-slate-200 dark:border-slate-800">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">Historia kampanii</h2>
         </div>
         
         {loading ? (
-          <div className="p-12 text-center text-slate-500">Ładowanie kampanii...</div>
+          <div className="p-12 text-center text-slate-600 dark:text-slate-400">Ładowanie kampanii...</div>
         ) : campaigns.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center justify-center">
             <Mail className="w-16 h-16 text-slate-300 dark:text-slate-700 mb-4" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Brak kampanii</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+            <p className="text-slate-600 dark:text-slate-400 mt-1 max-w-sm">
               Nie wysłałeś jeszcze żadnej wiadomości e-mail do swoich klientów. Kliknij "Nowa Kampania", aby zacząć.
             </p>
           </div>
@@ -165,7 +170,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                         </span>
                       )}
                     </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 line-clamp-1">{camp.body}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mt-1 line-clamp-1">{camp.body}</p>
                     {camp.imageUrl ? (
                       <img
                         src={camp.imageUrl}
@@ -174,7 +179,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                       />
                     ) : null}
                   </div>
-                  <div className="flex flex-col sm:items-end gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-col sm:items-end gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
                       <Target className="w-4 h-4" />
                       <span>Segment: <strong className="text-slate-700 dark:text-slate-300">{getSegmentLabel(camp.targetSegment)}</strong></span>
@@ -194,15 +199,17 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => !sending && setIsModalOpen(false)} />
-          <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
-              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Send className="w-6 h-6 text-primary-500" />
-                Utwórz Kampanię Mailową
+          <div className={`relative w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] ${panelSurfaceClassName}`}>
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Send className="w-5 h-5 text-primary-500" aria-hidden="true" />
+                Utwórz kampanię mailową
               </h2>
               <button 
+                type="button"
                 onClick={() => !sending && setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-2"
+                className={`text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors p-2 rounded-lg ${focusRingClassName}`}
+                aria-label="Zamknij"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -210,15 +217,15 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
             
             <form onSubmit={handleCreateCampaign} className="p-6 overflow-y-auto space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Grupa docelowa (Segment)</label>
+                <label className={labelClassName}>Grupa docelowa (segment)</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Users className="w-5 h-5 text-slate-400" />
+                    <Users className="w-5 h-5 text-slate-400" aria-hidden="true" />
                   </div>
                   <select
                     value={segment}
                     onChange={(e) => setSegment(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none font-medium text-slate-900 dark:text-white appearance-none"
+                    className={`${inputClassName} pl-12 appearance-none`}
                     disabled={sending}
                   >
                     <option value="ALL_GUESTS">Wszyscy Klienci</option>
@@ -230,20 +237,20 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Temat wiadomości</label>
+                <label className={labelClassName}>Temat wiadomości</label>
                 <input
                   type="text"
                   required
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none font-medium text-slate-900 dark:text-white"
+                  className={inputClassName}
                   placeholder="np. Odbierz darmowy trening!"
                   disabled={sending}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Zdjęcie kampanii (opcjonalnie)</label>
+                <label className={labelClassName}>Zdjęcie kampanii (opcjonalnie)</label>
                 <CampaignImageUpload
                   imageUrl={imageUrl}
                   onImageUrlChange={setImageUrl}
@@ -252,13 +259,13 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Treść wiadomości</label>
+                <label className={labelClassName}>Treść wiadomości</label>
                 <textarea
                   required
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   rows={8}
-                  className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none font-medium text-slate-900 dark:text-white resize-y min-h-[150px]"
+                  className={`${inputClassName} resize-y min-h-[150px]`}
                   placeholder="Napisz coś interesującego..."
                   disabled={sending}
                 />
@@ -288,12 +295,12 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900 dark:text-slate-300 block uppercase tracking-wide">Data i godzina wysyłki (opcjonalnie)</label>
+                <label className={labelClassName}>Data i godzina wysyłki (opcjonalnie)</label>
                 <input
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none font-medium text-slate-900 dark:text-white"
+                  className={inputClassName}
                   disabled={sending}
                 />
               </div>
@@ -303,7 +310,7 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={sending}
-                  className="px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className={secondaryButtonClassName}
                 >
                   Anuluj
                 </button>

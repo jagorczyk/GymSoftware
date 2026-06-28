@@ -4,7 +4,7 @@ import { getProducts, createProduct, updateProduct, deleteProduct, getProductSal
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import { FormSection } from "../../components/FormSection";
 import { LoadingState } from "../../components/LoadingState";
-import { inputClassName, labelClassName, primaryButtonClassName, secondaryButtonClassName, dangerButtonClassName } from "../../components/formStyles";
+import { inputClassName, labelClassName, panelSurfaceClassName, primaryButtonClassName, secondaryButtonClassName, dangerButtonClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
 
 export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
@@ -181,12 +181,12 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-sm">
+        <div className={`p-5 flex items-center gap-4 ${panelSurfaceClassName}`}>
           <div className="p-3 bg-primary-50 dark:bg-primary-950/20 text-primary-500 rounded-xl">
             <Package className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
               Wartość magazynu
             </p>
             <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
@@ -195,31 +195,31 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-sm">
+        <div className={`p-5 flex items-center gap-4 ${panelSurfaceClassName}`}>
           <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-xl">
             <Package className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
               Asortyment w magazynie
             </p>
             <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
               {totalQuantity} {totalQuantity === 1 ? "sztuka" : totalQuantity > 1 && totalQuantity < 5 ? "sztuki" : "sztuk"}
             </p>
             {lowStockCount > 0 && (
-              <p className="text-[10px] font-bold text-amber-500 mt-1 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1">
                 Uwaga: {lowStockCount} na wyczerpaniu
               </p>
             )}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 transition-all shadow-sm">
+        <div className={`p-5 flex items-center gap-4 ${panelSurfaceClassName}`}>
           <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 rounded-xl">
             <ListFilter className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
               Sprzedaż produktów łączna
             </p>
             <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
@@ -379,7 +379,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-extrabold uppercase text-slate-550 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60">
                       <th className="px-6 py-4">Nazwa produktu</th>
                       <th className="px-6 py-4">Kategoria</th>
                       <th className="px-6 py-4 text-right">Cena</th>
@@ -393,7 +393,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
                       <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-805/30 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{p.name}</td>
                         <td className="px-6 py-4">
-                          <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 rounded-lg">
+                          <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
                             {p.category}
                           </span>
                         </td>
@@ -470,7 +470,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-extrabold uppercase text-slate-550 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/60">
                       <th className="px-6 py-4 w-12"></th>
                       <th className="px-6 py-4">ID Transakcji</th>
                       <th className="px-6 py-4">Data sprzedaży</th>
@@ -505,7 +505,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
                             <td className="px-6 py-4">
                               <span className="font-semibold">{sale.guestName}</span>
                             </td>
-                            <td className="px-6 py-4 text-xs font-bold uppercase">
+                            <td className="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
                               {sale.paymentMethod === "CASH" ? "Gotówka" : "Karta"}
                             </td>
                             <td className="px-6 py-4 text-right font-black text-primary-500">
@@ -518,13 +518,13 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
                             <tr className="bg-slate-50/60 dark:bg-slate-950/20">
                               <td colSpan={7} className="px-12 py-3 border-b border-slate-100 dark:border-slate-800">
                                 <div className="space-y-2">
-                                  <p className="text-xs font-extrabold uppercase text-slate-400 tracking-wide">
-                                    Pozycje transakcji:
+                                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                    Pozycje transakcji
                                   </p>
                                   <div className="space-y-1.5">
                                     {sale.items.map((item) => (
                                       <div key={item.id} className="flex justify-between text-xs max-w-md">
-                                        <span className="text-slate-600 dark:text-slate-350">
+                                        <span className="text-slate-600 dark:text-slate-300">
                                           {item.productName}{" "}
                                           <span className="font-bold text-slate-800 dark:text-slate-200">
                                             x{item.quantity}

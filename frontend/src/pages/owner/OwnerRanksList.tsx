@@ -6,7 +6,7 @@ import type { OwnerContext } from "./types";
 import { LoadingState } from "../../components/LoadingState";
 import { EmptyState } from "../../components/EmptyState";
 import { PageHeader } from "../../components/PageHeader";
-import { primaryButtonClassName, secondaryButtonClassName } from "../../components/formStyles";
+import { primaryButtonClassName, secondaryButtonClassName, iconDangerButtonClassName, iconEditButtonClassName, listCardClassName } from "../../components/formStyles";
 
 export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
   const { auth, selectedGymId, setError } = ctx;
@@ -60,7 +60,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ranks.map((rank) => (
-            <div key={rank.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors group">
+            <div key={rank.id} className={listCardClassName}>
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary-50 dark:bg-primary-950/40 p-2.5 rounded-xl text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/40">
@@ -74,15 +74,18 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     to={`/owner/ranks/${rank.id}`}
-                    className="p-2 text-slate-400 dark:text-slate-550 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/20 rounded-lg transition-colors"
+                    className={iconEditButtonClassName}
                     title="Edytuj"
+                    aria-label={`Edytuj rangę ${rank.name}`}
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-4 h-4" aria-hidden="true" />
                   </Link>
                   <button
+                    type="button"
                     onClick={() => handleDelete(rank.id)}
-                    className="p-2 text-slate-400 dark:text-slate-550 hover:text-rose-600 dark:hover:text-rose-450 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors"
+                    className={iconDangerButtonClassName}
                     title="Usuń"
+                    aria-label={`Usuń rangę ${rank.name}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -90,7 +93,7 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {rank.permissions.map((p) => (
-                  <span key={p} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-950/40 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-slate-800">
+                  <span key={p} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
                     {p}
                   </span>
                 ))}

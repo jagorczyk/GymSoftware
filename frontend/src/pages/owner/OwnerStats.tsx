@@ -20,6 +20,7 @@ import { StatCard } from "../../components/StatCard";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
 import { ExpiringPassesList } from "../../components/ExpiringPassesList";
 import { PageHeader } from "../../components/PageHeader";
+import { focusRingClassName, panelSurfaceClassName } from "../../components/formStyles";
 import type { OwnerContext } from "./types";
 
 const CHART_COLORS = ["#2155e5", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4"];
@@ -106,23 +107,23 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 md:space-y-8">
       <PageHeader
         title="Podsumowanie"
         subtitle="Szybki przegląd siłowni, personelu i trendów z ostatnich 7 dni."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {stats.map((s) => (
           <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
         ))}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-6 sm:p-8">
+      <div className={`p-6 sm:p-8 ${panelSurfaceClassName}`}>
         <div className="flex items-center justify-between gap-3 mb-6">
           <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Zespół</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Awatary, status zmiany i najbliższa dostępność z grafiku.</p>
+            <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white tracking-tight">Zespół</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Awatary, status zmiany i najbliższa dostępność z grafiku.</p>
           </div>
           <Link
             to="/owner/employees"
@@ -133,7 +134,7 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
         </div>
 
         {dashboardStats.employees.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400">Brak pracowników w tej siłowni.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Brak pracowników w tej siłowni.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {dashboardStats.employees.map((employee) => {
@@ -142,7 +143,7 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
                 <Link
                   key={employee.id}
                   to={`/owner/employees/${employee.id}`}
-                  className="flex items-start gap-4 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900/50 hover:bg-slate-50 dark:hover:bg-slate-950/30 transition-colors"
+                  className={`flex items-start gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-900/50 hover:bg-slate-50 dark:hover:bg-slate-950/30 transition-colors ${focusRingClassName}`}
                 >
                   <div className="relative shrink-0">
                     {employee.avatarUrl ? (
@@ -179,7 +180,7 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <ChartCard title="Wejścia klientów (7 dni)">
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <LineChart data={checkInsChart}>
@@ -236,8 +237,8 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
       </div>
 
       {passTypeChart.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Sprzedane karnety wg typu (7 dni)</h3>
+        <div className={`p-6 sm:p-8 ${panelSurfaceClassName}`}>
+          <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">Sprzedane karnety wg typu (7 dni)</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
@@ -263,9 +264,9 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-8">
+      <div className={`p-6 md:p-8 ${panelSurfaceClassName}`}>
         <div className="flex items-center justify-between gap-3 mb-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Karnety wygasające w ciągu 7 dni</h3>
+          <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white tracking-tight">Karnety wygasające w ciągu 7 dni</h3>
           {expiring.length > 0 && (
             <Link to="/owner/guests" className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-950/20 px-4 py-2 rounded-xl transition-colors">
               Wszyscy klienci
@@ -280,8 +281,8 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
 
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{title}</h3>
+    <div className={`p-5 md:p-6 ${panelSurfaceClassName}`}>
+      <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mb-4">{title}</h3>
       <div className="h-72 w-full">{children}</div>
     </div>
   );

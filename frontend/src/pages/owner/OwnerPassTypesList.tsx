@@ -5,7 +5,7 @@ import { deletePassType } from "../../api";
 import { PageHeader } from "../../components/PageHeader";
 import { EmptyState } from "../../components/EmptyState";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
-import { primaryButtonClassName, secondaryButtonClassName } from "../../components/formStyles";
+import { primaryButtonClassName, secondaryButtonClassName, iconDangerButtonClassName, iconEditButtonClassName, inputClassName, listCardClassName } from "../../components/formStyles";
 import { formatPassTypeValidity } from "../../utils/passTypeLabels";
 import type { OwnerContext } from "./types";
 
@@ -48,11 +48,12 @@ export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input
-          type="text"
+          type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Szukaj oferty..."
-          className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-slate-900 dark:text-white"
+          aria-label="Szukaj typów karnetów"
+          className={`pl-12 ${inputClassName}`}
         />
       </div>
 
@@ -72,10 +73,7 @@ export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filtered.map((pt: any) => (
-            <div
-              key={pt.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-colors group"
-            >
+            <div key={pt.id} className={listCardClassName}>
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary-50 dark:bg-primary-950/40 p-2.5 rounded-xl text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/40">
@@ -92,16 +90,18 @@ export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
                   <button
                     type="button"
                     onClick={() => navigate(`/owner/pass-types/${pt.id}`)}
-                    className="p-2 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/20 rounded-lg transition-colors"
+                    className={iconEditButtonClassName}
                     title="Edytuj"
+                    aria-label={`Edytuj ${pt.name}`}
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-4 h-4" aria-hidden="true" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(pt.id, pt.name)}
-                    className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors"
+                    className={iconDangerButtonClassName}
                     title="Usuń"
+                    aria-label={`Usuń ${pt.name}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
