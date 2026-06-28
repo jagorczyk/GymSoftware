@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-28T00:00:00.000Z",
+  "title": "Design System: Gymlos",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Gymlos Blue",
+        "canonical": "oklch(52% 0.19 264)",
+        "tonalRamp": ["#0f173f", "#18266d", "#1a308b", "#1c3ba9", "#1e47c7", "#2155e5", "#818cf8", "#e0e7ff"]
+      },
+      "surface-light": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "canonical": "oklch(98% 0.005 264)",
+        "tonalRamp": ["#0b111e", "#131a26", "#1d2736", "#334155", "#64748b", "#94a3b8", "#e2e8f0", "#f8fafc"]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Deep Console",
+        "canonical": "oklch(16% 0.02 264)",
+        "tonalRamp": ["#030712", "#0b111e", "#131a26", "#1d2736", "#334155", "#475569", "#64748b", "#94a3b8"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink Slate",
+        "canonical": "oklch(28% 0.03 264)",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Outfit Display", "purpose": "Headlines, nav labels, metric numbers." },
+      "body": { "displayName": "Plus Jakarta Body", "purpose": "Forms, paragraphs, table data." }
+    },
+    "shadows": [
+      { "name": "panel-whisper", "value": "0 2px 10px -3px rgba(6, 81, 237, 0.05)", "purpose": "Page headers and detail layout panels." },
+      { "name": "button-glow", "value": "0 4px 6px -1px rgba(30, 71, 199, 0.2)", "purpose": "Primary button resting elevation." },
+      { "name": "glass-panel", "value": "0 20px 25px -5px rgba(15, 23, 42, 0.1)", "purpose": "Stat cards and elevated glass surfaces dark mode." }
+    ],
+    "motion": [
+      { "name": "ease-tech", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "tech-slide-up entrance animation." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Color and border transitions on buttons and nav." },
+      { "name": "duration-fast", "value": "200ms", "purpose": "Default transition duration for interactive states." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action across forms and page headers.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Zapisz zmiany</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #1e47c7; color: #ffffff; padding: 0.75rem 1.25rem; border: none; border-radius: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(30, 71, 199, 0.2); transition: background 0.2s, box-shadow 0.2s; } .ds-btn-primary:hover { background: #2155e5; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.25); } .ds-btn-primary:focus-visible { outline: 2px solid #2155e5; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; pointer-events: none; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary actions, cancel, back navigation companion.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Anuluj</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background: #ffffff; color: #334155; padding: 0.75rem 1.25rem; border: 2px solid #f1f5f9; border-radius: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background 0.2s, border-color 0.2s; } .ds-btn-secondary:hover { background: #f8fafc; border-color: #e2e8f0; } .ds-btn-secondary:focus-visible { outline: 2px solid #2155e5; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard form field with focus ring.",
+      "html": "<label class=\"ds-label\" for=\"ds-input\">Email</label><input class=\"ds-input\" id=\"ds-input\" type=\"email\" placeholder=\"jan@klub.pl\" />",
+      "css": ".ds-label { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0f172a; margin-bottom: 0.5rem; } .ds-input { width: 100%; box-sizing: border-box; background: #f8fafc; color: #0f172a; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.75rem 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 1rem; outline: none; transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; } .ds-input:focus { background: #ffffff; border-color: #2155e5; box-shadow: 0 0 0 4px rgba(33, 85, 229, 0.1); }"
+    },
+    {
+      "name": "Sidebar Nav Link (Active)",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Active route in app shell sidebar.",
+      "html": "<a class=\"ds-nav-active\" href=\"#\"><svg class=\"ds-nav-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/></svg><span>Podsumowanie</span></a>",
+      "css": ".ds-nav-active { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.75rem; background: rgba(33, 85, 229, 0.1); color: #1e47c7; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.875rem; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); outline: 1px solid rgba(33, 85, 229, 0.2); transition: background 0.2s; } .ds-nav-active .ds-nav-icon { color: #2155e5; flex-shrink: 0; } .ds-nav-active:hover { background: rgba(33, 85, 229, 0.15); }"
+    },
+    {
+      "name": "Sidebar Nav Link (Default)",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Inactive sidebar route with hover state.",
+      "html": "<a class=\"ds-nav\" href=\"#\"><svg class=\"ds-nav-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg><span>Klienci</span></a>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 1rem; border-radius: 0.75rem; background: transparent; color: #64748b; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.875rem; text-decoration: none; transition: background 0.2s, color 0.2s; } .ds-nav .ds-nav-icon { color: #94a3b8; flex-shrink: 0; } .ds-nav:hover { background: rgba(241, 245, 249, 0.6); color: #0f172a; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "button-primary",
+      "description": "Dashboard metric tile with glass surface and display number.",
+      "html": "<div class=\"ds-stat-card\"><div class=\"ds-stat-content\"><p class=\"ds-stat-label\">Aktywne karnety</p><p class=\"ds-stat-value\">128</p></div><div class=\"ds-stat-icon\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#2155e5\" stroke-width=\"2\"><path d=\"M2 9a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V9z\"/><path d=\"M6 12h.01M10 12h.01M14 12h.01M18 12h.01\"/></svg></div></div>",
+      "css": ".ds-stat-card { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-radius: 1.5rem; background: rgba(255,255,255,0.8); border: 1px solid rgba(226,232,240,0.6); box-shadow: 0 10px 15px -3px rgba(15,23,42,0.08); transition: border-color 0.3s; } .ds-stat-card:hover { border-color: rgba(33,85,229,0.3); } .ds-stat-label { font-family: 'Outfit', sans-serif; font-size: 0.625rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin: 0 0 0.5rem; } .ds-stat-value { font-family: 'Outfit', sans-serif; font-size: 2.25rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.025em; } .ds-stat-icon { padding: 0.75rem; background: rgba(33,85,229,0.1); border: 1px solid rgba(33,85,229,0.2); border-radius: 0.75rem; }"
+    },
+    {
+      "name": "Page Header",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Top-of-page title bar with optional action slot.",
+      "html": "<header class=\"ds-page-header\"><div class=\"ds-page-header-text\"><h1 class=\"ds-page-title\">Panel właściciela</h1><p class=\"ds-page-subtitle\">Przegląd dzisiejszej aktywności klubu</p></div><button class=\"ds-btn-primary\" type=\"button\">Odśwież</button></header>",
+      "css": ".ds-page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 2rem; border-radius: 1.5rem; background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 2px 10px -3px rgba(6,81,237,0.05); position: relative; overflow: hidden; } .ds-page-title { font-family: 'Outfit', sans-serif; font-size: 1.875rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.025em; } .ds-page-subtitle { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 500; color: #64748b; margin: 0.5rem 0 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Trusted Console",
+    "overview": "Gymlos is operational infrastructure for gym businesses — not a marketing page wearing a dashboard costume. The visual system reads as a confident, professional console: cool slate neutrals carry most surfaces, electric blue marks primary actions and active wayfinding, and generous rounding softens density without sacrificing scanability.",
+    "keyCharacteristics": [
+      "Restrained blue accent on neutral slate surfaces — accent ≤10% of any dashboard screen",
+      "Rounded containers (16–24px) with light borders and soft blue-tinted shadows",
+      "Fixed rem type scale rooted at 12px html — compact but legible for data-dense ops UI",
+      "Light/dark parity with shared component vocabulary across owner, employee, client, super-admin",
+      "Polish-native copy tone; UI chrome stays professional, not translated-marketing"
+    ],
+    "rules": [
+      { "name": "The Ten Percent Rule", "body": "Primary blue appears on primary actions, active navigation, focus rings, and key metrics — never as a full-screen wash inside the app shell. Its scarcity signals importance.", "section": "colors" },
+      { "name": "The Landing Exception", "body": "The public landing page and auth hero panel may use darker gradients and glow effects; dashboard routes inherit the restrained console palette.", "section": "colors" },
+      { "name": "The Display Boundary Rule", "body": "Outfit appears on headings, navigation, and metric numbers. Data tables, input text, and long descriptions use Plus Jakarta Sans only.", "section": "typography" },
+      { "name": "The Root Twelve Rule", "body": "html { font-size: 12px } sets the rem baseline. All spacing and type scale relative to rem; test legibility at 100% zoom on 1080p monitors.", "section": "typography" },
+      { "name": "The Flat Data Rule", "body": "Tables, list rows, and form sections stay flat at rest. Shadows appear on interactive containers (cards, headers, dropdowns) and lift on hover only.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use primary blue only for primary actions, active nav, and focus rings — keep dashboards neutral.",
+      "Do share formStyles.ts button/input classes across all roles for vocabulary consistency.",
+      "Do test contrast on slate-500 subtitle text; bump to slate-600/700 when below 4.5:1 on tinted backgrounds.",
+      "Do respect prefers-reduced-motion — replace slide-in animations with fade or instant display.",
+      "Do write UI copy in natural Polish; format PLN and dates for pl-PL expectations."
+    ],
+    "donts": [
+      "Don't use generic SaaS scaffolding — cream/sand body backgrounds, hero-metric blocks, identical icon-card feature grids, gradient text, or uppercase tracked eyebrows on every section.",
+      "Don't bleed landing-page aesthetics into operational dashboards where data density matters.",
+      "Don't use side-stripe borders (border-left > 1px colored accent) on cards, alerts, or list items.",
+      "Don't nest cards inside cards — use spacing and section headers to separate content.",
+      "Don't use Outfit display font for table data, form input values, or dense label grids.",
+      "Don't ship modal dialogs when inline expansion or a detail page would serve the task faster."
+    ]
+  }
+}
