@@ -390,7 +390,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm font-medium text-slate-900 dark:text-slate-200">
                     {products.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-805/30 transition-colors">
+                      <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{p.name}</td>
                         <td className="px-6 py-4">
                           <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
@@ -488,7 +488,7 @@ export function OwnerProducts({ ctx }: { ctx: OwnerContext }) {
                           <tr
                             key={sale.id}
                             onClick={() => toggleSaleExpand(sale.id)}
-                            className="hover:bg-slate-50/50 dark:hover:bg-slate-805/30 transition-colors cursor-pointer"
+                            className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
                           >
                             <td className="px-6 py-4 text-center">
                               {isExpanded ? (
