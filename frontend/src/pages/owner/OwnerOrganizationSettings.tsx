@@ -12,6 +12,7 @@ import { FormSection } from "../../components/FormSection";
 import { PermissionCheckboxGrid } from "../../components/PermissionCheckboxGrid";
 import { LoadingState } from "../../components/LoadingState";
 import {
+  focusRingClassName,
   inputClassName,
   labelClassName,
   primaryButtonClassName,
@@ -152,28 +153,36 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
       <form onSubmit={onSaveSettings} className="space-y-6">
         <FormSection
           title="Karnety na wejścia"
-          description="Określ, kiedy system odejmuje wejście z karnetu jednorazowego lub wieloweściowego."
+          description="Określ, kiedy system odejmuje wejście z karnetu jednorazowego lub wielowejściowego."
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setPassDeductTiming("CHECK_IN")}
-              className={`rounded-2xl border-2 p-4 text-left ${
-                passDeductTiming === "CHECK_IN" ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20" : "border-slate-200 dark:border-slate-800"
+              className={`rounded-2xl border-2 p-4 text-left transition-colors ${focusRingClassName} ${
+                passDeductTiming === "CHECK_IN"
+                  ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20"
+                  : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               <p className="font-bold">Przy wejściu</p>
-              <p className="text-sm text-slate-500 mt-1">Wejście zostaje odjęte w momencie check-inu na sali.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Wejście zostaje odjęte w momencie check-inu na sali.
+              </p>
             </button>
             <button
               type="button"
               onClick={() => setPassDeductTiming("CHECK_OUT")}
-              className={`rounded-2xl border-2 p-4 text-left ${
-                passDeductTiming === "CHECK_OUT" ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20" : "border-slate-200 dark:border-slate-800"
+              className={`rounded-2xl border-2 p-4 text-left transition-colors ${focusRingClassName} ${
+                passDeductTiming === "CHECK_OUT"
+                  ? "border-primary-500 bg-primary-50 dark:bg-primary-950/20"
+                  : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               <p className="font-bold">Przy wyjściu</p>
-              <p className="text-sm text-slate-500 mt-1">Wejście zostaje odjęte przy check-outcie lub zakończeniu wizyty.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Wejście zostaje odjęte przy check-outcie lub zakończeniu wizyty.
+              </p>
             </button>
           </div>
         </FormSection>
@@ -204,7 +213,7 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
         className="mt-8"
       >
         {gymNames.length > 0 && (
-          <p className="text-sm text-slate-500 mb-3">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
             Twoje siłownie: {gymNames.join(", ")}
           </p>
         )}
