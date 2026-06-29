@@ -42,4 +42,16 @@ public class Gym {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "stripe_connect_account_id")
+    private String stripeConnectAccountId;
+
+    @Column(name = "stripe_connect_charges_enabled", nullable = false)
+    private boolean stripeConnectChargesEnabled = false;
+
+    @Column(name = "stripe_connect_payouts_enabled", nullable = false)
+    private boolean stripeConnectPayoutsEnabled = false;
+
+    @Column(name = "stripe_connect_details_submitted", nullable = false)
+    private boolean stripeConnectDetailsSubmitted = false;
 }

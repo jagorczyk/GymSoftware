@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { StatCard } from "../../components/StatCard";
 import { SelectGymPrompt } from "../../components/SelectGymPrompt";
+import { PayoutSetupBanner } from "../../components/owner/PayoutSetupBanner";
 import { ExpiringPassesList } from "../../components/ExpiringPassesList";
 import { PageHeader } from "../../components/PageHeader";
 import { focusRingClassName, panelSurfaceClassName } from "../../components/formStyles";
@@ -47,7 +48,7 @@ function chartPoints(points: Array<{ label: string; value: number }> | undefined
 }
 
 export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
-  const { dashboardStats } = ctx;
+  const { dashboardStats, selectedGymId } = ctx;
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
@@ -108,9 +109,15 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <PageHeader
-        title="Podsumowanie"
-      />
+      <PageHeader title="Podsumowanie" />
+
+      {typeof selectedGymId === "number" && (
+        <PayoutSetupBanner
+          gymId={selectedGymId}
+          stripeConfigured={dashboardStats.stripeConfigured ?? false}
+          onlinePaymentsEnabled={dashboardStats.onlinePaymentsEnabled ?? false}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {stats.map((s) => (

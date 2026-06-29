@@ -95,7 +95,9 @@ public final class GymDtos {
             List<DashboardChartPoint> salesTrendLast7Days,
             List<DashboardChartPoint> newGuestsLast7Days,
             List<DashboardChartPoint> productSalesLast7Days,
-            List<OwnerDashboardPassTypeSlice> passTypeSalesLast7Days
+            List<OwnerDashboardPassTypeSlice> passTypeSalesLast7Days,
+            boolean stripeConfigured,
+            boolean onlinePaymentsEnabled
     ) {}
 
     public record SellPassRequest(
@@ -487,5 +489,17 @@ public final class GymDtos {
             int created,
             int skipped,
             List<String> errors
+    ) {}
+
+    public record PayoutStatusView(
+            boolean stripeConfigured,
+            String accountId,
+            boolean chargesEnabled,
+            boolean payoutsEnabled,
+            boolean detailsSubmitted,
+            Long availableBalanceCents,
+            Long pendingBalanceCents,
+            String currency,
+            int applicationFeePercent
     ) {}
 }

@@ -37,6 +37,7 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-http://localhost:5173/client/gyms/{gymId}/passes?success=true}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-http://localhost:5173/client/gyms/{gymId}/buy?canceled=true}
+      STRIPE_CONNECT_FEE_PERCENT: ${STRIPE_CONNECT_FEE_PERCENT:-5}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-twój_email@gmail.com}

@@ -26,14 +26,14 @@ public class StripeService {
         Stripe.apiKey = stripeProperties.getApi().getKey();
     }
 
-    public String createCheckoutSession(PassType passType, Long gymId, Long userId) throws StripeException {
+    public String createCheckoutSession(PassType passType, Long gymId, Long userId, String connectedAccountId, int applicationFeePercent) throws StripeException {
         // Ensure price is in cents for Stripe
         long amountInCents = passType.getPrice().multiply(BigDecimal.valueOf(100)).longValue();
 
         String successUrl = stripeProperties.getSuccess().getUrl().replace("{gymId}", gymId.toString());
         String cancelUrl = stripeProperties.getCancel().getUrl().replace("{gymId}", gymId.toString());
 
-        SessionCreateParams params = SessionCreateParams.builder()
+        SessionCreateParams.Builder builder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(successUrl)
                 .setCancelUrl(cancelUrl)
@@ -55,10 +55,23 @@ public class StripeService {
                                                 .build()
                                 )
                                 .build()
-                )
-                .build();
+                );
 
-        Session session = Session.create(params);
+        if (connectedAccountId != null && !connectedAccountId.isBlank()) {
+            long applicationFeeAmount = amountInCents * applicationFeePercent / 100L;
+            builder.setPaymentIntentData(
+                    SessionCreateParams.PaymentIntentData.builder()
+                            .setApplicationFeeAmount(applicationFeeAmount)
+                            .setTransferData(
+                                    SessionCreateParams.PaymentIntentData.TransferData.builder()
+                                            .setDestination(connectedAccountId)
+                                            .build()
+                            )
+                            .build()
+            );
+        }
+
+        Session session = Session.create(builder.build());
         return session.getUrl();
     }
 

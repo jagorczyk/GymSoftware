@@ -91,6 +91,7 @@ public class OwnerService {
     private final OwnerSettingsService ownerSettingsService;
     private final WorkScheduleEntryRepository workScheduleEntryRepository;
     private final com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository;
+    private final StripeConnectService stripeConnectService;
 
     private static final DateTimeFormatter AVAILABILITY_DATE = DateTimeFormatter.ofPattern("d.MM.yyyy HH:mm");
     private static final DateTimeFormatter AVAILABILITY_TIME = DateTimeFormatter.ofPattern("HH:mm");
@@ -117,7 +118,8 @@ public class OwnerService {
             SubdomainService subdomainService,
             OwnerSettingsService ownerSettingsService,
             WorkScheduleEntryRepository workScheduleEntryRepository,
-            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository
+            com.jagorczyk.gymManagement.repository.ProductSaleRepository productSaleRepository,
+            StripeConnectService stripeConnectService
     ) {
         this.gymRepository = gymRepository;
         this.guestRepository = guestRepository;
@@ -141,6 +143,7 @@ public class OwnerService {
         this.ownerSettingsService = ownerSettingsService;
         this.workScheduleEntryRepository = workScheduleEntryRepository;
         this.productSaleRepository = productSaleRepository;
+        this.stripeConnectService = stripeConnectService;
     }
 
     @Transactional
@@ -254,7 +257,9 @@ public class OwnerService {
 
     @Transactional(readOnly = true)
     public OwnerDashboardStats dashboardStats(Long ownerUserId, Long gymId) {
-        requireOwnerGym(ownerUserId, gymId);
+        Gym gym = requireOwnerGym(ownerUserId, gymId);
+        boolean stripeConfigured = stripeConnectService.isStripeConfigured();
+        boolean onlinePaymentsEnabled = stripeConnectService.canAcceptOnlinePayments(gym);
 
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
@@ -341,7 +346,9 @@ public class OwnerService {
                 salesChart,
                 newGuestsChart,
                 productSalesChart,
-                passTypeSales
+                passTypeSales,
+                stripeConfigured,
+                onlinePaymentsEnabled
         );
     }
 

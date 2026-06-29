@@ -33,6 +33,7 @@ import {
   Inbox,
   UserCircle,
   CreditCard,
+  Banknote,
   Layers,
   Settings,
   ChevronDown,
@@ -112,6 +113,7 @@ function ownerNavGroups(hasFeature: (feature: SaasPlanFeatureId) => boolean): Na
       id: "finance",
       label: "Finanse",
       items: [
+        { label: "Wypłaty", to: "/owner/payouts", icon: <Banknote className="w-5 h-5" /> },
         { label: "Magazyn", to: "/owner/products", icon: <Package className="w-5 h-5" />, feature: "INVENTORY" },
         { label: "Raport sprzedaży", to: "/owner/sales-report", icon: <Wallet className="w-5 h-5" />, feature: "SALES_REPORT" },
         { label: "Analityka", to: "/owner/analytics", icon: <LineChart className="w-5 h-5" />, feature: "ANALYTICS" },

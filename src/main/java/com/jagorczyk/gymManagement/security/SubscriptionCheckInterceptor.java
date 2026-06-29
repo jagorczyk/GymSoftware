@@ -30,7 +30,7 @@ public class SubscriptionCheckInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
 
         // Zawsze przepuszczamy endpointy potrzebne do opłacenia i odzyskania subskrypcji oraz podstawowe detale do renderu UI
-        if (uri.matches("^/api/(?:owner|client|employee)/gyms/\\d+/(?:subscription|checkout|details).*$")) {
+        if (uri.matches("^/api/(?:owner|client|employee)/gyms/\\d+/(?:subscription|checkout|details|payouts).*$")) {
             return true;
         }
 

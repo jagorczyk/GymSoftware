@@ -82,6 +82,7 @@ public class OwnerController {
     private final PosService posService;
     private final com.jagorczyk.gymManagement.service.GroupClassService groupClassService;
     private final OwnerSettingsService ownerSettingsService;
+    private final com.jagorczyk.gymManagement.service.StripeConnectService stripeConnectService;
 
     public OwnerController(
             OwnerService ownerService,
@@ -93,7 +94,8 @@ public class OwnerController {
             NotificationService notificationService,
             PosService posService,
             com.jagorczyk.gymManagement.service.GroupClassService groupClassService,
-            OwnerSettingsService ownerSettingsService
+            OwnerSettingsService ownerSettingsService,
+            com.jagorczyk.gymManagement.service.StripeConnectService stripeConnectService
     ) {
         this.ownerService = ownerService;
         this.calendarService = calendarService;
@@ -105,6 +107,7 @@ public class OwnerController {
         this.posService = posService;
         this.groupClassService = groupClassService;
         this.ownerSettingsService = ownerSettingsService;
+        this.stripeConnectService = stripeConnectService;
     }
 
     @GetMapping("/gyms")
@@ -152,6 +155,21 @@ public class OwnerController {
     public Map<String, String> customerPortalSession(@PathVariable Long gymId) {
         String url = ownerService.createCustomerPortalSession(currentUserService.getCurrentUser().getId(), gymId);
         return Map.of("portalUrl", url);
+    }
+
+    @GetMapping("/gyms/{gymId}/payouts")
+    public com.jagorczyk.gymManagement.api.dto.GymDtos.PayoutStatusView getPayoutStatus(@PathVariable Long gymId) {
+        return stripeConnectService.getPayoutStatus(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/payouts/onboard")
+    public Map<String, String> startPayoutOnboarding(@PathVariable Long gymId) throws com.stripe.exception.StripeException {
+        return stripeConnectService.startOnboarding(currentUserService.getCurrentUser().getId(), gymId);
+    }
+
+    @PostMapping("/gyms/{gymId}/payouts/dashboard")
+    public Map<String, String> openPayoutDashboard(@PathVariable Long gymId) throws com.stripe.exception.StripeException {
+        return stripeConnectService.createDashboardLink(currentUserService.getCurrentUser().getId(), gymId);
     }
 
     @PostMapping("/gyms/{gymId}/employees")

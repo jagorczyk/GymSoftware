@@ -53,6 +53,13 @@ public class ClientPortalService {
         this.stripeService = stripeService;
     }
 
+    private StripeConnectService stripeConnectService;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setStripeConnectService(StripeConnectService stripeConnectService) {
+        this.stripeConnectService = stripeConnectService;
+    }
+
     private StripeProperties stripeProperties;
 
     @org.springframework.beans.factory.annotation.Autowired
@@ -188,7 +195,22 @@ public class ClientPortalService {
         }
 
         try {
-            String checkoutUrl = stripeService.createCheckoutSession(passType, gymId, userId);
+            Gym gym = passType.getGym();
+            if (!stripeConnectService.canAcceptOnlinePayments(gym)) {
+                throw new IllegalArgumentException(
+                        "Płatności online są niedostępne — właściciel siłowni musi najpierw skonfigurować wypłaty."
+                );
+            }
+            int feePercent = stripeProperties.getConnect() != null
+                    ? stripeProperties.getConnect().getApplicationFeePercent()
+                    : 5;
+            String checkoutUrl = stripeService.createCheckoutSession(
+                    passType,
+                    gymId,
+                    userId,
+                    gym.getStripeConnectAccountId(),
+                    feePercent
+            );
             return new PurchasePassResponse(checkoutUrl);
         } catch (Exception e) {
             System.err.println("Stripe payment creation failed, using mock simulation: " + e.getMessage());

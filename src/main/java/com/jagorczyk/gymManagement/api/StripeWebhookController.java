@@ -4,7 +4,9 @@ import com.jagorczyk.gymManagement.config.StripeProperties;
 import com.jagorczyk.gymManagement.service.ClientPortalService;
 import com.jagorczyk.gymManagement.service.SaaSSubscriptionService;
 import com.jagorczyk.gymManagement.service.ScheduledJobTracker;
+import com.jagorczyk.gymManagement.service.StripeConnectService;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Account;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.model.Subscription;
@@ -23,6 +25,7 @@ public class StripeWebhookController {
     private final ClientPortalService clientPortalService;
     private final SaaSSubscriptionService saasSubscriptionService;
     private final ScheduledJobTracker scheduledJobTracker;
+    private final StripeConnectService stripeConnectService;
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
@@ -93,6 +96,16 @@ public class StripeWebhookController {
             }
             if (subscription != null) {
                 saasSubscriptionService.handleSubscriptionWebhook(subscription);
+            }
+        } else if ("account.updated".equals(event.getType())) {
+            Account account = null;
+            try {
+                account = (Account) event.getDataObjectDeserializer().deserializeUnsafe();
+            } catch (Exception e) {
+                System.err.println("Failed to deserialize account: " + e.getMessage());
+            }
+            if (account != null) {
+                stripeConnectService.handleAccountUpdated(account);
             }
         }
 

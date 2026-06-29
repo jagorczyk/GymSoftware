@@ -14,6 +14,7 @@ public class StripeProperties {
     private Webhook webhook;
     private Success success;
     private Cancel cancel;
+    private Connect connect = new Connect();
 
     @Getter
     @Setter
@@ -37,5 +38,13 @@ public class StripeProperties {
     @Setter
     public static class Cancel {
         private String url;
+    }
+
+    @Getter
+    @Setter
+    public static class Connect {
+        /** Platform fee taken from each client payment (percent of gross). */
+        private int applicationFeePercent = 5;
+        private String country = "PL";
     }
 }

@@ -230,6 +230,44 @@ export async function createOwnerSaaSCheckoutSession(auth: AuthState, gymId: num
   return response.json();
 }
 
+export type PayoutStatusView = {
+  stripeConfigured: boolean;
+  accountId: string | null;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  detailsSubmitted: boolean;
+  availableBalanceCents: number | null;
+  pendingBalanceCents: number | null;
+  currency: string;
+  applicationFeePercent: number;
+};
+
+export async function getOwnerPayoutStatus(auth: AuthState, gymId: number): Promise<PayoutStatusView> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/payouts`, {
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się pobrać statusu wypłat");
+  return response.json();
+}
+
+export async function startOwnerPayoutOnboarding(auth: AuthState, gymId: number): Promise<{ onboardingUrl: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/payouts/onboard`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć konfiguracji wypłat");
+  return response.json();
+}
+
+export async function openOwnerPayoutDashboard(auth: AuthState, gymId: number): Promise<{ dashboardUrl: string }> {
+  const response = await fetch(`${API_URL}/owner/gyms/${gymId}/payouts/dashboard`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${auth.token}` },
+  });
+  if (!response.ok) await parseApiError(response, "Nie udało się otworzyć panelu wypłat");
+  return response.json();
+}
+
 export async function getOwnerGyms(auth: AuthState): Promise<Array<{ id: number; name: string; address: string; city?: string; postalCode?: string; nip?: string; themeColor?: string; subdomain?: string }>> {
   const response = await fetch(`${API_URL}/owner/gyms`, {
     headers: { Authorization: `Bearer ${auth.token}` },
@@ -426,6 +464,8 @@ export type OwnerDashboardStats = {
   newGuestsLast7Days: Array<{ label: string; value: number }>;
   productSalesLast7Days: Array<{ label: string; value: number }>;
   passTypeSalesLast7Days: Array<{ passTypeName: string; count: number }>;
+  stripeConfigured: boolean;
+  onlinePaymentsEnabled: boolean;
 };
 
 export type PagedResponse<T> = {
