@@ -143,9 +143,9 @@
 }
 
 .toast-enter {
-  animation: toast-slide-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: toast-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .toast-exit {
-  animation: toast-slide-out 0.25s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+  animation: toast-slide-out 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
