@@ -37,7 +37,6 @@ export function OwnerPassTypesList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Typy karnetów"
-        subtitle="Zdefiniuj ofertę karnetów dostępną w siłowni."
         action={
           <Link to="/owner/pass-types/new" className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowy typ karnetu

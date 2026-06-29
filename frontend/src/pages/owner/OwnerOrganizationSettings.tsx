@@ -147,7 +147,6 @@ export function OwnerOrganizationSettings({ ctx }: { ctx: OwnerContext }) {
     <div className="max-w-3xl mx-auto pb-10">
       <PageHeader
         title="Ustawienia organizacji"
-        subtitle="Wspólne reguły dla wszystkich Twoich siłowni — karnety, pracownicy i uprawnienia."
       />
 
       <form onSubmit={onSaveSettings} className="space-y-6">

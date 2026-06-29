@@ -55,7 +55,6 @@ export function OwnerTrainersList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Trenerzy personalni"
-        subtitle="Zarządzaj trenerami na tej siłowni."
         action={
           <Link to="/owner/trainers/new" className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowy trener

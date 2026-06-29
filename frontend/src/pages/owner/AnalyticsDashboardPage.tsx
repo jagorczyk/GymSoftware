@@ -54,7 +54,6 @@ export function AnalyticsDashboardPage({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Zaawansowana Analityka"
-        subtitle="Analizuj kluczowe wskaźniki i podejmuj decyzje na podstawie danych."
       />
 
       {/* KPI Cards */}

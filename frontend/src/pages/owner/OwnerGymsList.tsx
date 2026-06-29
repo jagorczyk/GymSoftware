@@ -13,7 +13,6 @@ export function OwnerGymsList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Siłownie"
-        subtitle="Zarządzaj oddziałami swojej sieci."
         action={
           <Link to="/owner/gyms/new" className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowa siłownia

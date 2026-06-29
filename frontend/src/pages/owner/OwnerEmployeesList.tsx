@@ -40,7 +40,6 @@ export function OwnerEmployeesList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Pracownicy"
-        subtitle="Zarządzaj personelem i uprawnieniami w siłowni."
         action={
           <Link to="/owner/employees/new" className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowy pracownik

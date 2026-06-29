@@ -275,7 +275,6 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Profil Trenera"
-        subtitle="Zarządzaj swoją wizytówką i terminarzem dostępności dla klientów."
       />
 
       {success && (

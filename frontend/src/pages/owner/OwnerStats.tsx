@@ -110,7 +110,6 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6 md:space-y-8">
       <PageHeader
         title="Podsumowanie"
-        subtitle="Szybki przegląd siłowni, personelu i trendów z ostatnich 7 dni."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -123,7 +122,6 @@ export function OwnerStats({ ctx }: { ctx: OwnerContext }) {
         <div className="flex items-center justify-between gap-3 mb-6">
           <div>
             <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white tracking-tight">Zespół</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Awatary, status zmiany i najbliższa dostępność z grafiku.</p>
           </div>
           <Link
             to="/owner/employees"

@@ -45,7 +45,6 @@ export function EmployeeClassesPage({ ctx }: { ctx: EmployeeContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Zajęcia grupowe"
-        subtitle="Grafik nadchodzących zajęć i rezerwacje."
         action={
           canManage ? (
             <Link

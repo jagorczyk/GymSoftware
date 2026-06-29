@@ -95,7 +95,6 @@ export function OwnerCrm({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Marketing i CRM"
-        subtitle="Zarządzaj kampaniami mailowymi i docieraj do klientów."
         action={
           <button type="button" onClick={() => setIsModalOpen(true)} className={primaryButtonClassName}>
             <Plus className="w-5 h-5" />

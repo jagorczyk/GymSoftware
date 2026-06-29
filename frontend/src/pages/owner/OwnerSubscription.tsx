@@ -113,7 +113,6 @@ export function OwnerSubscription() {
     <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader
         title="Subskrypcja"
-        subtitle="Plan, status płatności i dostępne moduły dla wybranej siłowni."
       />
 
       <div className={`p-6 md:p-8 ${panelSurfaceClassName}`}>

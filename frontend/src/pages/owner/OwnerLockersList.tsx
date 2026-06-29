@@ -37,7 +37,6 @@ export function OwnerLockersList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Szafki"
-        subtitle="Zarządzaj szafkami i ich statusem w siłowni."
         action={
           <Link to="/owner/lockers/new" className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowa szafka

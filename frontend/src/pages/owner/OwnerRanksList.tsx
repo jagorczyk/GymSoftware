@@ -38,7 +38,6 @@ export function OwnerRanksList({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Zarządzanie rangami"
-        subtitle="Twórz i edytuj rangi z uprawnieniami dla pracowników."
         action={
           <Link to={`/owner/ranks/new`} className={primaryButtonClassName}>
             <Plus className="w-5 h-5" /> Nowa ranga

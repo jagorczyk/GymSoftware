@@ -145,7 +145,6 @@ export function EmployeeDashboard(props: { auth: AuthState; children: ReactNode 
       <div className="space-y-6">
         <PageHeader
           title="Panel pracownika"
-          subtitle="Obsługa klientów, sprzedaż karnetów i zarządzanie kluczykami."
         />
         {children}
       </div>

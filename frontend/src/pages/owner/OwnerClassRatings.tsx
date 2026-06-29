@@ -117,7 +117,6 @@ export function OwnerClassRatings({ ctx }: { ctx: OwnerContext }) {
     <div className="space-y-6">
       <PageHeader
         title="Oceny Zajęć"
-        subtitle="Zestawienie ocen klientów dla poszczególnych zajęć grupowych."
       />
       {loading ? (
         <LoadingState message="Ładowanie zestawienia..." />

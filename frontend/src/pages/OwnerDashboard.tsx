@@ -160,7 +160,6 @@ export function OwnerDashboard(props: { auth: AuthState; children: ReactNode }) 
       <div className="space-y-6">
         <PageHeader
           title="Panel właściciela"
-          subtitle="Zarządzaj siłowniami, personelem i danymi operacyjnymi."
           action={
             <button
               onClick={loadGymsAndDetails}
