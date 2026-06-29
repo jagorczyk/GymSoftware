@@ -352,7 +352,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
               className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
                 selectedCategory === cat
                   ? "bg-primary-500 text-white shadow-sm"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-805"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               {cat === "All" ? "Wszystkie" : cat}
@@ -399,7 +399,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
                       <p className="text-lg font-black text-primary-500">
                         {p.price.toFixed(2)} PLN
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-405 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         Magazyn:{" "}
                         <span
                           className={`font-semibold ${
@@ -492,7 +492,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
         ) : (
           <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
             {basket.map((item) => (
-              <div key={item.product.id} className="flex items-center justify-between text-sm bg-slate-50 dark:bg-slate-955/30 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div key={item.product.id} className="flex items-center justify-between text-sm bg-slate-50 dark:bg-slate-950/30 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                 <div className="min-w-0 flex-1 pr-2">
                   <p className="font-semibold text-slate-900 dark:text-white truncate" title={item.product.name}>
                     {item.product.name}
@@ -593,7 +593,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
               )}
               
               {searchedGuests.length > 0 && (
-                <div className="max-h-32 overflow-y-auto border border-slate-105 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/30 p-1 space-y-1 text-xs">
+                <div className="max-h-32 overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950/30 p-1 space-y-1 text-xs">
                   {searchedGuests.map((g) => (
                     <button
                       key={g.id}
@@ -616,7 +616,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
 
           {/* If another guest is manually selected (whose id is numeric and is not anonymous or search selection option) */}
           {selectedGuestId !== "anonymous" && selectedGuestId !== "search" && (
-            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-450 text-xs px-3 py-2 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs px-3 py-2 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
               <User className="w-3.5 h-3.5 shrink-0" />
               <span>
                 Klient powiązany:{" "}
@@ -643,7 +643,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
               className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-bold transition-all text-sm cursor-pointer ${
                 paymentMethod === "CASH"
                   ? "bg-slate-900 border-slate-900 dark:bg-slate-800 dark:border-slate-800 text-white"
-                  : "border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-805 text-slate-700 dark:text-slate-350 bg-transparent"
+                  : "border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 bg-transparent"
               }`}
             >
               <Coins className="w-4 h-4" />
@@ -655,7 +655,7 @@ export function EmployeePOS({ ctx }: { ctx: EmployeeContext }) {
               className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-bold transition-all text-sm cursor-pointer ${
                 paymentMethod === "CARD"
                   ? "bg-slate-900 border-slate-900 dark:bg-slate-800 dark:border-slate-800 text-white"
-                  : "border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-805 text-slate-700 dark:text-slate-350 bg-transparent"
+                  : "border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 bg-transparent"
               }`}
             >
               <CreditCard className="w-4 h-4" />

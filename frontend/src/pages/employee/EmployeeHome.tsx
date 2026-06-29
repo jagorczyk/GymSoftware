@@ -5,6 +5,7 @@ import { ExpiringPassesList } from "../../components/ExpiringPassesList";
 import { SelectGymDashboardPrompt } from "./EmployeeHomePrompt";
 import { computeEmployeeKpis } from "../../utils/dashboardStats";
 import type { EmployeeContext } from "./types";
+import { panelSurfaceClassName } from "../../components/formStyles";
 
 export { SelectGymDashboardPrompt } from "./EmployeeHomePrompt";
 
@@ -37,7 +38,7 @@ export function EmployeeHome({ ctx }: { ctx: EmployeeContext }) {
     : null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8">
       {kpis && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard label="Obecni teraz" value={kpis.presentNow} icon={<MapPin className="w-6 h-6" />} />
@@ -56,7 +57,7 @@ export function EmployeeHome({ ctx }: { ctx: EmployeeContext }) {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] p-8">
+      <div className={`p-8 ${panelSurfaceClassName}`}>
         <div className="flex items-center justify-between gap-3 mb-6">
           <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Karnety wygasające w ciągu 7 dni</h3>
           {expiring.length > 0 && (
@@ -66,7 +67,7 @@ export function EmployeeHome({ ctx }: { ctx: EmployeeContext }) {
           )}
         </div>
         <ExpiringPassesList items={expiring} guestLinkPrefix="/employee/guests" />
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-6 font-medium">Dane na żywo odświeżane co 10 s</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-6 font-medium">Dane na żywo odświeżane co 10 s</p>
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import { SelectGymDashboardPrompt } from "./EmployeeHome";
 import type { EmployeeContext } from "./types";
 import { assignLocker, returnLocker } from "../../api";
 import { useToast } from "../../components/Toast";
+import { inputClassName, labelClassName, panelSurfaceClassName } from "../../components/formStyles";
 
 type Locker = {
   id: number;
@@ -154,14 +155,14 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
               placeholder="Szukaj szafki lub klienta..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 dark:focus:border-slate-700"
+            className={`${inputClassName} !pl-9 !py-2`}
             />
           </div>
 
           <button
             onClick={refreshOverview}
             title="Odśwież"
-            className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-xl transition-all cursor-pointer"
+            className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl transition-all cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -180,7 +181,7 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
 
       {activeTab === "grid" ? (
         /* LOCKER GRID VIEW */
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6 transition-colors duration-200">
+        <div className={`p-6 space-y-6 ${panelSurfaceClassName}`}>
           <div className="flex items-center justify-between">
             <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">Wizualizacja szafek</h3>
             <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -215,7 +216,7 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold uppercase tracking-wider opacity-60">
+                      <span className="text-xs font-semibold opacity-70">
                         Szafka
                       </span>
                       {isOccupied ? (
@@ -262,7 +263,7 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
       {/* MODAL FOR ASSIGNING OR RETURNING LOCKER KEY */}
       {selectedLocker && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transform scale-100 transition-all">
+          <div className={`max-w-md w-full overflow-hidden transform scale-100 transition-all ${panelSurfaceClassName}`}>
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/40">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-slate-900 dark:bg-slate-800 text-white rounded-xl">
@@ -291,7 +292,7 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
                 /* Details for Occupied Locker */
                 <div className="space-y-6">
                   <div className="bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-semibold text-xs">
                       <Users className="w-4 h-4" />
                       <span>Aktualny Lokator</span>
                     </div>
@@ -334,7 +335,7 @@ export function EmployeeLockersList({ ctx }: { ctx: EmployeeContext }) {
                 /* Form to Assign Vacant Locker */
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <label className={labelClassName}>
                       Wybierz klienta na sali
                     </label>
                     {eligibleGuests.length === 0 ? (

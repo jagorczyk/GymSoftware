@@ -2,6 +2,14 @@ import { useState } from "react";
 import { QrCode, ShieldAlert, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 import type { EmployeeContext } from "./types";
 import { useToast } from "../../components/Toast";
+import {
+  focusRingClassName,
+  inputClassName,
+  labelClassName,
+  panelSurfaceClassName,
+  primaryButtonClassName,
+} from "../../components/formStyles";
+import { PageHeader } from "../../components/PageHeader";
 
 export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
   const { auth, selectedGymId, refreshOverview } = ctx;
@@ -18,8 +26,10 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
 
   if (!selectedGymId) {
     return (
-      <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-200">
-        <p className="text-slate-500 dark:text-slate-400 font-medium">Wybierz siłownię z menu bocznego, aby uruchomić skaner.</p>
+      <div className={`text-center py-12 ${panelSurfaceClassName}`}>
+        <p className="text-slate-600 dark:text-slate-400 font-medium">
+          Wybierz siłownię z menu bocznego, aby uruchomić skaner.
+        </p>
       </div>
     );
   }
@@ -72,60 +82,45 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header Info */}
-      <div>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Skaner wejścia (dev)</h2>
-        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
-          Narzędzie deweloperskie do testowania tokenów QR. W produkcji klient melduje się w recepcji — personel wyszukuje gościa i robi check-in ręcznie.
-        </p>
-      </div>
+      <PageHeader
+        title="Skaner wejścia (dev)"
+        subtitle="Narzędzie testowe tokenów QR. W produkcji check-in wykonuje recepcja po wyszukaniu gościa."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Side: Viewfinder Simulator */}
-        <div className="bg-slate-900 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl border border-slate-800 min-h-[400px]">
-          {/* Laser beam scan lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(99,102,241,0.03)_50%,rgba(99,102,241,0.08)_50%)] bg-[length:100%_4px]"></div>
-          
-          <div className="w-full max-w-[280px] aspect-square border-2 border-indigo-500/20 rounded-3xl relative flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-            {/* Viewfinder corners */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-400 rounded-tl-2xl -translate-x-1 -translate-y-1"></div>
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-400 rounded-tr-2xl translate-x-1 -translate-y-1"></div>
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-400 rounded-bl-2xl -translate-x-1 translate-y-1"></div>
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-400 rounded-br-2xl translate-x-1 translate-y-1"></div>
+        <div className={`p-8 flex flex-col items-center justify-center relative overflow-hidden min-h-[400px] bg-slate-900 dark:bg-slate-950 ${panelSurfaceClassName}`}>
+          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(99,102,241,0.03)_50%,rgba(99,102,241,0.08)_50%)] bg-[length:100%_4px]" />
 
-            {/* Glowing vertical animated scanner line */}
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-indigo-400 shadow-[0_0_15px_#818cf8] animate-[bounce_3s_infinite]"></div>
-
-            <QrCode className="w-24 h-24 text-slate-700 opacity-60 animate-pulse" />
+          <div className="w-full max-w-[280px] aspect-square border-2 border-indigo-500/25 rounded-2xl relative flex items-center justify-center p-4 bg-slate-950/60">
+            <div className="absolute inset-2 rounded-xl border border-indigo-400/40" />
+            <div className="absolute left-0 right-0 h-0.5 bg-indigo-400/90 shadow-[0_0_12px_rgba(129,140,248,0.75)] motion-safe:animate-pulse" />
+            <QrCode className="w-24 h-24 text-slate-600 opacity-70" />
           </div>
 
           <div className="mt-8 text-center space-y-2 z-10">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-300 motion-safe:animate-pulse" />
               SKANER AKTYWNY
             </span>
-            <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+            <p className="text-xs text-slate-300 max-w-xs leading-relaxed">
               Skieruj kod QR z aplikacji mobilnej (przyszła funkcja) w stronę czytnika — lub wklej token testowy poniżej.
             </p>
           </div>
         </div>
 
-        {/* Right Side: Control Panel & Status */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
-            <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">Wprowadź kod QR ręcznie</h3>
-            
+          <div className={`p-6 space-y-4 ${panelSurfaceClassName}`}>
+            <h3 className="font-bold text-slate-900 dark:text-white text-lg">Wprowadź kod QR ręcznie</h3>
+
             <form onSubmit={handleScan} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Zaszyfrowany token QR (JWT)
-                </label>
+                <label className={labelClassName}>Zaszyfrowany token QR (JWT)</label>
                 <textarea
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   placeholder="Wklej token wygenerowany w profilu klienta..."
                   rows={4}
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 resize-none dark:text-white"
+                  className={`${inputClassName} text-xs font-mono resize-none`}
                   required
                 />
               </div>
@@ -133,11 +128,11 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
               <button
                 type="submit"
                 disabled={loading || !tokenInput.trim()}
-                className="w-full py-3 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                className={`w-full ${primaryButtonClassName}`}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-5 h-5 motion-safe:animate-spin" />
                     Weryfikacja tokenu...
                   </>
                 ) : (
@@ -153,7 +148,7 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
           {/* Results Display */}
           {result && (
             <div
-              className={`rounded-3xl p-6 border shadow-sm animate-fade-in flex items-start gap-4 ${
+              className={`rounded-2xl p-6 border shadow-sm flex items-start gap-4 ${
                 result.success
                   ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/40 text-emerald-950 dark:text-emerald-300"
                   : "bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-rose-950 dark:text-rose-300"
@@ -167,15 +162,15 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
                 )}
               </div>
               <div className="space-y-1">
-                <h4 className="font-extrabold text-lg leading-snug">
+                <h4 className="font-bold text-lg leading-snug">
                   {result.success ? "Wejście Autoryzowane" : "Odmowa Wejścia"}
                 </h4>
                 <p className="text-sm opacity-85 leading-relaxed font-medium">{result.message}</p>
                 {result.success && result.guestName && (
                   <div className="pt-3 border-t border-emerald-200/50 mt-3 space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-wider opacity-60">Gość</p>
+                    <p className="text-xs font-semibold opacity-70">Gość</p>
                     <p className="font-bold text-slate-900 dark:text-white">{result.guestName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">ID Klienta: {result.guestId}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">ID Klienta: {result.guestId}</p>
                   </div>
                 )}
               </div>
@@ -184,9 +179,8 @@ export function EmployeeQRScannerSimulator({ ctx }: { ctx: EmployeeContext }) {
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="bg-slate-100 dark:bg-slate-950/40 rounded-3xl p-6 border border-slate-200/50 dark:border-slate-800/80 transition-colors duration-200">
-        <h4 className="font-bold text-slate-800 dark:text-slate-250 text-sm mb-2">Test integracji QR (opcjonalnie)</h4>
+      <div className={`p-6 ${panelSurfaceClassName}`}>
+        <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-2">Test integracji QR (opcjonalnie)</h4>
         <ol className="list-decimal pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-2 leading-relaxed">
           <li>Endpoint <span className="font-mono">GET /api/client/checkin-qr-token</span> nadal istnieje pod przyszłą aplikację mobilną.</li>
           <li>Panel klienta w przeglądarce nie pokazuje QR — wejście odbywa się przez recepcję.</li>

@@ -80,7 +80,7 @@ export function EmployeeClassesPage({ ctx }: { ctx: EmployeeContext }) {
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2 min-h-[40px]">{c.description || "Brak opisu"}</p>
               
               <div className="mt-auto space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-350">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <span>
                     {new Date(c.startTime).toLocaleString("pl-PL", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })}
@@ -88,7 +88,7 @@ export function EmployeeClassesPage({ ctx }: { ctx: EmployeeContext }) {
                     {new Date(c.endTime).toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-350">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                   <Users className="w-4 h-4 text-slate-400" />
                   <span>Zapisani: {c.activeReservations} / {c.capacity}</span>
                 </div>

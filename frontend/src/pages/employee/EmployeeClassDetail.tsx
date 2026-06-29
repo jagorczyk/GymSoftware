@@ -67,7 +67,7 @@ export function EmployeeClassDetail({ ctx }: { ctx: EmployeeContext }) {
         {reservations.length === 0 ? (
           <EmptyState message="Brak rezerwacji na te zajęcia." />
         ) : (
-          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-350">
+          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
             <thead className="bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Klient</th>
@@ -97,7 +97,7 @@ export function EmployeeClassDetail({ ctx }: { ctx: EmployeeContext }) {
                         <button
                           onClick={() => handleAttendance(r.id, "ATTENDED")}
                           disabled={r.status === "ATTENDED"}
-                          className={`p-2 rounded-lg transition-colors ${r.status === "ATTENDED" ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 opacity-50 cursor-not-allowed" : "text-emerald-600 dark:text-emerald-450 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"}`}
+                          className={`p-2 rounded-lg transition-colors ${r.status === "ATTENDED" ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 opacity-50 cursor-not-allowed" : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"}`}
                           title="Obecny"
                         >
                           <CheckCircle className="w-5 h-5" />
@@ -105,7 +105,7 @@ export function EmployeeClassDetail({ ctx }: { ctx: EmployeeContext }) {
                         <button
                           onClick={() => handleAttendance(r.id, "NO_SHOW")}
                           disabled={r.status === "NO_SHOW"}
-                          className={`p-2 rounded-lg transition-colors ${r.status === "NO_SHOW" ? "bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 opacity-50 cursor-not-allowed" : "text-rose-600 dark:text-rose-450 hover:bg-rose-50 dark:hover:bg-rose-950/20"}`}
+                          className={`p-2 rounded-lg transition-colors ${r.status === "NO_SHOW" ? "bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 opacity-50 cursor-not-allowed" : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20"}`}
                           title="Nieobecny"
                         >
                           <XCircle className="w-5 h-5" />

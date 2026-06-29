@@ -4,6 +4,7 @@ import { getTrainerProfile, updateTrainerProfile, getTrainerTrainings, cancelTra
 import { Save, User, Calendar, CheckCircle } from "lucide-react";
 import { FormSection } from "../../components/FormSection";
 import { PageHeader } from "../../components/PageHeader";
+import { LoadingState } from "../../components/LoadingState";
 import {
   inputClassName,
   labelClassName,
@@ -259,12 +260,7 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
 
   if (!ctx.selectedGymId) return <SelectGymDashboardPrompt />;
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full" />
-      </div>
-    );
+  if (loading) return <LoadingState message="Ładowanie profilu trenera..." />;
 
   if (error && !profile)
     return (
@@ -276,7 +272,7 @@ export function EmployeeTrainerProfile({ ctx }: { ctx: EmployeeContext }) {
   if (!profile) return null;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6">
       <PageHeader
         title="Profil Trenera"
         subtitle="Zarządzaj swoją wizytówką i terminarzem dostępności dla klientów."
