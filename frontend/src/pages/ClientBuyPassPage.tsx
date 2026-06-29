@@ -3,24 +3,39 @@ import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom"
 import { useAuth } from "../authContext";
 import { useToast } from "../components/Toast";
 import { getClientPassTypes, purchasePassOnline } from "../clientApi";
-import { ArrowLeft, ShieldCheck, CheckCircle2, ShoppingCart, Loader2 } from "lucide-react";
+import { ArrowLeft, ShieldCheck, CheckCircle2, Loader2 } from "lucide-react";
 import { formatPassTypeValidity } from "../utils/passTypeLabels";
+import { PageHeader } from "../components/PageHeader";
+import { LoadingState } from "../components/LoadingState";
+import { EmptyState } from "../components/EmptyState";
+import {
+  panelSurfaceClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+} from "../components/formStyles";
+
+type PassTypeOption = {
+  id: number;
+  name: string;
+  price: number;
+  durationDays: number;
+  maxEntries?: number | null;
+};
 
 export function ClientBuyPassPage() {
   const { gymId } = useParams();
   const { auth } = useAuth();
-  const { showError, showSuccess } = useToast();
+  const { showError } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [passTypes, setPassTypes] = useState<any[]>([]);
+  const [passTypes, setPassTypes] = useState<PassTypeOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
   useEffect(() => {
     if (searchParams.get("canceled") === "true") {
       showError("Płatność została anulowana.");
-      // Usuwamy parametr z url, żeby nie pokazywało się przy odświeżeniu
       navigate(".", { replace: true });
     }
   }, [searchParams, navigate, showError]);
@@ -29,7 +44,7 @@ export function ClientBuyPassPage() {
     if (!auth || !gymId) return;
     getClientPassTypes(auth, Number(gymId))
       .then((data) => setPassTypes(data))
-      .catch((err) => showError(err.message))
+      .catch((err) => showError(err instanceof Error ? err.message : "Błąd ładowania cennika"))
       .finally(() => setLoading(false));
   }, [auth, gymId, showError]);
 
@@ -50,78 +65,83 @@ export function ClientBuyPassPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Ładowanie cennika...</div>;
+  if (loading) {
+    return <LoadingState message="Ładowanie cennika..." />;
+  }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 relative animate-in fade-in zoom-in-95 duration-500">
-      
-      <div className="text-center space-y-4">
-        <Link to="/client/dashboard" className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-colors mb-4">
-          <ArrowLeft className="w-4 h-4" />
-          Wróć do Panelu
-        </Link>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">Wybierz swój karnet</h1>
-        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-          Zostaniesz bezpiecznie przekierowany do bramki Stripe, aby sfinalizować transakcję.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-        {passTypes.map((pt, i) => (
-          <div
-            key={pt.id}
-            className="group relative bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-[0_2px_15px_-3px_rgba(6,81,237,0.1)] border-2 border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-indigo-500 flex flex-col"
-            style={{ animationDelay: `${i * 100}ms` }}
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      <PageHeader
+        title="Kup karnet online"
+        subtitle="Wybierz karnet — płatność przejdzie przez bezpieczną bramkę Stripe."
+        action={
+          <Link
+            to={gymId ? `/client/gyms/${gymId}/passes` : "/client/dashboard"}
+            className={secondaryButtonClassName}
           >
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{pt.name}</h3>
-              <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{pt.price}</span>
-                <span className="text-xl font-bold text-slate-500 dark:text-slate-400">zł</span>
-              </div>
-              
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Wróć
+          </Link>
+        }
+      />
+
+      {passTypes.length === 0 ? (
+        <div className={panelSurfaceClassName}>
+          <EmptyState
+            title="Brak karnetów do kupienia online"
+            description="Ta siłownia nie udostępnia jeszcze sprzedaży online. Skontaktuj się z recepcją."
+            action={
+              <Link to="/client/dashboard" className={secondaryButtonClassName}>
+                Wróć do pulpitu
+              </Link>
+            }
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {passTypes.map((pt) => (
+            <article key={pt.id} className={`p-6 flex flex-col gap-6 ${panelSurfaceClassName}`}>
+              <div className="flex-1 space-y-3">
+                <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white text-balance">
+                  {pt.name}
+                </h2>
+                <p className="text-3xl font-display font-black text-slate-900 dark:text-white tabular-nums">
+                  {new Intl.NumberFormat("pl-PL", {
+                    style: "currency",
+                    currency: "PLN",
+                  }).format(pt.price)}
+                </p>
+                <p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
                   {formatPassTypeValidity(pt)}
-                </li>
-                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Pełny dostęp do stref
-                </li>
-                <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                  Wsparcie trenera dyżurnego
-                </li>
-              </ul>
-            </div>
-            
-            <button
-              onClick={() => handleSelectPass(pt.id)}
-              disabled={isProcessing === pt.id}
-              className="w-full bg-slate-900 dark:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/40 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:bg-slate-900 dark:disabled:hover:bg-slate-800"
-            >
-              {isProcessing === pt.id ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Przekierowywanie...
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="w-5 h-5" />
-                  Zapłać przez Stripe
-                </>
-              )}
-            </button>
-          </div>
-        ))}
-      </div>
+                </p>
+              </div>
 
-      <div className="flex items-center justify-center gap-2 text-slate-400 mt-8">
-        <ShieldCheck className="w-5 h-5 text-indigo-400" />
-        <span className="text-sm font-medium">Bezpieczne płatności obsługuje Stripe</span>
-      </div>
+              <button
+                type="button"
+                onClick={() => handleSelectPass(pt.id)}
+                disabled={isProcessing === pt.id}
+                className={primaryButtonClassName}
+                aria-busy={isProcessing === pt.id}
+              >
+                {isProcessing === pt.id ? (
+                  <>
+                    <Loader2 className="w-5 h-5 motion-safe:animate-spin" aria-hidden="true" />
+                    Przekierowywanie…
+                  </>
+                ) : (
+                  "Kup karnet"
+                )}
+              </button>
+            </article>
+          ))}
+        </div>
+      )}
 
+      <p className="flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+        <ShieldCheck className="w-4 h-4 text-primary-500 shrink-0" aria-hidden="true" />
+        Bezpieczne płatności obsługuje Stripe
+      </p>
     </div>
   );
 }

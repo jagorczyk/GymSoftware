@@ -5,6 +5,17 @@ import { useToast } from "../components/Toast";
 import { getAllGymsForClient, joinGym, ClientGymView } from "../clientApi";
 import { ArrowLeft, MapPin, User, Phone, CheckCircle2 } from "lucide-react";
 import { formatGymAddressLine } from "../utils/gymLabel";
+import { PageHeader } from "../components/PageHeader";
+import { LoadingState } from "../components/LoadingState";
+import { EmptyState } from "../components/EmptyState";
+import {
+  panelSurfaceClassName,
+  inputClassName,
+  labelClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
+  focusRingClassName,
+} from "../components/formStyles";
 
 export function ClientGymJoinPage() {
   const { auth } = useAuth();
@@ -23,7 +34,7 @@ export function ClientGymJoinPage() {
     if (!auth) return;
     getAllGymsForClient(auth)
       .then((data) => setGyms(data))
-      .catch((err) => showError(err.message))
+      .catch((err) => showError(err instanceof Error ? err.message : "Błąd ładowania"))
       .finally(() => setLoading(false));
   }, [auth, showError]);
 
@@ -47,132 +58,152 @@ export function ClientGymJoinPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-slate-500 animate-pulse">Ładowanie dostępnych klubów...</div>;
+  if (loading) {
+    return <LoadingState message="Ładowanie dostępnych klubów..." />;
+  }
 
   return (
-    <div className="max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-12">
-      <div className="flex items-center gap-4 mb-8">
-        <Link to="/client/dashboard" className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
-          <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-display font-extrabold text-slate-900 dark:text-white tracking-tight">Dołącz do Klubu</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">Wybierz lokalizację i uzupełnij dane, aby kontynuować.</p>
-        </div>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      <PageHeader
+        title="Dołącz do klubu"
+        subtitle="Wybierz lokalizację i uzupełnij dane kontaktowe."
+        action={
+          <Link to="/client/dashboard" className={secondaryButtonClassName}>
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Wróć
+          </Link>
+        }
+      />
 
-      <div className="space-y-10">
-        {/* Krok 1: Wybór Siłowni */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">1</div>
-            Wybierz lokalizację
-          </h2>
-          {gyms.length === 0 ? (
-            <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-center text-slate-500">
-              Brak dostępnych klubów.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {gyms.map((g) => (
-                <div
+      <section className="space-y-4">
+        <h2 className="text-base font-display font-bold text-slate-900 dark:text-white">
+          1. Wybierz lokalizację
+        </h2>
+        {gyms.length === 0 ? (
+          <div className={panelSurfaceClassName}>
+            <EmptyState title="Brak dostępnych klubów" description="Spróbuj ponownie później lub skontaktuj się z recepcją." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="radiogroup" aria-label="Wybór klubu">
+            {gyms.map((g) => {
+              const selected = selectedGymId === g.id;
+              return (
+                <button
                   key={g.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
                   onClick={() => setSelectedGymId(g.id)}
-                  className={`relative p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col gap-2 ${
-                    selectedGymId === g.id
-                      ? "border-primary-500 bg-primary-50 dark:bg-primary-900/10 shadow-md"
-                      : "border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm"
+                  className={`text-left p-5 rounded-2xl border-2 transition-colors flex flex-col gap-2 ${focusRingClassName} ${
+                    selected
+                      ? "border-primary-500 bg-primary-50 dark:bg-primary-900/10"
+                      : "border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl ${selectedGymId === g.id ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                        <MapPin className="w-5 h-5" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`p-2 rounded-xl shrink-0 ${
+                          selected
+                            ? "bg-primary-100 dark:bg-primary-900/40 text-primary-600"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                        }`}
+                      >
+                        <MapPin className="w-5 h-5" aria-hidden="true" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="font-bold text-slate-900 dark:text-white">{g.name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 text-pretty">
                           {formatGymAddressLine(g) || "Brak adresu"}
                         </p>
                       </div>
                     </div>
-                    {selectedGymId === g.id && (
-                      <CheckCircle2 className="w-6 h-6 text-primary-500 animate-in zoom-in" />
+                    {selected && (
+                      <CheckCircle2 className="w-6 h-6 text-primary-500 shrink-0" aria-hidden="true" />
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-        {/* Krok 2: Formularz Danych */}
-        <div className={`transition-all duration-500 ${selectedGymId ? 'opacity-100 translate-y-0' : 'opacity-30 pointer-events-none translate-y-4'}`}>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs">2</div>
-            Twoje dane
-          </h2>
-          
-          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Imię</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Wpisz imię"
-                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Nazwisko</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Wpisz nazwisko"
-                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+      <section
+        className={`space-y-4 transition-opacity ${selectedGymId ? "opacity-100" : "opacity-40 pointer-events-none"}`}
+        aria-disabled={!selectedGymId}
+      >
+        <h2 className="text-base font-display font-bold text-slate-900 dark:text-white">
+          2. Twoje dane
+        </h2>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
-                Numer telefonu <span className="text-slate-400 font-normal">(opcjonalnie)</span>
+        <form onSubmit={handleSubmit} className={`p-6 md:p-8 space-y-6 ${panelSurfaceClassName}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="join-first-name" className={labelClassName}>
+                Imię
               </label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
                 <input
+                  id="join-first-name"
                   type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+48 000 000 000"
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all text-slate-900 dark:text-white"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Wpisz imię"
+                  className={`${inputClassName} pl-11`}
+                  required
                 />
               </div>
             </div>
-
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="submit"
-                disabled={isSubmitting || selectedGymId === ""}
-                className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Przetwarzanie..." : "Dołącz do Klubu"}
-              </button>
+            <div>
+              <label htmlFor="join-last-name" className={labelClassName}>
+                Nazwisko
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+                <input
+                  id="join-last-name"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Wpisz nazwisko"
+                  className={`${inputClassName} pl-11`}
+                  required
+                />
+              </div>
             </div>
-          </form>
-        </div>
-      </div>
+          </div>
+
+          <div>
+            <label htmlFor="join-phone" className={labelClassName}>
+              Numer telefonu <span className="text-slate-400 font-normal">(opcjonalnie)</span>
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
+              <input
+                id="join-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+48 000 000 000"
+                className={`${inputClassName} pl-11`}
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="submit"
+              disabled={isSubmitting || selectedGymId === ""}
+              className={`w-full ${primaryButtonClassName}`}
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting ? "Przetwarzanie…" : "Dołącz do klubu"}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

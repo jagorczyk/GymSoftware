@@ -7,6 +7,7 @@ import { useAppGymSelector } from "../appGymSelectorContext";
 import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
+import { ClientGymGate } from "../components/ClientGymGate";
 import { useToast } from "../components/Toast";
 
 export function ClientClassesPage({ hideHeader }: { hideHeader?: boolean }) {
@@ -90,7 +91,11 @@ export function ClientClassesPage({ hideHeader }: { hideHeader?: boolean }) {
   }
 
   if (!gymId) {
-    return <EmptyState message="Wybierz siłownię, aby zobaczyć grafik." />;
+    return (
+      <ClientGymGate noGymMessage="Zapisz się na zajęcia po dołączeniu do klubu w sieci Gymlos.">
+        {null}
+      </ClientGymGate>
+    );
   }
 
   if (loading) return <LoadingState message="Wczytywanie zajęć..." />;

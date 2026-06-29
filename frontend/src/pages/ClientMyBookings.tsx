@@ -6,6 +6,7 @@ import { useAuth } from "../authContext";
 import { useAppGymSelector } from "../appGymSelectorContext";
 import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
+import { ClientGymGate } from "../components/ClientGymGate";
 import { useToast } from "../components/Toast";
 
 export function ClientMyBookings() {
@@ -64,7 +65,13 @@ export function ClientMyBookings() {
     }
   }
 
-  if (!gymId) return <EmptyState message="Wybierz siłownię." />;
+  if (!gymId) {
+    return (
+      <ClientGymGate noGymMessage="Twoje rezerwacje pojawią się po dołączeniu do klubu.">
+        {null}
+      </ClientGymGate>
+    );
+  }
   if (loading) return <LoadingState message="Wczytywanie rezerwacji..." />;
 
   const hasAnyBookings = classes.length > 0 || trainings.length > 0;

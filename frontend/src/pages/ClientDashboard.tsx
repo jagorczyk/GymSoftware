@@ -5,7 +5,6 @@ import { useToast } from "../components/Toast";
 import {
   getClientGyms,
   getClientDashboard,
-  getGlobalClientStats,
   getClientTodaySummary,
   getUpcomingTrainings,
   ClientTodaySummaryView,
@@ -17,6 +16,7 @@ import { PageHeader } from "../components/PageHeader";
 import { LoadingState } from "../components/LoadingState";
 import { EmptyState } from "../components/EmptyState";
 import { primaryButtonClassName, secondaryButtonClassName } from "../components/formStyles";
+import { formatTrainingStatus } from "../utils/clientLabels";
 import {
   Store,
   Ticket,
@@ -53,7 +53,6 @@ export function ClientDashboard() {
   const [gyms, setGyms] = useState<ClientGymView[]>([]);
   const [activePasses, setActivePasses] = useState<PassWithGym[]>([]);
   const [upcomingTrainings, setUpcomingTrainings] = useState<PersonalTrainingView[]>([]);
-  const [stats, setStats] = useState({ activePasses: 0, workoutsThisMonth: 0 });
   const [todaySummary, setTodaySummary] = useState<ClientTodaySummaryView | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,15 +68,13 @@ export function ClientDashboard() {
     async function load() {
       setLoading(true);
       try {
-        const [gymData, statsData, trainingsData, todaySummaryData] = await Promise.all([
+        const [gymData, trainingsData, todaySummaryData] = await Promise.all([
           getClientGyms(currentAuth),
-          getGlobalClientStats(currentAuth),
           getUpcomingTrainings(currentAuth),
           getClientTodaySummary(currentAuth),
         ]);
 
         setGyms(gymData);
-        setStats(statsData);
         setTodaySummary(todaySummaryData);
 
         const now = new Date();
@@ -142,30 +139,13 @@ export function ClientDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 mb-2">
-            <Ticket className="w-5 h-5" />
-            <span className="text-sm font-bold uppercase tracking-wide">Aktywne karnety</span>
-          </div>
-          <p className="text-4xl font-display font-black text-slate-900 dark:text-white">{stats.activePasses}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
-            <CalendarDays className="w-5 h-5" />
-            <span className="text-sm font-bold uppercase tracking-wide">Nadchodzące treningi</span>
-          </div>
-          <p className="text-4xl font-display font-black text-slate-900 dark:text-white">{upcomingTrainings.length}</p>
-        </div>
-      </div>
-
       <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3">
-        <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+        <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white text-balance">
           Dzisiaj
         </h2>
         {todaySummary?.nextBooking ? (
           <div className="rounded-xl border border-primary-200 dark:border-primary-900/50 bg-primary-50/60 dark:bg-primary-950/20 p-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-primary-700 dark:text-primary-300">
+            <p className="text-xs font-semibold text-primary-700 dark:text-primary-300">
               Najbliższa rezerwacja
             </p>
             <p className="font-bold text-slate-900 dark:text-white mt-1">{todaySummary.nextBooking.title}</p>
@@ -184,10 +164,10 @@ export function ClientDashboard() {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white text-balance">
             Aktywne karnety
           </h2>
-          {activePasses.length > 0 && (
+          {activePasses.length > 0 && gyms.length === 1 && (
             <Link
               to={gyms.length > 0 ? `/client/gyms/${gyms[0].id}/passes` : "/client/gyms/join"}
               className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:underline"
@@ -239,7 +219,7 @@ export function ClientDashboard() {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+          <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white text-balance">
             Nadchodzące rezerwacje
           </h2>
           <Link to="/client/activities" className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:underline">
@@ -271,8 +251,8 @@ export function ClientDashboard() {
                   </p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{formatDateTime(training.scheduledAt)}</p>
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                  {training.status}
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  {formatTrainingStatus(training.status)}
                 </span>
               </div>
             ))}
@@ -281,7 +261,7 @@ export function ClientDashboard() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white uppercase tracking-wide">
+        <h2 className="text-lg font-display font-bold text-slate-900 dark:text-white text-balance">
           Twoje kluby
         </h2>
 

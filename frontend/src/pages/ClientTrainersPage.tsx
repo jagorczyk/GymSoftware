@@ -12,6 +12,7 @@ import {
 } from "../clientApi";
 import { PageHeader } from "../components/PageHeader";
 import { EmptyState } from "../components/EmptyState";
+import { ClientGymGate } from "../components/ClientGymGate";
 import { LoadingState } from "../components/LoadingState";
 import { UserCircle, Star, ArrowLeft, CheckCircle, Lock, Clock } from "lucide-react";
 
@@ -90,7 +91,13 @@ export function ClientTrainersPage({ hideHeader }: { hideHeader?: boolean }) {
     }
   }
 
-  if (!gymId) return <EmptyState message="Wybierz siłownię, aby zobaczyć listę trenerów." />;
+  if (!gymId) {
+    return (
+      <ClientGymGate noGymMessage="Umów trening personalny po dołączeniu do klubu w sieci Gymlos.">
+        {null}
+      </ClientGymGate>
+    );
+  }
   if (loading) return <LoadingState message="Wczytywanie trenerów..." />;
 
   // ─── Trainer list ────────────────────────────────────────────────────────────
