@@ -38,11 +38,12 @@ services:
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-http://localhost:5173/client/gyms/{gymId}/passes?success=true}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-http://localhost:5173/client/gyms/{gymId}/buy?canceled=true}
       STRIPE_CONNECT_FEE_PERCENT: ${STRIPE_CONNECT_FEE_PERCENT:-5}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      STRIPE_CONNECT_RETURN_URL: ${STRIPE_CONNECT_RETURN_URL:-}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-twój_email@gmail.com}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-twój_app_password}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "8080:8080"

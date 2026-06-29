@@ -502,4 +502,6 @@ public final class GymDtos {
             String currency,
             int applicationFeePercent
     ) {}
+
+    public record PayoutOnboardRequest(String returnOrigin) {}
 }

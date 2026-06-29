@@ -46,5 +46,7 @@ public class StripeProperties {
         /** Platform fee taken from each client payment (percent of gross). */
         private int applicationFeePercent = 5;
         private String country = "PL";
+        /** Override for Stripe Connect return/refresh URLs (defaults to FRONTEND_URL). */
+        private String returnUrlBase;
     }
 }

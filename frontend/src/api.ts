@@ -253,7 +253,11 @@ export async function getOwnerPayoutStatus(auth: AuthState, gymId: number): Prom
 export async function startOwnerPayoutOnboarding(auth: AuthState, gymId: number): Promise<{ onboardingUrl: string }> {
   const response = await fetch(`${API_URL}/owner/gyms/${gymId}/payouts/onboard`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${auth.token}` },
+    headers: {
+      Authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ returnOrigin: window.location.origin }),
   });
   if (!response.ok) await parseApiError(response, "Nie udało się rozpocząć konfiguracji wypłat");
   return response.json();

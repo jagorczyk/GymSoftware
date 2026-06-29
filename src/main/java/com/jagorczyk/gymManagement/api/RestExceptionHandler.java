@@ -1,5 +1,6 @@
 package com.jagorczyk.gymManagement.api;
 
+import com.stripe.exception.StripeException;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,10 +80,34 @@ public class RestExceptionHandler {
         return Map.of("error", "Operacja naruszyła reguły bazy danych. Sprawdź dane i spróbuj ponownie.");
     }
 
+    @ExceptionHandler(StripeException.class)
+    public ResponseEntity<Map<String, String>> handleStripe(StripeException ex) {
+        log.error("Stripe error [code={}]: {}", ex.getCode(), ex.getUserMessage(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of("error", mapStripeError(ex)));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleUnexpected(Exception ex) {
         log.error("Nieobsłużony wyjątek", ex);
         return Map.of("error", "Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później.");
+    }
+
+    private static String mapStripeError(StripeException ex) {
+        String message = ex.getUserMessage() != null ? ex.getUserMessage() : ex.getMessage();
+        if (message == null || message.isBlank()) {
+            return "Błąd usługi płatności Stripe. Spróbuj ponownie później.";
+        }
+        String lower = message.toLowerCase();
+        if (lower.contains("signed up for connect") || lower.contains("connect")) {
+            return "Stripe Connect nie jest włączony na koncie platformy. Administrator musi aktywować Connect w panelu Stripe.";
+        }
+        if (lower.contains("url") && lower.contains("https")) {
+            return "Nieprawidłowy adres powrotu po konfiguracji. W panelu Stripe dodaj dozwolone adresy dla subdomen siłowni (np. https://*.gymlos.pl/owner/payouts).";
+        }
+        if (lower.contains("platform profile")) {
+            return "Profil platformy Stripe jest niekompletny. Dokończ konfigurację konta Stripe (Connect).";
+        }
+        return "Stripe: " + message;
     }
 }

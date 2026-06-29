@@ -163,8 +163,16 @@ public class OwnerController {
     }
 
     @PostMapping("/gyms/{gymId}/payouts/onboard")
-    public Map<String, String> startPayoutOnboarding(@PathVariable Long gymId) throws com.stripe.exception.StripeException {
-        return stripeConnectService.startOnboarding(currentUserService.getCurrentUser().getId(), gymId);
+    public Map<String, String> startPayoutOnboarding(
+            @PathVariable Long gymId,
+            @RequestBody(required = false) com.jagorczyk.gymManagement.api.dto.GymDtos.PayoutOnboardRequest request
+    ) throws com.stripe.exception.StripeException {
+        String returnOrigin = request != null ? request.returnOrigin() : null;
+        return stripeConnectService.startOnboarding(
+                currentUserService.getCurrentUser().getId(),
+                gymId,
+                returnOrigin
+        );
     }
 
     @PostMapping("/gyms/{gymId}/payouts/dashboard")

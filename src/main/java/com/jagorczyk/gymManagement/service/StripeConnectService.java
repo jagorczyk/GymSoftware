@@ -13,7 +13,10 @@ import com.stripe.net.RequestOptions;
 import com.stripe.param.AccountCreateParams;
 import com.stripe.param.AccountLinkCreateParams;
 import com.stripe.param.LoginLinkCreateOnAccountParams;
+import java.net.URI;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class StripeConnectService {
 
+    private static final Logger log = LoggerFactory.getLogger(StripeConnectService.class);
+
     private final GymRepository gymRepository;
     private final StripeProperties stripeProperties;
 
-    @Value("${FRONTEND_URL:http://localhost:5173}")
-    private String frontendUrl;
+    @Value("${app.tenant.base-domain:gymlos.pl}")
+    private String tenantBaseDomain;
+
+    @Value("${app.tenant.base-protocol:https}")
+    private String tenantBaseProtocol;
+
+    @Value("${app.tenant.local-port:5173}")
+    private int tenantLocalPort;
 
     public StripeConnectService(GymRepository gymRepository, StripeProperties stripeProperties) {
         this.gymRepository = gymRepository;
@@ -68,7 +79,7 @@ public class StripeConnectService {
     }
 
     @Transactional
-    public Map<String, String> startOnboarding(Long ownerUserId, Long gymId) throws StripeException {
+    public Map<String, String> startOnboarding(Long ownerUserId, Long gymId, String returnOrigin) throws StripeException {
         Gym gym = requireOwnerGym(ownerUserId, gymId);
         if (!isStripeConfigured()) {
             throw new IllegalArgumentException("Płatności Stripe nie są skonfigurowane na platformie.");
@@ -79,7 +90,7 @@ public class StripeConnectService {
             gym.setStripeConnectAccountId(accountId);
             gymRepository.save(gym);
         }
-        String onboardingUrl = createAccountLink(accountId, gymId);
+        String onboardingUrl = createAccountLink(accountId, gym, returnOrigin);
         return Map.of("onboardingUrl", onboardingUrl);
     }
 
@@ -111,11 +122,14 @@ public class StripeConnectService {
     }
 
     private String createExpressAccount(Gym gym) throws StripeException {
-        String country = stripeProperties.getConnect().getCountry();
+        String country = connectCountry();
+        String email = ownerEmail(gym);
+        log.info("Creating Stripe Express account for gymId={} country={}", gym.getId(), country);
+
         AccountCreateParams params = AccountCreateParams.builder()
                 .setType(AccountCreateParams.Type.EXPRESS)
                 .setCountry(country)
-                .setEmail(gym.getOwnerUser().getEmail())
+                .setEmail(email)
                 .setBusinessProfile(
                         AccountCreateParams.BusinessProfile.builder()
                                 .setName(gym.getName())
@@ -138,11 +152,13 @@ public class StripeConnectService {
                 .putMetadata("gymId", gym.getId().toString())
                 .build();
         Account account = Account.create(params);
+        log.info("Created Stripe Express account {} for gymId={}", account.getId(), gym.getId());
         return account.getId();
     }
 
-    private String createAccountLink(String accountId, Long gymId) throws StripeException {
-        String base = frontendUrl + "/owner/payouts?gymId=" + gymId;
+    private String createAccountLink(String accountId, Gym gym, String returnOrigin) throws StripeException {
+        String base = connectReturnBaseUrl(gym, returnOrigin) + "/owner/payouts?gymId=" + gym.getId();
+        log.info("Creating Stripe account link for accountId={} gymId={} returnBase={}", accountId, gym.getId(), base);
         AccountLinkCreateParams params = AccountLinkCreateParams.builder()
                 .setAccount(accountId)
                 .setRefreshUrl(base + "&onboarding=refresh")
@@ -204,8 +220,69 @@ public class StripeConnectService {
     }
 
     private Gym requireOwnerGym(Long ownerUserId, Long gymId) {
-        return gymRepository.findById(gymId)
+        return gymRepository.findByIdWithOwner(gymId)
                 .filter(g -> g.getOwnerUser().getId().equals(ownerUserId))
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono siłowni lub brak uprawnień właściciela."));
+    }
+
+    private String ownerEmail(Gym gym) {
+        if (gym.getOwnerUser() == null || gym.getOwnerUser().getEmail() == null || gym.getOwnerUser().getEmail().isBlank()) {
+            throw new IllegalArgumentException("Brak adresu e-mail właściciela konta. Uzupełnij profil przed konfiguracją wypłat.");
+        }
+        return gym.getOwnerUser().getEmail();
+    }
+
+    private String connectCountry() {
+        if (stripeProperties.getConnect() != null && stripeProperties.getConnect().getCountry() != null) {
+            return stripeProperties.getConnect().getCountry();
+        }
+        return "PL";
+    }
+
+    private String connectReturnBaseUrl(Gym gym, String returnOrigin) {
+        if (returnOrigin != null && !returnOrigin.isBlank() && isAllowedReturnOrigin(returnOrigin)) {
+            return stripTrailingSlash(returnOrigin.trim());
+        }
+        return buildGymTenantOrigin(gym);
+    }
+
+    private String buildGymTenantOrigin(Gym gym) {
+        String subdomain = gym.getSubdomain();
+        if (subdomain == null || subdomain.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Ta siłownia nie ma przypisanej subdomeny. Uzupełnij nazwę siłowni przed konfiguracją wypłat."
+            );
+        }
+        String domain = tenantBaseDomain.trim();
+        if (domain.equalsIgnoreCase("localhost") || domain.startsWith("localhost:")) {
+            return "http://" + subdomain + ".localhost:" + tenantLocalPort;
+        }
+        String protocol = tenantBaseProtocol != null && !tenantBaseProtocol.isBlank()
+                ? tenantBaseProtocol.trim()
+                : "https";
+        return protocol + "://" + subdomain + "." + domain;
+    }
+
+    private boolean isAllowedReturnOrigin(String origin) {
+        try {
+            URI uri = URI.create(origin);
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return false;
+            }
+            String host = uri.getHost().toLowerCase();
+            String allowedDomain = tenantBaseDomain.trim().toLowerCase();
+            if (host.equals("localhost") || host.endsWith(".localhost")) {
+                return true;
+            }
+            int colon = allowedDomain.indexOf(':');
+            String domainHost = colon >= 0 ? allowedDomain.substring(0, colon) : allowedDomain;
+            return host.equals(domainHost) || host.endsWith("." + domainHost);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    private static String stripTrailingSlash(String value) {
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
     }
 }
